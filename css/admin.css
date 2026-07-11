@@ -1,0 +1,6 @@
+.input-field { padding: 12px; border-radius: 12px; border: 1px solid var(--chip-border); background: var(--chip-bg); color: var(--ink); font-family: inherit; width: 100%; box-sizing: border-box; }
+.event-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-radius: 12px; background: var(--legend-bg); border: 1px solid var(--legend-border); margin-bottom: 8px; }
+.del-btn { background: var(--ds); color: white; border: none; border-radius: 8px; padding: 6px 12px; cursor: pointer; font-family: inherit; font-weight: 600; }
+
+#eventBuilder { display: none; flex-direction: column; gap: 14px; margin-top: 14px; }
+#lockScreen { display: flex; flex-direction: column; gap: 14px; }
