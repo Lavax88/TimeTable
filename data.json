@@ -1,57 +1,309 @@
 {
   "ACCENT": {
-    "TOC": ["var(--toc)", "var(--toc-soft)"],
-    "EE": ["var(--ee)", "var(--ee-soft)"],
-    "DS": ["var(--ds)", "var(--ds-soft)"],
-    "MAT": ["var(--mat)", "var(--mat-soft)"],
-    "OOP": ["var(--oop)", "var(--oop-soft)"],
-    "DAL": ["var(--dal)", "var(--dal-soft)"],
-    "LAB": ["var(--lab)", "var(--lab-soft)"],
-    "ACT": ["var(--act)", "var(--act-soft)"]
+    "TOC": [
+      "var(--toc)",
+      "var(--toc-soft)"
+    ],
+    "EE": [
+      "var(--ee)",
+      "var(--ee-soft)"
+    ],
+    "DS": [
+      "var(--ds)",
+      "var(--ds-soft)"
+    ],
+    "MAT": [
+      "var(--mat)",
+      "var(--mat-soft)"
+    ],
+    "OOP": [
+      "var(--oop)",
+      "var(--oop-soft)"
+    ],
+    "DAL": [
+      "var(--dal)",
+      "var(--dal-soft)"
+    ],
+    "LAB": [
+      "var(--lab)",
+      "var(--lab-soft)"
+    ],
+    "ACT": [
+      "var(--act)",
+      "var(--act-soft)"
+    ]
   },
   "SUBJECTS": {
-    "TOC": { "name": "Theory of Computation", "subLine": "PCCST302 · Ms. Thilakavathi A", "chipLabel": "TOC", "accentKey": "TOC" },
-    "EE": { "name": "Economics For Engineers", "subLine": "UCHUT346 · Ms. Rose Paul", "chipLabel": "EE", "accentKey": "EE" },
-    "DS": { "name": "Data Structures and Algorithms", "subLine": "PCCST303 · Ms. Shruthy Chandran", "chipLabel": "DS", "accentKey": "DS" },
-    "MAT": { "name": "Mathematics for Computer and Information Science", "subLine": "GAMAT301 · Ms. Femy Francis", "chipLabel": "MAT", "accentKey": "MAT" },
-    "OOP": { "name": "Object Oriented Programming", "subLine": "PBCST304 · Ms. Preeja Mol Prasad", "chipLabel": "OOP", "accentKey": "OOP" },
-    "DAL": { "name": "Digital Electronics and Logic Design", "subLine": "GAEST305 · Ms. Anna Isabel John", "chipLabel": "DAL", "accentKey": "DAL" },
-    "ACT": { "name": "Activity Hour", "subLine": "Break from routine classes", "chipLabel": "—", "accentKey": "ACT" },
-    "LABCOMBO": { "name": "Data Structures Lab / Digital Electronics Lab", "subLine": "PCCSL307 · PCCSL308 · Ms. Shruthy Chandran, Ms. Anna Isabel John, Ms. Jefia R Wilson", "chipLabel": "Lab", "accentKey": "LAB" }
+    "TOC": {
+      "name": "Theory of Computation",
+      "subLine": "PCCST302 · Ms. Thilakavathi A",
+      "chipLabel": "TOC",
+      "accentKey": "TOC"
+    },
+    "EE": {
+      "name": "Economics For Engineers",
+      "subLine": "UCHUT346 · Ms. Rose Paul",
+      "chipLabel": "EE",
+      "accentKey": "EE"
+    },
+    "DS": {
+      "name": "Data Structures and Algorithms",
+      "subLine": "PCCST303 · Ms. Shruthy Chandran",
+      "chipLabel": "DS",
+      "accentKey": "DS"
+    },
+    "MAT": {
+      "name": "Mathematics for Computer and Information Science",
+      "subLine": "GAMAT301 · Ms. Femy Francis",
+      "chipLabel": "MAT",
+      "accentKey": "MAT"
+    },
+    "OOP": {
+      "name": "Object Oriented Programming",
+      "subLine": "PBCST304 · Ms. Preeja Mol Prasad",
+      "chipLabel": "OOP",
+      "accentKey": "OOP"
+    },
+    "DAL": {
+      "name": "Digital Electronics and Logic Design",
+      "subLine": "GAEST305 · Ms. Anna Isabel John",
+      "chipLabel": "DAL",
+      "accentKey": "DAL"
+    },
+    "ACT": {
+      "name": "Activity Hour",
+      "subLine": "Break from routine classes",
+      "chipLabel": "—",
+      "accentKey": "ACT"
+    },
+    "LABCOMBO": {
+      "name": "Data Structures Lab / Digital Electronics Lab",
+      "subLine": "PCCSL307 · PCCSL308 · Ms. Shruthy Chandran, Ms. Anna Isabel John, Ms. Jefia R Wilson",
+      "chipLabel": "Lab",
+      "accentKey": "LAB"
+    }
   },
   "SCHEDULE": {
     "Monday": [
-      ["08:00", "08:55", "TOC", ""], ["09:20", "10:15", "EE", ""], ["10:20", "11:15", "DS", ""],
-      ["11:35", "12:30", "MAT", ""], ["12:35", "13:30", "OOP", ""]
+      [
+        "08:00",
+        "08:55",
+        "TOC",
+        ""
+      ],
+      [
+        "09:20",
+        "10:15",
+        "EE",
+        ""
+      ],
+      [
+        "10:20",
+        "11:15",
+        "DS",
+        ""
+      ],
+      [
+        "11:35",
+        "12:30",
+        "MAT",
+        ""
+      ],
+      [
+        "12:35",
+        "13:30",
+        "OOP",
+        ""
+      ]
     ],
     "Tuesday": [
-      ["08:00", "08:55", "DS", ""], ["09:20", "10:15", "OOP", ""],
-      ["10:20", "12:30", "LABCOMBO", "", 2]
+      [
+        "08:00",
+        "08:55",
+        "DS",
+        ""
+      ],
+      [
+        "09:20",
+        "10:15",
+        "OOP",
+        ""
+      ],
+      [
+        "10:20",
+        "12:30",
+        "LABCOMBO",
+        "",
+        2
+      ]
     ],
     "Wednesday": [
-      ["08:00", "08:55", "DAL", ""], ["09:20", "10:15", "MAT", ""], ["10:20", "11:15", "DS", ""],
-      ["11:35", "12:30", "TOC", ""], ["12:35", "13:30", "EE", ""]
+      [
+        "08:00",
+        "08:55",
+        "DAL",
+        ""
+      ],
+      [
+        "09:20",
+        "10:15",
+        "MAT",
+        ""
+      ],
+      [
+        "10:20",
+        "11:15",
+        "DS",
+        ""
+      ],
+      [
+        "11:35",
+        "12:30",
+        "TOC",
+        ""
+      ],
+      [
+        "12:35",
+        "13:30",
+        "EE",
+        ""
+      ]
     ],
     "Thursday": [
-      ["08:00", "08:55", "MAT", ""], ["09:20", "10:15", "DAL", ""], ["10:20", "11:15", "TOC", ""],
-      ["11:35", "12:30", "DAL", ""], ["12:35", "13:30", "OOP", ""]
+      [
+        "08:00",
+        "08:55",
+        "MAT",
+        ""
+      ],
+      [
+        "09:20",
+        "10:15",
+        "DAL",
+        ""
+      ],
+      [
+        "10:20",
+        "11:15",
+        "TOC",
+        ""
+      ],
+      [
+        "11:35",
+        "12:30",
+        "DAL",
+        ""
+      ],
+      [
+        "12:35",
+        "13:30",
+        "OOP",
+        ""
+      ]
     ],
     "Friday": [
-      ["08:00", "11:15", "LABCOMBO", "", 3],
-      ["11:35", "12:30", "DAL", ""], ["12:35", "13:30", "TOC", ""]
+      [
+        "08:00",
+        "11:15",
+        "LABCOMBO",
+        "",
+        3
+      ],
+      [
+        "11:35",
+        "12:30",
+        "DAL",
+        ""
+      ],
+      [
+        "12:35",
+        "13:30",
+        "TOC",
+        ""
+      ]
     ],
     "Saturday": [
-      ["08:00", "08:45", "DS", ""], ["09:10", "09:55", "TOC", ""], ["10:00", "10:45", "OOP", ""],
-      ["10:50", "11:35", "ACT", ""], ["11:55", "12:40", "OOP", ""], ["12:45", "13:30", "DS", ""]
+      [
+        "08:00",
+        "08:45",
+        "DS",
+        ""
+      ],
+      [
+        "09:10",
+        "09:55",
+        "TOC",
+        ""
+      ],
+      [
+        "10:00",
+        "10:45",
+        "OOP",
+        ""
+      ],
+      [
+        "10:50",
+        "11:35",
+        "ACT",
+        ""
+      ],
+      [
+        "11:55",
+        "12:40",
+        "OOP",
+        ""
+      ],
+      [
+        "12:45",
+        "13:30",
+        "DS",
+        ""
+      ]
     ]
   },
   "LEGEND": [
-    ["TOC", "Theory of Computation", "PCCST302 · Ms. Thilakavathi A"],
-    ["EE", "Economics For Engineers", "UCHUT346 · Ms. Rose Paul"],
-    ["DS", "Data Structures and Algorithms", "PCCST303 · Ms. Shruthy Chandran"],
-    ["MAT", "Mathematics for CS & IS", "GAMAT301 · Ms. Femy Francis"],
-    ["OOP", "Object Oriented Programming", "PBCST304 · Ms. Preeja Mol Prasad"],
-    ["DAL", "Digital Electronics & Logic Design", "GAEST305 · Ms. Anna Isabel John"],
-    ["LAB", "Data Structures Lab / Digital Electronics Lab", "PCCSL307 · PCCSL308"]
-  ]
+    [
+      "TOC",
+      "Theory of Computation",
+      "PCCST302 · Ms. Thilakavathi A"
+    ],
+    [
+      "EE",
+      "Economics For Engineers",
+      "UCHUT346 · Ms. Rose Paul"
+    ],
+    [
+      "DS",
+      "Data Structures and Algorithms",
+      "PCCST303 · Ms. Shruthy Chandran"
+    ],
+    [
+      "MAT",
+      "Mathematics for CS & IS",
+      "GAMAT301 · Ms. Femy Francis"
+    ],
+    [
+      "OOP",
+      "Object Oriented Programming",
+      "PBCST304 · Ms. Preeja Mol Prasad"
+    ],
+    [
+      "DAL",
+      "Digital Electronics & Logic Design",
+      "GAEST305 · Ms. Anna Isabel John"
+    ],
+    [
+      "LAB",
+      "Data Structures Lab / Digital Electronics Lab",
+      "PCCSL307 · PCCSL308"
+    ]
+  ],
+  "EVENTS": [
+    {
+      "title": "Reminder",
+      "date": "2026-07-12",
+      "type": "reminder"
+    }
+  ],
+  "HOLIDAYS": []
 }
