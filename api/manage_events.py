@@ -55,6 +55,12 @@ class handler(BaseHTTPRequestHandler):
             action = body.get("action")
             commit_message = "Admin UI: Updated"
 
+            if action == "verify":
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": True}).encode())
+                return
+
             if action == "add":
                 new_events = body.get("events", [])
                 data["EVENTS"].extend(new_events)

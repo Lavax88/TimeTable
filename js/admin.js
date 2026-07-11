@@ -9,13 +9,35 @@ const seriesFields = document.getElementById('seriesFields');
 const seriesRows = document.getElementById('seriesRows');
 const addSeriesRowBtn = document.getElementById('addSeriesRow');
 
-document.getElementById('unlockBtn').addEventListener('click', () => {
-  if (pwdInput.value.trim() !== "") {
-    lockScreen.style.display = 'none';
-    eventBuilder.style.display = 'flex';
-    document.getElementById('holidaysSection').style.display = 'block';
-  } else {
-    alert("Please enter a password.");
+document.getElementById('unlockBtn').addEventListener('click', async () => {
+  const pwd = pwdInput.value.trim();
+  if (!pwd) { alert("Please enter a password."); return; }
+
+  const unlockBtn = document.getElementById('unlockBtn');
+  unlockBtn.textContent = "Verifying...";
+  unlockBtn.disabled = true;
+
+  try {
+    const res = await fetch('/api/manage_events', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pwd, action: 'verify' })
+    });
+    const result = await res.json();
+
+    if (res.ok) {
+      lockScreen.style.display = 'none';
+      eventBuilder.style.display = 'flex';
+      document.getElementById('holidaysSection').style.display = 'block';
+    } else {
+      alert(result.error || "Incorrect password.");
+      unlockBtn.textContent = "Unlock Dashboard";
+      unlockBtn.disabled = false;
+    }
+  } catch {
+    alert("Network error. Check your connection.");
+    unlockBtn.textContent = "Unlock Dashboard";
+    unlockBtn.disabled = false;
   }
 });
 
