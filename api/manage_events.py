@@ -3,6 +3,15 @@ import json
 import os
 import urllib.request
 import base64
+from datetime import datetime
+
+def _not_expired(ev, now_ts):
+    try:
+        d = datetime.strptime(ev["date"], "%Y-%m-%d")
+        d = d.replace(hour=13, minute=30, second=0, microsecond=0)
+        return d.timestamp() > now_ts
+    except (KeyError, ValueError, TypeError):
+        return True
 
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):
@@ -10,7 +19,6 @@ class handler(BaseHTTPRequestHandler):
         post_data = self.rfile.read(content_length)
         body = json.loads(post_data)
 
-        # 1. Verify Password
         if body.get("password") != os.environ.get("ADMIN_PASSWORD"):
             self.send_response(401)
             self.end_headers()
@@ -28,7 +36,6 @@ class handler(BaseHTTPRequestHandler):
         }
 
         try:
-            # 2. Fetch current data.json
             req = urllib.request.Request(url, headers=headers)
             with urllib.request.urlopen(req) as response:
                 file_data = json.loads(response.read().decode())
@@ -38,26 +45,39 @@ class handler(BaseHTTPRequestHandler):
 
             if "EVENTS" not in data:
                 data["EVENTS"] = []
+            if "HOLIDAYS" not in data:
+                data["HOLIDAYS"] = []
+
+            # Remove expired events (past 1:30 PM on their date)
+            now = datetime.now().timestamp()
+            data["EVENTS"] = [ev for ev in data["EVENTS"] if _not_expired(ev, now)]
 
             action = body.get("action")
-            commit_message = "Admin UI: Updated events"
+            commit_message = "Admin UI: Updated"
 
-            # 3. Handle Add (Supports single events or bulk array for Series Exams)
             if action == "add":
                 new_events = body.get("events", [])
                 data["EVENTS"].extend(new_events)
                 commit_message = f"Admin UI: Added {len(new_events)} event(s)"
 
-            # 4. Handle Delete
             elif action == "delete":
                 target_title = body.get("targetTitle")
                 target_date = body.get("targetDate")
-                # Filter out the event that matches the title and date exactly
                 data["EVENTS"] = [ev for ev in data["EVENTS"] if not (ev.get("title") == target_title and ev.get("date") == target_date)]
                 commit_message = f"Admin UI: Deleted event '{target_title}'"
 
-            # 5. Commit back to GitHub
-            new_content = base64.b64encode(json.dumps(data, indent=2).encode('utf-8')).decode('utf-8')
+            elif action == "add_holiday":
+                date = body.get("holidayDate")
+                if date and date not in data["HOLIDAYS"]:
+                    data["HOLIDAYS"].append(date)
+                commit_message = f"Admin UI: Added holiday {date}"
+
+            elif action == "remove_holiday":
+                date = body.get("holidayDate")
+                data["HOLIDAYS"] = [d for d in data["HOLIDAYS"] if d != date]
+                commit_message = f"Admin UI: Removed holiday {date}"
+
+            new_content = base64.b64encode(json.dumps(data, indent=2, ensure_ascii=False).encode('utf-8')).decode('utf-8')
             put_data = json.dumps({
                 "message": commit_message,
                 "content": new_content,

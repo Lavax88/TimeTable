@@ -1,27 +1,21 @@
-// --- 0. MODAL UI CONTROLS ---
 const notifToggle = document.getElementById('notifToggle');
 const settingsModal = document.getElementById('settingsModal');
 const closeSettings = document.getElementById('closeSettings');
 
-// Open modal
 notifToggle.addEventListener('click', () => {
   settingsModal.classList.add('active');
 });
 
-// Close modal via X button
 closeSettings.addEventListener('click', () => {
   settingsModal.classList.remove('active');
 });
 
-// Close modal by clicking the blurry background outside the panel
 settingsModal.addEventListener('click', (e) => {
   if (e.target === settingsModal) {
     settingsModal.classList.remove('active');
   }
 });
 
-// --- 1. STATE MANAGEMENT (localStorage) ---
-// Default settings (all turned ON initially)
 const defaultSettings = {
   classStart: true,
   classEnd: true,
@@ -30,49 +24,46 @@ const defaultSettings = {
   fridayReminder: true
 };
 
-// Load saved settings, or use defaults if it is their first time visiting
 let userSettings = JSON.parse(localStorage.getItem("timetableAlertSettings")) || defaultSettings;
 
-// Wire up the HTML checkboxes to update the settings
 document.querySelectorAll('.settings-panel input[type="checkbox"]').forEach(checkbox => {
   const key = checkbox.dataset.key;
-
-  // Set initial visual state based on saved data
   checkbox.checked = userSettings[key];
-
-  // Listen for changes
   checkbox.addEventListener('change', (e) => {
     userSettings[key] = e.target.checked;
     localStorage.setItem("timetableAlertSettings", JSON.stringify(userSettings));
-
-    // If they turn anything on, make sure we have OS permission
     if (e.target.checked) requestNotificationPermission();
   });
 });
 
-// --- 2. PERMISSIONS ---
 function requestNotificationPermission() {
   if (!("Notification" in window)) return;
   if (Notification.permission !== "granted" && Notification.permission !== "denied") {
     Notification.requestPermission();
   }
 }
-// Ask once on initial load
 requestNotificationPermission();
 
-// --- 3. ALERT FUNCTION ---
 function sendAlert(title, message, categoryKey) {
-  // Check OS permission AND check if the user toggled this specific category ON
   if (Notification.permission === "granted" && userSettings[categoryKey] === true) {
     new Notification(title, {
       body: message,
       icon: "logo.png?v=5",
-      tag: "timetable-alert-" + categoryKey // Unique tag prevents stacking duplicate categories
+      tag: "timetable-alert-" + categoryKey
     });
   }
 }
 
-// --- 4. THE TIME CHECKER LOGIC ---
+function isTodayHoliday() {
+  if (!window._holidays || !window._holidays.length) return false;
+  const t = new Date();
+  const yyyy = t.getFullYear();
+  const mm = String(t.getMonth() + 1).padStart(2, '0');
+  const dd = String(t.getDate()).padStart(2, '0');
+  const today = `${yyyy}-${mm}-${dd}`;
+  return window._holidays.includes(today);
+}
+
 let lastNotifiedMinute = -1;
 
 function checkTimeForNotifications() {
@@ -82,7 +73,9 @@ function checkTimeForNotifications() {
   if (curMinutes === lastNotifiedMinute) return;
   lastNotifiedMinute = curMinutes;
 
-  // --- FRIDAY 9:30 PM REMINDER ---
+  const todayHoliday = isTodayHoliday();
+
+  // --- FRIDAY 9:30 PM REMINDER — always fires even on holidays ---
   if (t.getDay() === 5 && curMinutes === 1290) {
     const tomorrow = new Date(t);
     tomorrow.setDate(t.getDate() + 1);
@@ -94,6 +87,9 @@ function checkTimeForNotifications() {
       sendAlert("Enjoy the weekend! 🎉", "No classes tomorrow.", "fridayReminder");
     }
   }
+
+  // --- Skip all other notifications on holidays ---
+  if (todayHoliday) return;
 
   // --- DAILY CLASS REMINDERS ---
   const dayNames = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
@@ -115,7 +111,6 @@ function checkTimeForNotifications() {
     const subjectTitleEl = card.querySelector(".subj-name");
     const subjectName = subjectTitleEl ? subjectTitleEl.textContent.trim() : "Class";
 
-    // Trigger for start times
     if (curMinutes === startMin) {
       if (subjectName.toLowerCase().includes("break")) {
         sendAlert("Break Time! ☕", `The ${subjectName} has started.`, "breakStart");
@@ -124,7 +119,6 @@ function checkTimeForNotifications() {
       }
     }
 
-    // Trigger for end times
     if (curMinutes === endMin) {
       if (endMin === finalEndMin) {
         sendAlert("Day Complete! 🎒", "Classes are over for the day.", "classEnd");

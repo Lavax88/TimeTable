@@ -13,6 +13,7 @@ themeToggle.addEventListener("click", () => {
 function applyTheme(theme){
   root.setAttribute("data-theme", theme);
   themeToggle.textContent = theme === "dark" ? "☀️" : "🌙";
+  localStorage.setItem("timetableTheme", theme);
 }
 
 /* ---------- Data Fetching & Initialization ---------- */
@@ -24,6 +25,7 @@ async function initTimetableApp() {
     const ACCENT = data.ACCENT;
     const SUBJECTS = data.SUBJECTS;
     const SCHEDULE = data.SCHEDULE;
+    window._holidays = data.HOLIDAYS || [];
 
     // 1. We added "Exams" as a dedicated tab at the end
     const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday", "Exams"];
@@ -32,10 +34,11 @@ async function initTimetableApp() {
     const EVENTS = data.EVENTS || [];
     const nowTime = new Date().getTime();
 
-    // Filter out past events (keeps them if their timestamp + 1 day is in the future)
+    // Filter out past events (removes them after 1:30 PM on their date)
     const upcomingEvents = EVENTS.filter(ev => {
-      const evDate = new Date(ev.date).getTime() + (24 * 60 * 60 * 1000);
-      return evDate > nowTime;
+      const evDate = new Date(ev.date);
+      evDate.setHours(13, 30, 0, 0);
+      return evDate.getTime() > nowTime;
     }).sort((a,b) => new Date(a.date) - new Date(b.date));
 
     const exams = upcomingEvents.filter(e => e.type === 'exam');
@@ -68,12 +71,27 @@ async function initTimetableApp() {
       return out;
     }
 
+    const typeCardLabels = {
+      exam: 'Upcoming Exam',
+      test: 'Upcoming Class Test',
+      deadline: 'Pending Assignment',
+      general: 'General Event',
+      reminder: 'Reminder'
+    };
+    const typeShortLabels = {
+      exam: 'SERIES',
+      test: 'TEST',
+      deadline: 'DEADLINE',
+      general: 'EVENT',
+      reminder: 'REMINDER'
+    };
+
     // --- EVENT CARD GENERATOR ---
     function createEventCard(ev) {
       const card = document.createElement("div");
       card.className = "card now";
 
-      // Exams get Red (DS), Deadlines get Yellow (MAT)
+      // Exams get Red (DS), others get Yellow (MAT)
       const accent = ev.type === 'exam' ? ACCENT.DS : ACCENT.MAT;
       card.style.setProperty("--card-accent", accent[0]);
 
@@ -85,16 +103,19 @@ async function initTimetableApp() {
       const d = new Date(ev.date);
       const dateStr = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 
+      const tagLabel = typeCardLabels[ev.type] || 'Event';
+      const shortLabel = typeShortLabels[ev.type] || ev.type.toUpperCase();
+
       card.innerHTML = `
         <div class="card-main">
           <div class="card-time" style="flex-basis: 90px;">
             <span class="p-num" style="font-size:15px; color:var(--ink);">${dateStr}</span>
-            <span class="p-time" style="font-size: 11px; margin-top:6px; color:var(--ink-soft);">${ev.type.toUpperCase()}</span>
+            <span class="p-time" style="font-size: 11px; margin-top:6px; color:var(--ink-soft);">${shortLabel}</span>
           </div>
           <div class="card-body">
             <div class="card-info">
-              <span class="now-tag" style="background:${accent[0]}">${ev.type === 'exam' ? 'Upcoming Exam' : 'Pending Task'}</span><br>
-              <p class="subj-name" style="margin-top:4px;">${ev.title}</p>
+              <span class="now-tag" style="background:${accent[0]}">${tagLabel}</span><br>
+              <p class="subj-name" style="margin-top:4px;">${ev.title}${ev.subject && ev.title !== ev.subject ? `<br><span style="font-size:13px;color:var(--ink-soft);font-weight:400;">${ev.subject}</span>` : ''}</p>
               <div class="progress-wrap">
                 <div class="progress-track"><div class="progress-fill"></div></div>
                 <span class="progress-remaining" style="font-variant-numeric: tabular-nums; min-width: 90px;"></span>

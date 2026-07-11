@@ -42,17 +42,35 @@
           <select id="type" class="input-field" required>
             <option value="test">Class Test</option>
             <option value="deadline">Assignment / Deadline</option>
-            <option value="exam">Major Exam</option>
+            <option value="exam">Series</option>
+            <option value="general">General Event</option>
+            <option value="reminder">Reminder</option>
           </select>
 
-          <select id="subject" class="input-field" required>
-            <option value="" disabled selected>Loading subjects...</option>
-            <!-- Injected via JS -->
-          </select>
+          <div id="normalFields">
+            <select id="subject" class="input-field">
+              <option value="" disabled selected>Loading subjects...</option>
+              <option value="">— No subject —</option>
+            </select>
 
-          <input type="text" id="title" placeholder="Custom Event Title" required class="input-field">
+            <input type="text" id="title" placeholder="Event Title" required class="input-field">
 
-          <input type="date" id="date" required class="input-field">
+            <input type="date" id="date" required class="input-field">
+          </div>
+
+          <div id="seriesFields" style="display: none;">
+            <input type="text" id="seriesGlobalName" class="input-field" placeholder="Series name (optional)">
+            <div id="seriesRows">
+              <div class="series-row">
+                <select class="input-field series-subject" required>
+                  <option value="" disabled selected>Subject</option>
+                </select>
+                <input type="date" class="input-field series-date" required>
+                <button type="button" class="series-remove-btn" style="display: none;">✕</button>
+              </div>
+            </div>
+            <button type="button" id="addSeriesRow" class="add-row-btn">+ Add Another Date</button>
+          </div>
 
           <button type="submit" style="padding: 14px; background: var(--toc); color: #fff; border: none; border-radius: 12px; font-weight: 700; font-family: inherit; cursor: pointer; margin-top: 8px;">Push to Schedule</button>
         </div>
@@ -65,6 +83,19 @@
       <h2 style="font-size: 18px; margin-top: 0; margin-bottom: 16px;">Active Events</h2>
       <div id="eventsList">
         <p style="color: var(--ink-soft); font-size: 14px;">Loading existing events...</p>
+      </div>
+    </div>
+
+    <!-- Holidays Section (hidden until unlocked) -->
+    <div id="holidaysSection" class="card" style="padding: 24px; display: none;">
+      <h2 style="font-size: 18px; margin-top: 0; margin-bottom: 16px;">Holidays</h2>
+      <p style="font-size: 13px; color: var(--ink-soft); margin: 0 0 12px;">On these dates all notifications are disabled (except Friday reminder).</p>
+      <div id="holidayForm" style="display: flex; gap: 10px; margin-bottom: 16px;">
+        <input type="date" id="holidayDate" class="input-field" style="flex: 1;">
+        <button id="addHolidayBtn" style="padding: 12px 20px; background: var(--ee); color: #fff; border: none; border-radius: 12px; font-weight: 700; font-family: inherit; cursor: pointer; white-space: nowrap;">Add Holiday</button>
+      </div>
+      <div id="holidaysList">
+        <p style="color: var(--ink-soft); font-size: 14px;">No holidays set.</p>
       </div>
     </div>
   </div>
