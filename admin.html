@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script>
+    const savedTheme = localStorage.getItem("timetableTheme");
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    document.documentElement.setAttribute("data-theme", savedTheme ? savedTheme : (prefersDark ? "dark" : "light"));
+  </script>
+  <style>
+    .input-field { padding: 12px; border-radius: 12px; border: 1px solid var(--chip-border); background: var(--chip-bg); color: var(--ink); font-family: inherit; width: 100%; box-sizing: border-box; }
+    .event-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-radius: 12px; background: var(--legend-bg); border: 1px solid var(--legend-border); margin-bottom: 8px; }
+    .del-btn { background: var(--ds); color: white; border: none; border-radius: 8px; padding: 6px 12px; cursor: pointer; font-family: inherit; font-weight: 600; }
+
+    /* UI States */
+    #eventBuilder { display: none; flex-direction: column; gap: 14px; margin-top: 14px; }
+    #lockScreen { display: flex; flex-direction: column; gap: 14px; }
+  </style>
+</head>
+<body>
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+
+  <div class="wrap">
+    <header>
+      <div class="header-actions">
+        <a href="index.html" class="admin-toggle">🏠</a>
+      </div>
+      <h1>Admin Dashboard</h1>
+      <p class="eyebrow">KTU S3 CSE · Event Management</p>
+    </header>
+
+    <div class="card" style="padding: 24px; margin-bottom: 24px;">
+      <h2 style="font-size: 18px; margin-top: 0;">Add New Event</h2>
+
+      <!-- LOCK SCREEN -->
+      <div id="lockScreen">
+        <p style="font-size: 13px; color: var(--ink-soft); margin: 0;">Enter your admin password to manage events.</p>
+        <input type="password" id="password" placeholder="Admin Password" required class="input-field">
+        <button id="unlockBtn" style="padding: 14px; background: var(--dal); color: #fff; border: none; border-radius: 12px; font-weight: 700; font-family: inherit; cursor: pointer;">Unlock Dashboard</button>
+      </div>
+
+      <!-- EVENT BUILDER FORM (Hidden by default) -->
+      <form id="adminForm">
+        <div id="eventBuilder">
+          <select id="type" class="input-field" required>
+            <option value="test">Class Test</option>
+            <option value="deadline">Assignment / Deadline</option>
+            <option value="exam">Major Exam</option>
+          </select>
+
+          <select id="subject" class="input-field" required>
+            <option value="" disabled selected>Loading subjects...</option>
+            <!-- Injected via JS -->
+          </select>
+
+          <input type="text" id="title" placeholder="Custom Event Title" required class="input-field">
+
+          <input type="date" id="date" required class="input-field">
+
+          <button type="submit" style="padding: 14px; background: var(--toc); color: #fff; border: none; border-radius: 12px; font-weight: 700; font-family: inherit; cursor: pointer; margin-top: 8px;">Push to Schedule</button>
+        </div>
+      </form>
+      <p id="status" style="margin-top: 16px; font-weight: 600; text-align: center; font-size: 14px;"></p>
+    </div>
+
+    <!-- Active Events List -->
+    <div class="card" style="padding: 24px;">
+      <h2 style="font-size: 18px; margin-top: 0; margin-bottom: 16px;">Active Events</h2>
+      <div id="eventsList">
+        <p style="color: var(--ink-soft); font-size: 14px;">Loading existing events...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Link to the new external JS file -->
+  <script src="js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>S3 CSE · Room A214 · Timetable</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css?v=2">
+
+  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="apple-touch-icon" href="logo.png">
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+
+<div class="blob b1"></div>
+<div class="blob b2"></div>
+<div class="blob b3"></div>
+<div class="blob b4"></div>
+
+<div class="wrap">
+  <header>
+      <div class="header-actions">
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">🌙</button>
+        <button class="notif-toggle" id="notifToggle" aria-label="Notification Settings">🔔</button>
+        <a href="admin.html" class="admin-toggle" aria-label="Admin Settings">⚙️</a>
+      </div>
+
+    <p class="eyebrow">CSE Department · Semester S3 · 2026–2027</p>
+    <h1>Weekly Class Timetable</h1>
+    <div class="meta-row">
+      <span class="meta-chip">📍 Room A214</span>
+      <span class="meta-chip">Batch advisors: Sweety C Joy · Preeja Mol</span>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs"></nav>
+  <div id="panels"></div>
+
+  <p class="legend-title">Subjects &amp; faculty</p>
+  <div class="legend-grid" id="legend"></div>
+
+</div>
+
+<div class="settings-modal-overlay" id="settingsModal">
+  <div class="settings-panel">
+    <div class="settings-header">
+      <h2>Notification Settings</h2>
+      <button class="close-modal" id="closeSettings">✕</button>
+    </div>
+
+    <label class="toggle-row">
+      <span>Class Starts</span>
+      <input type="checkbox" id="toggle-start" data-key="classStart">
+    </label>
+    <label class="toggle-row">
+      <span>Class Ends / Day Complete</span>
+      <input type="checkbox" id="toggle-end" data-key="classEnd">
+    </label>
+    <label class="toggle-row">
+      <span>Break Starts</span>
+      <input type="checkbox" id="toggle-break-start" data-key="breakStart">
+    </label>
+    <label class="toggle-row">
+      <span>Break Ends</span>
+      <input type="checkbox" id="toggle-break-end" data-key="breakEnd">
+    </label>
+    <label class="toggle-row">
+      <span>Friday 9:30 PM Reminder</span>
+      <input type="checkbox" id="toggle-friday" data-key="fridayReminder">
+    </label>
+  </div>
+</div>
+
+<script src="js/timetable.js"></script>
+
+<script src="js/notifications.js"></script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(registration => {
+          console.log('ServiceWorker registered successfully with scope: ', registration.scope);
+        })
+        .catch(error => {
+          console.log('ServiceWorker registration failed: ', error);
+        });
+    });
+  }
+</script>
+
+</body>
+</html>
