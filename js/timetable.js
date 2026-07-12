@@ -46,12 +46,16 @@ async function initTimetableApp() {
 
     // Render all upcoming non-exam events in dedicated section
     (function renderUpcomingTasks() {
-      const container = document.getElementById('upcomingTasks');
-      if (!container) return;
-      container.innerHTML = '';
-      if (deadlines.length === 0) return;
-      container.innerHTML = `<p class="legend-title" style="margin: 0 0 10px 4px;">Urgent Tasks</p>`;
-      deadlines.forEach(ev => container.appendChild(createEventCard(ev)));
+      try {
+        const container = document.getElementById('upcomingTasks');
+        if (!container) return;
+        container.innerHTML = '';
+        if (deadlines.length === 0) return;
+        container.innerHTML = `<p class="legend-title" style="margin: 0 0 10px 4px;">Urgent Tasks</p>`;
+        deadlines.forEach(ev => container.appendChild(createEventCard(ev)));
+      } catch (e) {
+        console.error("renderUpcomingTasks error:", e);
+      }
     })();
 
     function fmt(hhmm){
@@ -515,7 +519,7 @@ async function initTimetableApp() {
 
   } catch (error) {
     console.error("Failed to load timetable data:", error);
-    document.getElementById("panels").innerHTML = `<div class="free-note">Error loading schedule. Please check your connection.</div>`;
+    document.getElementById("panels").innerHTML = `<div class="free-note">Error loading schedule. Please check your connection.<br><span style="font-size:12px;color:var(--ds);">${error.message || error}</span></div>`;
   }
 }
 
