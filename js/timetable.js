@@ -19,7 +19,7 @@ function applyTheme(theme){
 /* ---------- Data Fetching & Initialization ---------- */
 async function initTimetableApp() {
   try {
-    const response = await fetch('./data.json?v=' + new Date().getTime());
+    const response = await fetch('./data.json?v=' + new Date().getTime(), { cache: 'no-store' });
     const data = await response.json();
 
     const ACCENT = data.ACCENT;
@@ -525,6 +525,19 @@ async function initTimetableApp() {
     document.getElementById("panels").innerHTML = `<div class="free-note">Error loading schedule. Please check your connection.</div>`;
   }
 }
+
+/* --- Tap title 7 times with 1.5s delay to open admin --- */
+let titleClicks = 0;
+let clickTimer = null;
+document.getElementById('mainTitle').addEventListener('click', () => {
+  titleClicks++;
+  clearTimeout(clickTimer);
+  clickTimer = setTimeout(() => { titleClicks = 0; }, 1500);
+  if (titleClicks >= 7) {
+    titleClicks = 0;
+    window.location.href = 'admin.html';
+  }
+});
 
 // Boot up the app
 initTimetableApp();

@@ -26,12 +26,10 @@
   <header>
       <div class="header-actions">
         <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">🌙</button>
-        <button class="notif-toggle" id="notifToggle" aria-label="Notification Settings">🔔</button>
-        <a href="admin.html" class="admin-toggle" aria-label="Admin Settings">⚙️</a>
       </div>
 
     <p class="eyebrow">CSE Department · Semester S3 · 2026–2027</p>
-    <h1>Weekly Class Timetable</h1>
+    <h1 id="mainTitle">Weekly Class Timetable</h1>
     <div class="meta-row">
       <span class="meta-chip">📍 Room A214</span>
       <span class="meta-chip">Batch advisors: Sweety C Joy · Preeja Mol</span>
@@ -46,50 +44,12 @@
 
 </div>
 
-<div class="settings-modal-overlay" id="settingsModal">
-  <div class="settings-panel">
-    <div class="settings-header">
-      <h2>Notification Settings</h2>
-      <button class="close-modal" id="closeSettings">✕</button>
-    </div>
-
-    <label class="toggle-row">
-      <span>Class Starts</span>
-      <input type="checkbox" id="toggle-start" data-key="classStart">
-    </label>
-    <label class="toggle-row">
-      <span>Class Ends / Day Complete</span>
-      <input type="checkbox" id="toggle-end" data-key="classEnd">
-    </label>
-    <label class="toggle-row">
-      <span>Break Starts</span>
-      <input type="checkbox" id="toggle-break-start" data-key="breakStart">
-    </label>
-    <label class="toggle-row">
-      <span>Break Ends</span>
-      <input type="checkbox" id="toggle-break-end" data-key="breakEnd">
-    </label>
-    <label class="toggle-row">
-      <span>Friday 9:30 PM Reminder</span>
-      <input type="checkbox" id="toggle-friday" data-key="fridayReminder">
-    </label>
-  </div>
-</div>
-
 <script src="js/timetable.js"></script>
-
-<script src="js/notifications.js"></script>
 
 <script>
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js')
-        .then(registration => {
-          console.log('ServiceWorker registered successfully with scope: ', registration.scope);
-        })
-        .catch(error => {
-          console.log('ServiceWorker registration failed: ', error);
-        });
+    navigator.serviceWorker.getRegistrations().then(regs => {
+      regs.forEach(r => r.unregister());
     });
   }
 </script>

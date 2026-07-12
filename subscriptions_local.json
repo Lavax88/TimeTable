@@ -1,0 +1,13 @@
+[
+  {
+    "endpoint": "https://ex.com/sub/1",
+    "keys": {
+      "p256dh": "k1",
+      "auth": "k2"
+    },
+    "types": [
+      "classStart",
+      "classEnd"
+    ]
+  }
+]
