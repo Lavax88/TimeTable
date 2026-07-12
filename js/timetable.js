@@ -44,6 +44,16 @@ async function initTimetableApp() {
     const exams = upcomingEvents.filter(e => e.type === 'exam');
     const deadlines = upcomingEvents.filter(e => e.type !== 'exam');
 
+    // Render all upcoming non-exam events in dedicated section
+    (function renderUpcomingTasks() {
+      const container = document.getElementById('upcomingTasks');
+      if (!container) return;
+      container.innerHTML = '';
+      if (deadlines.length === 0) return;
+      container.innerHTML = `<p class="legend-title" style="margin: 0 0 10px 4px;">Urgent Tasks</p>`;
+      deadlines.forEach(ev => container.appendChild(createEventCard(ev)));
+    })();
+
     function fmt(hhmm){
       const [h,m] = hhmm.split(":").map(Number);
       const period = h>=12 ? "PM":"AM";
@@ -207,23 +217,6 @@ async function initTimetableApp() {
         caution.className = "caution-banner";
         caution.innerHTML = `⚠️ No classes this Saturday — classes only run on the 1st &amp; 3rd Saturdays of the month.`;
         panel.appendChild(caution);
-      }
-
-      // Render Deadlines at the top of "Today's" panel
-      if (isToday && deadlines.length > 0) {
-        const dBanner = document.createElement("p");
-        dBanner.className = "legend-title";
-        dBanner.style.margin = "0 0 10px 4px";
-        dBanner.textContent = "Urgent Deadlines";
-        panel.appendChild(dBanner);
-
-        deadlines.forEach(ev => panel.appendChild(createEventCard(ev)));
-
-        const tBanner = document.createElement("p");
-        tBanner.className = "legend-title";
-        tBanner.style.margin = "20px 0 10px 4px";
-        tBanner.textContent = "Today's Classes";
-        panel.appendChild(tBanner);
       }
 
       const rawPeriods = SCHEDULE[day];
