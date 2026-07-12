@@ -1,10 +1,12 @@
 const { get } = require('@vercel/edge-config');
 
-const EDGE_CONFIG_ID = process.env.EDGE_CONFIG
-  ? process.env.EDGE_CONFIG.replace(/^edge_config:\/\//, '')
-  : null;
-const EDGE_CONFIG_WRITE_TOKEN = process.env.EDGE_CONFIG_WRITE_TOKEN || '';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
+const EDGE_CONFIG_WRITE_TOKEN = process.env.EDGE_CONFIG_WRITE_TOKEN || '';
+
+function getEdgeConfigId() {
+  const s = process.env.EDGE_CONFIG || '';
+  return s.replace(/^edge_config:\/\//, '').replace(/^edge_config:/, '') || process.env.EDGE_CONFIG_ID || '';
+}
 
 function unauthorized(res, msg) {
   res.status(401).json({ error: msg || 'Unauthorized: Incorrect password.' });
@@ -19,7 +21,11 @@ async function readEdgeConfig() {
 }
 
 async function writeEdgeConfig(payload) {
-  const url = `https://api.vercel.com/v1/edge-config/${EDGE_CONFIG_ID}/items`;
+  const id = getEdgeConfigId();
+  if (!id) throw new Error('EDGE_CONFIG (or EDGE_CONFIG_ID) env var is not set');
+  if (!EDGE_CONFIG_WRITE_TOKEN) throw new Error('EDGE_CONFIG_WRITE_TOKEN env var is not set');
+
+  const url = `https://api.vercel.com/v1/edge-config/${id}/items?dcr_token=${encodeURIComponent(EDGE_CONFIG_WRITE_TOKEN)}`;
   const body = {
     items: [
       {
@@ -31,15 +37,12 @@ async function writeEdgeConfig(payload) {
   };
   const res = await fetch(url, {
     method: 'PATCH',
-    headers: {
-      Authorization: `Bearer ${EDGE_CONFIG_WRITE_TOKEN}`,
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`Edge Config write failed: ${res.status} ${text}`);
+    throw new Error(`Edge Config write failed (${res.status}): ${text}`);
   }
 }
 
