@@ -563,8 +563,6 @@ async function initTimetableApp() {
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden) loadEvents();
 });
-window.addEventListener('focus', () => loadEvents());
-setInterval(loadEvents, 60000);
 
 /* --- Tap title 7 times with 1.5s delay to open admin --- */
 let titleClicks = 0;
