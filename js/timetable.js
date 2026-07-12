@@ -166,6 +166,7 @@ async function initTimetableApp() {
         const sep = document.createElement('hr');
         sep.style.cssText = 'border:none;border-top:1px solid var(--card-time-border);margin:20px 0 10px;';
         container.appendChild(sep);
+        container.appendChild(document.createElement('br'));
       } catch (e) {
         console.error("renderUpcomingTasks error:", e);
       }
