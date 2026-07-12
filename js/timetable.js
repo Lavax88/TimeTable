@@ -16,10 +16,139 @@ function applyTheme(theme){
   localStorage.setItem("timetableTheme", theme);
 }
 
+/* ---------- Globals ---------- */
+let _ACCENT = null;
+let _SUBJECTS = null;
+let _events = [];
+let _holidays = [];
+
+/* ---------- Event helpers ---------- */
+const typeCardLabels = {
+  exam: 'Upcoming Exam',
+  test: 'Upcoming Class Test',
+  deadline: 'Pending Assignment',
+  general: 'General Event',
+  reminder: 'Reminder'
+};
+const typeShortLabels = {
+  exam: 'SERIES',
+  test: 'TEST',
+  deadline: 'DEADLINE',
+  general: 'EVENT',
+  reminder: 'REMINDER'
+};
+
+function subjectAccent(subjectName) {
+  if (!subjectName || !_SUBJECTS) return null;
+  for (const details of Object.values(_SUBJECTS)) {
+    if (details.name === subjectName) {
+      return _ACCENT[details.accentKey] || null;
+    }
+  }
+  return null;
+}
+
+function createEventCard(ev) {
+  const card = document.createElement("div");
+  card.className = "card now";
+
+  const subAccent = subjectAccent(ev.subject);
+  const accent = subAccent || (_ACCENT && _ACCENT.MAT) || ['#6366f1', '#eef2ff'];
+  card.style.setProperty("--card-accent", accent[0]);
+
+  card.dataset.eventDate = ev.date;
+  card.dataset.eventType = ev.type;
+
+  const d = new Date(ev.date);
+  const dateStr = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+
+  const tagLabel = typeCardLabels[ev.type] || 'Event';
+  const shortLabel = typeShortLabels[ev.type] || ev.type.toUpperCase();
+
+  const mainHeading = ev.subject || ev.title;
+
+  card.innerHTML = `
+    <div class="card-main">
+      <div class="card-time" style="flex-basis: 90px;">
+        <span class="p-num" style="font-size:15px; color:var(--ink);">${dateStr}</span>
+        <span class="p-time" style="font-size: 11px; margin-top:6px; color:var(--ink-soft);">${shortLabel}</span>
+      </div>
+      <div class="card-body">
+        <div class="card-info">
+          <span class="now-tag" style="background:${accent[0]}">${tagLabel}</span><br>
+          <p class="subj-name" style="margin-top:4px;">${mainHeading}</p>
+          <div class="progress-wrap">
+            <div class="progress-track"><div class="progress-fill"></div></div>
+            <span class="progress-remaining" style="font-variant-numeric: tabular-nums; min-width: 90px;"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  return card;
+}
+
+/* ---------- Events Fetching & Rendering ---------- */
+async function loadEvents() {
+  try {
+    const res = await fetch('/api/events');
+    const data = await res.json();
+    _events = data.EVENTS || [];
+    _holidays = data.HOLIDAYS || [];
+  } catch (e) {
+    console.error('Failed to load events:', e);
+    _events = [];
+    _holidays = [];
+  }
+  renderEvents();
+}
+
+function getFilteredEvents() {
+  const nowTime = new Date().getTime();
+  const upcoming = _events.filter(ev => {
+    const evDate = new Date(ev.date);
+    evDate.setHours(13, 30, 0, 0);
+    return evDate.getTime() > nowTime;
+  }).sort((a,b) => new Date(a.date) - new Date(b.date));
+  return {
+    exams: upcoming.filter(e => e.type === 'exam'),
+    deadlines: upcoming.filter(e => e.type !== 'exam'),
+  };
+}
+
+function renderEvents() {
+  const { exams, deadlines } = getFilteredEvents();
+
+  // Render upcoming tasks section
+  const container = document.getElementById('upcomingTasks');
+  if (container) {
+    container.innerHTML = '';
+    if (deadlines.length > 0) {
+      container.innerHTML = `<p class="legend-title" style="margin: 0 0 10px 4px;">Urgent Tasks</p>`;
+      deadlines.forEach(ev => container.appendChild(createEventCard(ev)));
+      const tt = document.createElement('p');
+      tt.className = 'legend-title';
+      tt.style.cssText = 'margin: 20px 0 10px 4px;';
+      tt.textContent = 'Timetable';
+      container.appendChild(tt);
+    }
+  }
+
+  // Render exams tab
+  const examsPanel = document.querySelector('.day-panel[data-day="Exams"]');
+  if (examsPanel) {
+    examsPanel.innerHTML = '';
+    if (exams.length === 0) {
+      examsPanel.innerHTML = `<div class="free-note">No upcoming exams scheduled. You're safe (for now).</div>`;
+    } else {
+      exams.forEach(ev => examsPanel.appendChild(createEventCard(ev)));
+    }
+  }
+}
+
 /* ---------- Data Fetching & Initialization ---------- */
 async function initTimetableApp() {
   try {
-    // Try sessionStorage cache first (5 min TTL)
     let data = null;
     const cached = sessionStorage.getItem('timetableData');
     const cachedAt = sessionStorage.getItem('timetableDataAt');
@@ -35,27 +164,11 @@ async function initTimetableApp() {
       } catch (e) {}
     }
 
-    const ACCENT = data.ACCENT;
-    const SUBJECTS = data.SUBJECTS;
+    _ACCENT = data.ACCENT;
+    _SUBJECTS = data.SUBJECTS;
     const SCHEDULE = data.SCHEDULE;
-    window._holidays = data.HOLIDAYS || [];
 
-    // 1. We added "Exams" as a dedicated tab at the end
     const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday", "Exams"];
-
-    // 2. Parse Events
-    const EVENTS = data.EVENTS || [];
-    const nowTime = new Date().getTime();
-
-    // Filter out past events (removes them after 1:30 PM on their date)
-    const upcomingEvents = EVENTS.filter(ev => {
-      const evDate = new Date(ev.date);
-      evDate.setHours(13, 30, 0, 0);
-      return evDate.getTime() > nowTime;
-    }).sort((a,b) => new Date(a.date) - new Date(b.date));
-
-    const exams = upcomingEvents.filter(e => e.type === 'exam');
-    const deadlines = upcomingEvents.filter(e => e.type !== 'exam');
 
     function fmt(hhmm){
       const [h,m] = hhmm.split(":").map(Number);
@@ -83,95 +196,6 @@ async function initTimetableApp() {
       }
       return out;
     }
-
-    const typeCardLabels = {
-      exam: 'Upcoming Exam',
-      test: 'Upcoming Class Test',
-      deadline: 'Pending Assignment',
-      general: 'General Event',
-      reminder: 'Reminder'
-    };
-    const typeShortLabels = {
-      exam: 'SERIES',
-      test: 'TEST',
-      deadline: 'DEADLINE',
-      general: 'EVENT',
-      reminder: 'REMINDER'
-    };
-
-    // --- EVENT CARD GENERATOR ---
-    function subjectAccent(subjectName) {
-      if (!subjectName) return null;
-      for (const details of Object.values(SUBJECTS)) {
-        if (details.name === subjectName) {
-          return ACCENT[details.accentKey] || null;
-        }
-      }
-      return null;
-    }
-
-    function createEventCard(ev) {
-      const card = document.createElement("div");
-      card.className = "card now";
-
-      // Use subject accent if available, otherwise fallback
-      const subAccent = subjectAccent(ev.subject);
-      const accent = subAccent || ACCENT.MAT;
-      card.style.setProperty("--card-accent", accent[0]);
-
-      // Save date data for the live tracker
-      card.dataset.eventDate = ev.date;
-      card.dataset.eventType = ev.type;
-
-      // Format date like "15 Jul"
-      const d = new Date(ev.date);
-      const dateStr = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-
-      const tagLabel = typeCardLabels[ev.type] || 'Event';
-      const shortLabel = typeShortLabels[ev.type] || ev.type.toUpperCase();
-
-      // Main heading: subject name if available, else event title
-      const mainHeading = ev.subject || ev.title;
-
-      card.innerHTML = `
-        <div class="card-main">
-          <div class="card-time" style="flex-basis: 90px;">
-            <span class="p-num" style="font-size:15px; color:var(--ink);">${dateStr}</span>
-            <span class="p-time" style="font-size: 11px; margin-top:6px; color:var(--ink-soft);">${shortLabel}</span>
-          </div>
-          <div class="card-body">
-            <div class="card-info">
-              <span class="now-tag" style="background:${accent[0]}">${tagLabel}</span><br>
-              <p class="subj-name" style="margin-top:4px;">${mainHeading}</p>
-              <div class="progress-wrap">
-                <div class="progress-track"><div class="progress-fill"></div></div>
-                <span class="progress-remaining" style="font-variant-numeric: tabular-nums; min-width: 90px;"></span>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-      return card;
-    }
-
-    // Render all upcoming non-exam events in dedicated section
-    (function renderUpcomingTasks() {
-      try {
-        const container = document.getElementById('upcomingTasks');
-        if (!container) return;
-        container.innerHTML = '';
-        if (deadlines.length === 0) return;
-        container.innerHTML = `<p class="legend-title" style="margin: 0 0 10px 4px;">Urgent Tasks</p>`;
-        deadlines.forEach(ev => container.appendChild(createEventCard(ev)));
-        const tt = document.createElement('p');
-        tt.className = 'legend-title';
-        tt.style.cssText = 'margin: 20px 0 10px 4px;';
-        tt.textContent = 'Timetable';
-        container.appendChild(tt);
-      } catch (e) {
-        console.error("renderUpcomingTasks error:", e);
-      }
-    })();
 
     const now = new Date();
     const dayNames = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
@@ -223,15 +247,10 @@ async function initTimetableApp() {
       panel.className = "day-panel";
       panel.dataset.day = day;
 
-      // Render Dedicated Exams Tab
       if (isExamsTab) {
-        if (exams.length === 0) {
-          panel.innerHTML = `<div class="free-note">No upcoming exams scheduled. You're safe (for now).</div>`;
-        } else {
-          exams.forEach(ev => panel.appendChild(createEventCard(ev)));
-        }
+        panel.innerHTML = `<div class="free-note">No upcoming exams scheduled. You're safe (for now).</div>`;
         panelsEl.appendChild(panel);
-        return; // Skip the normal timetable generation for this tab
+        return;
       }
 
       if(day === "Saturday" && thisWeekHasNoSaturdayClass){
@@ -282,9 +301,9 @@ async function initTimetableApp() {
         }
 
         periodCount++;
-        const subjData = SUBJECTS[key];
+        const subjData = _SUBJECTS[key];
         const subj = { name: subjData.name };
-        const accent = ACCENT[subjData.accentKey];
+        const accent = _ACCENT[subjData.accentKey];
         const subLine = subjData.subLine;
         const chipLabel = subjData.chipLabel;
         const extraNote = note || "";
@@ -333,14 +352,13 @@ async function initTimetableApp() {
 
     function selectDay(day){
       if(isAnimating) return;
-      // Update h1 for Exams tab
       if (day === "Exams") {
+        const { exams } = getFilteredEvents();
         const label = exams.length > 0 ? exams[0].title : "Exam Timetable";
         h1El.textContent = label;
       } else {
         h1El.textContent = originalH1;
       }
-      // Hide urgent tasks when on Exams tab
       const tasksEl = document.getElementById('upcomingTasks');
       if (tasksEl) tasksEl.style.display = day === 'Exams' ? 'none' : '';
       document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.day === day));
@@ -445,7 +463,7 @@ async function initTimetableApp() {
     /* ---------- Legend ---------- */
     const legendEl = document.getElementById("legend");
     data.LEGEND.forEach(([key,name,sub]) => {
-      const accent = ACCENT[key];
+      const accent = _ACCENT[key];
       const item = document.createElement("div");
       item.className = "legend-item";
       item.innerHTML = `<span class="legend-swatch" style="background:${accent[0]}"></span>
@@ -472,7 +490,6 @@ async function initTimetableApp() {
       const t = new Date();
       const curMinutes = t.getHours() * 60 + t.getMinutes() + t.getSeconds() / 60;
 
-      // 1. Regular Timetable Classes
       const classCards = document.querySelectorAll(".card.now[data-start-min]");
       classCards.forEach(card => {
         const startMin = Number(card.dataset.startMin);
@@ -496,12 +513,10 @@ async function initTimetableApp() {
         }
       });
 
-      // 2. Event Countdown Trackers
       const eventCards = document.querySelectorAll(".card.now[data-event-date]");
       eventCards.forEach(card => {
         const evDate = new Date(card.dataset.eventDate);
 
-        // Assume exams start at 9:00 AM, deadlines are due by 11:59 PM
         if (card.dataset.eventType === 'exam') evDate.setHours(9, 0, 0);
         else evDate.setHours(23, 59, 59);
 
@@ -513,7 +528,6 @@ async function initTimetableApp() {
           if(remainingEl) remainingEl.textContent = "It's Time!";
           if(fill) fill.style.width = "100%";
         } else {
-          // Calculate precise time left
           const d = Math.floor(diffMs / (1000 * 60 * 60 * 24));
           const h = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
           const m = Math.floor((diffMs / 1000 / 60) % 60);
@@ -525,7 +539,6 @@ async function initTimetableApp() {
             else remainingEl.textContent = `${m}m ${s}s left!`;
           }
 
-          // Visual bar progress based on a 14-day threshold window
           const totalMs = 14 * 24 * 60 * 60 * 1000;
           const pct = Math.max(0, 100 - ((diffMs / totalMs) * 100));
           if(fill) fill.style.width = Math.min(100, pct) + "%";
@@ -535,14 +548,23 @@ async function initTimetableApp() {
 
     updateProgressBars();
 
-    // Upgraded from 15s to 1s to make the event countdowns tick live!
     setInterval(updateProgressBars, 1000);
+
+    /* ---------- Load events after timetable is ready ---------- */
+    await loadEvents();
 
   } catch (error) {
     console.error("Failed to load timetable data:", error);
     document.getElementById("panels").innerHTML = `<div class="free-note">Error loading schedule. Please check your connection.<br><span style="font-size:12px;color:var(--ds);">${error.message || error}</span></div>`;
   }
 }
+
+/* ---------- Auto-refresh events ---------- */
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) loadEvents();
+});
+window.addEventListener('focus', () => loadEvents());
+setInterval(loadEvents, 60000);
 
 /* --- Tap title 7 times with 1.5s delay to open admin --- */
 let titleClicks = 0;
@@ -557,5 +579,4 @@ document.getElementById('mainTitle').addEventListener('click', () => {
   }
 });
 
-// Boot up the app
 initTimetableApp();

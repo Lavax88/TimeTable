@@ -20,8 +20,8 @@ self.addEventListener('install', event => {
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
-  // Network-first for data.json (always fetch fresh, fall back to cache)
-  if (url.pathname.endsWith('/data.json') || url.pathname.endsWith('data.json')) {
+  // Network-first for /api/events (always fetch fresh, fall back to cache)
+  if (url.pathname.startsWith('/api/events')) {
     event.respondWith(
       fetch(event.request)
         .then(response => {

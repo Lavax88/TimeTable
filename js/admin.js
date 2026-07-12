@@ -15,7 +15,7 @@ document.getElementById('unlockBtn').addEventListener('click', async () => {
   unlockBtn.disabled = true;
 
   try {
-    const res = await fetch('/api/manage_events', {
+    const res = await fetch('/api/admin/events', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password: pwd, action: 'verify' })
@@ -54,18 +54,25 @@ function populateSubjectSelect(sel, placeholder) {
 
 async function loadData() {
   try {
-    const res = await fetch('/api/data');
-    const data = await res.json();
+    const [dataRes, eventsRes] = await Promise.all([
+      fetch('/api/data'),
+      fetch('/api/events')
+    ]);
+    const data = await dataRes.json();
+    let eventsData = { EVENTS: [], HOLIDAYS: [] };
+    if (eventsRes.ok) {
+      eventsData = await eventsRes.json();
+    }
     window._subjects = data.SUBJECTS;
-    window._holidays = data.HOLIDAYS || [];
+    window._holidays = eventsData.HOLIDAYS || [];
 
     populateSubjectSelect(document.querySelector('.event-subject'), 'Select a Subject');
     document.querySelectorAll('.series-subject').forEach(sel => populateSubjectSelect(sel, 'Select Subject'));
 
-    renderEventsList(data.EVENTS || []);
+    renderEventsList(eventsData.EVENTS || []);
     renderHolidaysList();
   } catch (err) {
-    console.error("Failed to load data.json", err);
+    console.error("Failed to load data", err);
   }
 }
 
@@ -262,7 +269,7 @@ async function sendToAPI(payload) {
   statusEl.style.color = "var(--ink-soft)";
 
   try {
-    const res = await fetch('/api/manage_events', {
+    const res = await fetch('/api/admin/events', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)

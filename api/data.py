@@ -33,13 +33,6 @@ class handler(BaseHTTPRequestHandler):
 
         try:
             data = fetch_github_file(token, repo, "data.json")
-            try:
-                events = fetch_github_file(token, repo, "events.json")
-                data["EVENTS"] = events.get("EVENTS", [])
-                data["HOLIDAYS"] = events.get("HOLIDAYS", [])
-            except Exception:
-                data["EVENTS"] = []
-                data["HOLIDAYS"] = []
 
             self.send_response(200)
             self.send_header("Content-Type", "application/json")

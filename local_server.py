@@ -45,6 +45,8 @@ class LocalHandler(http.server.SimpleHTTPRequestHandler):
         clean_path = urllib.parse.urlparse(self.path).path
         if clean_path == "/data.json":
             self.serve_merged_data()
+        elif clean_path == "/api/events":
+            self.serve_events()
         else:
             super().do_GET()
 
@@ -61,6 +63,16 @@ class LocalHandler(http.server.SimpleHTTPRequestHandler):
         data["EVENTS"] = local_events
         data["HOLIDAYS"] = local_holidays
         body = json.dumps(data, indent=2, ensure_ascii=False)
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.end_headers()
+        self.wfile.write(body.encode("utf-8"))
+
+    def serve_events(self):
+        local_events = filter_expired_events(load_json(LOCAL_EVENTS_FILE) or [])
+        local_holidays = load_json(LOCAL_HOLIDAYS_FILE) or []
+        body = json.dumps({"EVENTS": local_events, "HOLIDAYS": local_holidays}, indent=2, ensure_ascii=False)
         self.send_response(200)
         self.send_header("Content-Type", "application/json")
         self.send_header("Access-Control-Allow-Origin", "*")
