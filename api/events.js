@@ -2,6 +2,9 @@ const { get } = require('@vercel/edge-config');
 
 module.exports = async (req, res) => {
   try {
+    if (!process.env.EDGE_CONFIG) {
+      return res.status(200).json({ EVENTS: [], HOLIDAYS: [] });
+    }
     const data = await get('events');
     const EVENTS = (data && data.EVENTS) || [];
     const HOLIDAYS = (data && data.HOLIDAYS) || [];

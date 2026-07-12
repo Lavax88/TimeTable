@@ -9,6 +9,9 @@ function unauthorized(res, msg) {
 }
 
 async function readEdgeConfig() {
+  if (!process.env.EDGE_CONFIG) {
+    return { EVENTS: [], HOLIDAYS: [] };
+  }
   const data = await get('events');
   return {
     EVENTS: (data && data.EVENTS) || [],
