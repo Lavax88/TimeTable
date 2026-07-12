@@ -27,9 +27,8 @@
     </header>
 
     <div class="card" style="padding: 24px; margin-bottom: 24px;">
-      <h2 style="font-size: 18px; margin-top: 0;">Add New Event</h2>
+      <h2 style="font-size: 18px; margin-top: 0;">Add Events</h2>
 
-      <!-- LOCK SCREEN -->
       <div id="lockScreen">
         <p style="font-size: 13px; color: var(--ink-soft); margin: 0;">Enter your admin password to manage events.</p>
         <input type="password" id="password" placeholder="Admin Password" required class="input-field">
@@ -37,49 +36,46 @@
       </div>
 
       <div id="eventBuilder">
-        <select id="type" class="input-field" required>
-          <option value="test">Class Test</option>
-          <option value="deadline">Assignment / Deadline</option>
-          <option value="exam">Series</option>
-          <option value="general">General Event</option>
-          <option value="reminder">Reminder</option>
-        </select>
-
-        <div id="normalFields" style="display: flex; flex-direction: column; gap: 14px;">
-          <div id="eventRows">
-            <div class="event-row">
-              <select class="input-field event-subject">
-                <option value="" disabled selected>Loading subjects...</option>
-                <option value="">— No subject —</option>
-              </select>
-              <input type="text" class="input-field event-title" placeholder="Event Title" required>
-              <input type="date" class="input-field event-date" required>
-              <button type="button" class="event-remove-btn" style="display:none;">✕</button>
-            </div>
+        <p style="font-size:13px;color:var(--ink-soft);margin:0;">Single events (test, deadline, general, reminder)</p>
+        <div id="eventRows">
+          <div class="event-row">
+            <select class="input-field event-type">
+              <option value="test">Test</option>
+              <option value="deadline">Deadline</option>
+              <option value="general">General</option>
+              <option value="reminder">Reminder</option>
+            </select>
+            <select class="input-field event-subject">
+              <option value="" disabled selected>Loading subjects...</option>
+              <option value="">— No subject —</option>
+            </select>
+            <input type="text" class="input-field event-title" placeholder="Event Title" required>
+            <input type="date" class="input-field event-date" required>
+            <button type="button" class="event-remove-btn" style="display:none;">✕</button>
           </div>
-          <button type="button" id="addEventRow" class="add-row-btn">+ Add Another</button>
         </div>
+        <button type="button" id="addEventRow" class="add-row-btn">+ Add Another Event</button>
 
-        <div id="seriesFields" style="display: none;">
-          <input type="text" id="seriesGlobalName" class="input-field" placeholder="Series name (optional)">
-          <div id="seriesRows">
-            <div class="series-row">
-              <select class="input-field series-subject" required>
-                <option value="" disabled selected>Subject</option>
-              </select>
-              <input type="date" class="input-field series-date" required>
-              <button type="button" class="series-remove-btn" style="display: none;">✕</button>
-            </div>
+        <hr style="border:none;border-top:1px solid var(--card-time-border);margin:16px 0;">
+
+        <p style="font-size:13px;color:var(--ink-soft);margin:0;">Exam series (one title, multiple dates)</p>
+        <input type="text" id="seriesGlobalName" class="input-field" placeholder="Series title (optional, defaults to subject name)">
+        <div id="seriesRows">
+          <div class="series-row">
+            <select class="input-field series-subject" required>
+              <option value="" disabled selected>Subject</option>
+            </select>
+            <input type="date" class="input-field series-date" required>
+            <button type="button" class="series-remove-btn" style="display: none;">✕</button>
           </div>
-          <button type="button" id="addSeriesRow" class="add-row-btn">+ Add Another Date</button>
         </div>
+        <button type="button" id="addSeriesRow" class="add-row-btn">+ Add Another Date</button>
 
-        <button type="button" id="submitEventsBtn" style="padding: 14px; background: var(--toc); color: #fff; border: none; border-radius: 12px; font-weight: 700; font-family: inherit; cursor: pointer; margin-top: 8px;">Push to Schedule</button>
+        <button type="button" id="submitEventsBtn" style="padding: 14px; background: var(--toc); color: #fff; border: none; border-radius: 12px; font-weight: 700; font-family: inherit; cursor: pointer; margin-top: 16px;">Push All to Schedule</button>
       </div>
       <p id="status" style="margin-top: 16px; font-weight: 600; text-align: center; font-size: 14px;"></p>
     </div>
 
-    <!-- Active Events List -->
     <div class="card" style="padding: 24px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
         <h2 style="font-size: 18px; margin: 0;">Active Events</h2>
@@ -93,10 +89,9 @@
       </div>
     </div>
 
-    <!-- Holidays Section (hidden until unlocked) -->
     <div id="holidaysSection" class="card" style="padding: 24px; display: none;">
       <h2 style="font-size: 18px; margin-top: 0; margin-bottom: 16px;">Holidays</h2>
-      <p style="font-size: 13px; color: var(--ink-soft); margin: 0 0 12px;">On these dates all notifications are disabled (except Friday reminder).</p>
+      <p style="font-size: 13px; color: var(--ink-soft); margin: 0 0 12px;">On these dates all notifications are disabled.</p>
       <div id="holidayForm" style="display: flex; gap: 10px; margin-bottom: 16px;">
         <input type="date" id="holidayDate" class="input-field" style="flex: 1;">
         <button id="addHolidayBtn" style="padding: 12px 20px; background: var(--ee); color: #fff; border: none; border-radius: 12px; font-weight: 700; font-family: inherit; cursor: pointer; white-space: nowrap;">Add Holiday</button>

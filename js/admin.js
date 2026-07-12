@@ -1,12 +1,9 @@
 const lockScreen = document.getElementById('lockScreen');
 const eventBuilder = document.getElementById('eventBuilder');
-const typeSelect = document.getElementById('type');
 const pwdInput = document.getElementById('password');
-const normalFields = document.getElementById('normalFields');
-const seriesFields = document.getElementById('seriesFields');
 const seriesRows = document.getElementById('seriesRows');
 const addSeriesRowBtn = document.getElementById('addSeriesRow');
-const eventRows = document.getElementById('eventRows');
+const eventRowsContainer = document.getElementById('eventRows');
 const addEventRowBtn = document.getElementById('addEventRow');
 
 document.getElementById('unlockBtn').addEventListener('click', async () => {
@@ -86,88 +83,63 @@ function setMinDates() {
 loadData();
 setMinDates();
 
-typeSelect.addEventListener('change', toggleEventType);
-toggleEventType();
-
-function toggleEventType() {
-  if (typeSelect.value === 'exam') {
-    normalFields.style.display = 'none';
-    seriesFields.style.display = 'flex';
-  } else {
-    normalFields.style.display = 'flex';
-    seriesFields.style.display = 'none';
-  }
-}
-
-function updateTitleInput(input) {
-  const row = input.closest('.event-row');
-  const subject = row.querySelector('.event-subject').value;
-  const currentType = typeSelect.value;
-  const noSubjNeeded = ['general', 'reminder'].includes(currentType);
+function updateRowFields(row) {
+  const type = row.querySelector('.event-type').value;
+  const subjectSel = row.querySelector('.event-subject');
+  const titleInp = row.querySelector('.event-title');
+  const noSubjNeeded = ['general', 'reminder'].includes(type);
+  subjectSel.style.display = noSubjNeeded ? 'none' : '';
   if (noSubjNeeded) {
-    input.value = typeSelect.options[typeSelect.selectedIndex].text;
-  } else if (subject && subject !== 'General') {
-    input.value = subject;
+    subjectSel.value = '';
+    titleInp.value = row.querySelector('.event-type').options[row.querySelector('.event-type').selectedIndex].text;
+  } else if (subjectSel.value && subjectSel.value !== 'General') {
+    titleInp.value = subjectSel.value;
   }
 }
 
-document.querySelector('.event-subject').addEventListener('change', function() {
-  const row = this.closest('.event-row');
-  const titleInput = row.querySelector('.event-title');
-  updateTitleInput(titleInput);
-});
-
-typeSelect.addEventListener('change', function() {
-  document.querySelectorAll('.event-title').forEach(inp => updateTitleInput(inp));
-  document.querySelectorAll('.event-subject').forEach(sel => {
-    const noSubjNeeded = ['general', 'reminder'].includes(typeSelect.value);
-    sel.style.display = noSubjNeeded ? 'none' : '';
-    if (noSubjNeeded) sel.value = '';
-  });
-  document.querySelectorAll('.event-title').forEach(inp => {
-    const row = inp.closest('.event-row');
-    const subj = row.querySelector('.event-subject').value;
-    if (!subj || ['general', 'reminder'].includes(typeSelect.value)) {
-      inp.value = typeSelect.options[typeSelect.selectedIndex].text;
+document.addEventListener('change', function(e) {
+  if (e.target.matches('.event-type')) {
+    updateRowFields(e.target.closest('.event-row'));
+  }
+  if (e.target.matches('.event-subject')) {
+    const row = e.target.closest('.event-row');
+    const titleInp = row.querySelector('.event-title');
+    const type = row.querySelector('.event-type').value;
+    if (e.target.value && e.target.value !== 'General' && !['general','reminder'].includes(type)) {
+      titleInp.value = e.target.value;
     }
-  });
+  }
 });
-typeSelect.dispatchEvent(new Event('change'));
 
 function addEventRow() {
-  const rows = eventRows.querySelectorAll('.event-row');
+  const rows = eventRowsContainer.querySelectorAll('.event-row');
   const template = rows[0].cloneNode(true);
   template.querySelector('.event-subject').value = '';
-  template.querySelector('.event-title').value = typeSelect.options[typeSelect.selectedIndex].text;
+  template.querySelector('.event-title').value = '';
   template.querySelector('.event-date').value = '';
   const rmBtn = template.querySelector('.event-remove-btn');
   rmBtn.style.display = 'flex';
   rmBtn.addEventListener('click', () => {
-    if (eventRows.querySelectorAll('.event-row').length > 1) {
+    if (eventRowsContainer.querySelectorAll('.event-row').length > 1) {
       template.remove();
     }
   });
   populateSubjectSelect(template.querySelector('.event-subject'), 'Select a Subject');
-  template.querySelector('.event-subject').addEventListener('change', function() {
-    const titleInput = this.closest('.event-row').querySelector('.event-title');
-    updateTitleInput(titleInput);
-  });
+  updateRowFields(template);
   const today = new Date();
   const yyyy = today.getFullYear(), mm = String(today.getMonth()+1).padStart(2,'0'), dd = String(today.getDate()).padStart(2,'0');
   template.querySelector('.event-date').setAttribute('min', `${yyyy}-${mm}-${dd}`);
-  const noSubjNeeded = ['general', 'reminder'].includes(typeSelect.value);
-  if (noSubjNeeded) template.querySelector('.event-subject').style.display = 'none';
-  eventRows.appendChild(template);
+  eventRowsContainer.appendChild(template);
 }
 
 addEventRowBtn.addEventListener('click', addEventRow);
 
-document.querySelectorAll('.event-remove-btn').forEach(btn => {
-  btn.addEventListener('click', function() {
-    if (eventRows.querySelectorAll('.event-row').length > 1) {
-      this.closest('.event-row').remove();
+eventRowsContainer.addEventListener('click', function(e) {
+  if (e.target.matches('.event-remove-btn')) {
+    if (eventRowsContainer.querySelectorAll('.event-row').length > 1) {
+      e.target.closest('.event-row').remove();
     }
-  });
+  }
 });
 
 addSeriesRowBtn.addEventListener('click', () => {
@@ -186,12 +158,12 @@ addSeriesRowBtn.addEventListener('click', () => {
   seriesRows.appendChild(template);
 });
 
-document.querySelectorAll('.series-remove-btn').forEach(btn => {
-  btn.addEventListener('click', function() {
+seriesRows.addEventListener('click', function(e) {
+  if (e.target.matches('.series-remove-btn')) {
     if (seriesRows.querySelectorAll('.series-row').length > 1) {
-      this.closest('.series-row').remove();
+      e.target.closest('.series-row').remove();
     }
-  });
+  }
 });
 
 const typeLabels = {
@@ -305,9 +277,11 @@ async function sendToAPI(payload) {
         });
         const first = document.querySelector('.event-row');
         if (first) {
+          const firstType = first.querySelector('.event-type');
           first.querySelector('.event-subject').value = '';
-          first.querySelector('.event-title').value = typeSelect.options[typeSelect.selectedIndex].text;
+          first.querySelector('.event-title').value = firstType.options[firstType.selectedIndex].text;
           first.querySelector('.event-date').value = '';
+          updateRowFields(first);
         }
       }
       loadData();
@@ -324,48 +298,38 @@ async function sendToAPI(payload) {
 document.getElementById('submitEventsBtn').addEventListener('click', (e) => {
   e.preventDefault();
 
-  let events;
-  if (typeSelect.value === 'exam') {
-    events = [];
-    const globalName = document.getElementById('seriesGlobalName').value.trim();
-    seriesRows.querySelectorAll('.series-row').forEach(row => {
-      const subject = row.querySelector('.series-subject').value;
-      const date = row.querySelector('.series-date').value;
-      if (subject && date) {
-        const title = globalName || subject;
-        events.push({ title: title, date: date, type: 'exam', subject: subject });
+  const events = [];
+
+  eventRowsContainer.querySelectorAll('.event-row').forEach(row => {
+    const type = row.querySelector('.event-type').value;
+    const subject = row.querySelector('.event-subject').value;
+    const title = row.querySelector('.event-title').value.trim();
+    const date = row.querySelector('.event-date').value;
+    if (title && date) {
+      const ev = { title: title, date: date, type: type };
+      if (subject && !['general', 'reminder'].includes(type)) {
+        ev.subject = subject;
       }
-    });
-    if (events.length === 0) {
-      alert("Please add at least one subject and date for the Series.");
-      return;
+      events.push(ev);
     }
-  } else {
-    events = [];
-    eventRows.querySelectorAll('.event-row').forEach(row => {
-      const subject = row.querySelector('.event-subject').value;
-      const title = row.querySelector('.event-title').value.trim();
-      const date = row.querySelector('.event-date').value;
-      if (title && date) {
-        const ev = { title: title, date: date, type: typeSelect.value };
-        if (subject && !['general', 'reminder'].includes(typeSelect.value)) {
-          ev.subject = subject;
-        }
-        events.push(ev);
-      }
-    });
-    if (events.length === 0) {
-      alert("Please fill in at least one event row.");
-      return;
+  });
+
+  const globalName = document.getElementById('seriesGlobalName').value.trim();
+  seriesRows.querySelectorAll('.series-row').forEach(row => {
+    const subject = row.querySelector('.series-subject').value;
+    const date = row.querySelector('.series-date').value;
+    if (subject && date) {
+      const title = globalName || subject;
+      events.push({ title: title, date: date, type: 'exam', subject: subject });
     }
+  });
+
+  if (events.length === 0) {
+    alert("Please fill in at least one event.");
+    return;
   }
 
-  const payload = {
-    password: pwdInput.value,
-    action: 'add',
-    events: events
-  };
-  sendToAPI(payload);
+  sendToAPI({ password: pwdInput.value, action: 'add', events: events });
 });
 
 window.deleteEvent = function(title, date) {
