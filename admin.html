@@ -36,51 +36,58 @@
         <button id="unlockBtn" style="padding: 14px; background: var(--dal); color: #fff; border: none; border-radius: 12px; font-weight: 700; font-family: inherit; cursor: pointer;">Unlock Dashboard</button>
       </div>
 
-      <!-- EVENT BUILDER FORM (Hidden by default) -->
-      <form id="adminForm" novalidate>
-        <div id="eventBuilder">
-          <select id="type" class="input-field" required>
-            <option value="test">Class Test</option>
-            <option value="deadline">Assignment / Deadline</option>
-            <option value="exam">Series</option>
-            <option value="general">General Event</option>
-            <option value="reminder">Reminder</option>
-          </select>
+      <div id="eventBuilder">
+        <select id="type" class="input-field" required>
+          <option value="test">Class Test</option>
+          <option value="deadline">Assignment / Deadline</option>
+          <option value="exam">Series</option>
+          <option value="general">General Event</option>
+          <option value="reminder">Reminder</option>
+        </select>
 
-          <div id="normalFields">
-            <select id="subject" class="input-field">
-              <option value="" disabled selected>Loading subjects...</option>
-              <option value="">— No subject —</option>
-            </select>
-
-            <input type="text" id="title" placeholder="Event Title" required class="input-field">
-
-            <input type="date" id="date" required class="input-field">
-          </div>
-
-          <div id="seriesFields" style="display: none;">
-            <input type="text" id="seriesGlobalName" class="input-field" placeholder="Series name (optional)">
-            <div id="seriesRows">
-              <div class="series-row">
-                <select class="input-field series-subject" required>
-                  <option value="" disabled selected>Subject</option>
-                </select>
-                <input type="date" class="input-field series-date" required>
-                <button type="button" class="series-remove-btn" style="display: none;">✕</button>
-              </div>
+        <div id="normalFields" style="display: flex; flex-direction: column; gap: 14px;">
+          <div id="eventRows">
+            <div class="event-row">
+              <select class="input-field event-subject">
+                <option value="" disabled selected>Loading subjects...</option>
+                <option value="">— No subject —</option>
+              </select>
+              <input type="text" class="input-field event-title" placeholder="Event Title" required>
+              <input type="date" class="input-field event-date" required>
+              <button type="button" class="event-remove-btn" style="display:none;">✕</button>
             </div>
-            <button type="button" id="addSeriesRow" class="add-row-btn">+ Add Another Date</button>
           </div>
-
-          <button type="submit" style="padding: 14px; background: var(--toc); color: #fff; border: none; border-radius: 12px; font-weight: 700; font-family: inherit; cursor: pointer; margin-top: 8px;">Push to Schedule</button>
+          <button type="button" id="addEventRow" class="add-row-btn">+ Add Another</button>
         </div>
-      </form>
+
+        <div id="seriesFields" style="display: none;">
+          <input type="text" id="seriesGlobalName" class="input-field" placeholder="Series name (optional)">
+          <div id="seriesRows">
+            <div class="series-row">
+              <select class="input-field series-subject" required>
+                <option value="" disabled selected>Subject</option>
+              </select>
+              <input type="date" class="input-field series-date" required>
+              <button type="button" class="series-remove-btn" style="display: none;">✕</button>
+            </div>
+          </div>
+          <button type="button" id="addSeriesRow" class="add-row-btn">+ Add Another Date</button>
+        </div>
+
+        <button type="button" id="submitEventsBtn" style="padding: 14px; background: var(--toc); color: #fff; border: none; border-radius: 12px; font-weight: 700; font-family: inherit; cursor: pointer; margin-top: 8px;">Push to Schedule</button>
+      </div>
       <p id="status" style="margin-top: 16px; font-weight: 600; text-align: center; font-size: 14px;"></p>
     </div>
 
     <!-- Active Events List -->
     <div class="card" style="padding: 24px;">
-      <h2 style="font-size: 18px; margin-top: 0; margin-bottom: 16px;">Active Events</h2>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h2 style="font-size: 18px; margin: 0;">Active Events</h2>
+        <div style="display:flex;gap:8px;">
+          <button id="deleteSelectedBtn" class="del-btn" style="display:none;">Delete Selected</button>
+          <button id="clearAllBtn" class="del-btn" style="background:var(--ds);">Clear All</button>
+        </div>
+      </div>
       <div id="eventsList">
         <p style="color: var(--ink-soft); font-size: 14px;">Loading existing events...</p>
       </div>
@@ -100,7 +107,6 @@
     </div>
   </div>
 
-  <!-- Link to the new external JS file -->
   <script src="js/admin.js"></script>
 </body>
 </html>

@@ -6,6 +6,13 @@
 #lockScreen { display: flex; flex-direction: column; gap: 14px; }
 
 #normalFields { display: flex; flex-direction: column; gap: 14px; }
+#eventRows { display: flex; flex-direction: column; gap: 10px; }
+.event-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.event-row .event-subject { flex: 2 1 140px; }
+.event-row .event-title { flex: 1 1 160px; }
+.event-row .event-date { flex: 0 0 auto; width: auto; min-width: 130px; }
+.event-remove-btn { background: var(--ds); color: white; border: none; border-radius: 8px; width: 36px; height: 36px; cursor: pointer; font-size: 16px; flex: 0 0 36px; display: flex; align-items: center; justify-content: center; }
+.event-remove-btn:hover { opacity: 0.8; }
 #seriesFields { display: flex; flex-direction: column; gap: 10px; }
 .series-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .series-row .series-name { flex: 1 1 120px; min-width: 100px; }

@@ -1,13 +1,13 @@
 const lockScreen = document.getElementById('lockScreen');
 const eventBuilder = document.getElementById('eventBuilder');
-const subjectSelect = document.getElementById('subject');
 const typeSelect = document.getElementById('type');
-const titleInput = document.getElementById('title');
 const pwdInput = document.getElementById('password');
 const normalFields = document.getElementById('normalFields');
 const seriesFields = document.getElementById('seriesFields');
 const seriesRows = document.getElementById('seriesRows');
 const addSeriesRowBtn = document.getElementById('addSeriesRow');
+const eventRows = document.getElementById('eventRows');
+const addEventRowBtn = document.getElementById('addEventRow');
 
 document.getElementById('unlockBtn').addEventListener('click', async () => {
   const pwd = pwdInput.value.trim();
@@ -62,7 +62,7 @@ async function loadData() {
     window._subjects = data.SUBJECTS;
     window._holidays = data.HOLIDAYS || [];
 
-    populateSubjectSelect(subjectSelect, 'Select a Subject');
+    populateSubjectSelect(document.querySelector('.event-subject'), 'Select a Subject');
     document.querySelectorAll('.series-subject').forEach(sel => populateSubjectSelect(sel, 'Select Subject'));
 
     renderEventsList(data.EVENTS || []);
@@ -78,7 +78,7 @@ function setMinDates() {
   const mm = String(today.getMonth() + 1).padStart(2, '0');
   const dd = String(today.getDate()).padStart(2, '0');
   const min = `${yyyy}-${mm}-${dd}`;
-  document.getElementById('date').setAttribute('min', min);
+  document.querySelectorAll('.event-date').forEach(el => el.setAttribute('min', min));
   document.getElementById('holidayDate').setAttribute('min', min);
   document.querySelectorAll('.series-date').forEach(el => el.setAttribute('min', min));
 }
@@ -93,34 +93,82 @@ function toggleEventType() {
   if (typeSelect.value === 'exam') {
     normalFields.style.display = 'none';
     seriesFields.style.display = 'flex';
-    titleInput.required = false;
-    document.getElementById('date').required = false;
-    subjectSelect.required = true;
   } else {
     normalFields.style.display = 'flex';
     seriesFields.style.display = 'none';
-    titleInput.required = true;
-    document.getElementById('date').required = true;
-    // subject optional for general/reminder
-    const noSubjNeeded = ['general', 'reminder'].includes(typeSelect.value);
-    subjectSelect.required = !noSubjNeeded;
-    if (noSubjNeeded) subjectSelect.value = '';
   }
-  updateTitle();
 }
 
-function updateTitle() {
-  if (typeSelect.value === 'exam') {
-    titleInput.value = '';
-    return;
+function updateTitleInput(input) {
+  const row = input.closest('.event-row');
+  const subject = row.querySelector('.event-subject').value;
+  const currentType = typeSelect.value;
+  const noSubjNeeded = ['general', 'reminder'].includes(currentType);
+  if (noSubjNeeded) {
+    input.value = typeSelect.options[typeSelect.selectedIndex].text;
+  } else if (subject && subject !== 'General') {
+    input.value = subject;
   }
-  const subj = subjectSelect.value;
-  const typeLabel = typeSelect.options[typeSelect.selectedIndex].text;
-  const prefix = subj && subj !== "General" ? subj : typeLabel;
-  titleInput.value = prefix;
 }
-subjectSelect.addEventListener('change', updateTitle);
-typeSelect.addEventListener('change', updateTitle);
+
+document.querySelector('.event-subject').addEventListener('change', function() {
+  const row = this.closest('.event-row');
+  const titleInput = row.querySelector('.event-title');
+  updateTitleInput(titleInput);
+});
+
+typeSelect.addEventListener('change', function() {
+  document.querySelectorAll('.event-title').forEach(inp => updateTitleInput(inp));
+  document.querySelectorAll('.event-subject').forEach(sel => {
+    const noSubjNeeded = ['general', 'reminder'].includes(typeSelect.value);
+    sel.style.display = noSubjNeeded ? 'none' : '';
+    if (noSubjNeeded) sel.value = '';
+  });
+  document.querySelectorAll('.event-title').forEach(inp => {
+    const row = inp.closest('.event-row');
+    const subj = row.querySelector('.event-subject').value;
+    if (!subj || ['general', 'reminder'].includes(typeSelect.value)) {
+      inp.value = typeSelect.options[typeSelect.selectedIndex].text;
+    }
+  });
+});
+typeSelect.dispatchEvent(new Event('change'));
+
+function addEventRow() {
+  const rows = eventRows.querySelectorAll('.event-row');
+  const template = rows[0].cloneNode(true);
+  template.querySelector('.event-subject').value = '';
+  template.querySelector('.event-title').value = typeSelect.options[typeSelect.selectedIndex].text;
+  template.querySelector('.event-date').value = '';
+  const rmBtn = template.querySelector('.event-remove-btn');
+  rmBtn.style.display = 'flex';
+  rmBtn.addEventListener('click', () => {
+    if (eventRows.querySelectorAll('.event-row').length > 1) {
+      template.remove();
+    }
+  });
+  populateSubjectSelect(template.querySelector('.event-subject'), 'Select a Subject');
+  template.querySelector('.event-subject').addEventListener('change', function() {
+    const titleInput = this.closest('.event-row').querySelector('.event-title');
+    updateTitleInput(titleInput);
+  });
+  const today = new Date();
+  const yyyy = today.getFullYear(), mm = String(today.getMonth()+1).padStart(2,'0'), dd = String(today.getDate()).padStart(2,'0');
+  template.querySelector('.event-date').setAttribute('min', `${yyyy}-${mm}-${dd}`);
+  const noSubjNeeded = ['general', 'reminder'].includes(typeSelect.value);
+  if (noSubjNeeded) template.querySelector('.event-subject').style.display = 'none';
+  eventRows.appendChild(template);
+}
+
+addEventRowBtn.addEventListener('click', addEventRow);
+
+document.querySelectorAll('.event-remove-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    if (eventRows.querySelectorAll('.event-row').length > 1) {
+      this.closest('.event-row').remove();
+    }
+  });
+});
 
 addSeriesRowBtn.addEventListener('click', () => {
   const rows = seriesRows.querySelectorAll('.series-row');
@@ -163,13 +211,14 @@ const typeShortLabels = {
 
 function renderEventsList(events) {
   const listEl = document.getElementById('eventsList');
+  window._cachedEvents = events;
   if (events.length === 0) {
     listEl.innerHTML = `<p style="color: var(--ink-soft); font-size: 14px;">No upcoming events found.</p>`;
+    document.getElementById('deleteSelectedBtn').style.display = 'none';
     return;
   }
   listEl.innerHTML = '';
 
-  // Count exam events by title for "Delete All" option
   const examTitleCount = {};
   events.forEach(ev => {
     if (ev.type === 'exam' && ev.title) {
@@ -177,7 +226,7 @@ function renderEventsList(events) {
     }
   });
 
-  events.forEach(ev => {
+  events.forEach((ev, idx) => {
     const item = document.createElement('div');
     item.className = 'event-item';
     const displayTitle = ev.title || ev.subject || 'Untitled';
@@ -185,22 +234,31 @@ function renderEventsList(events) {
 
     const safeTitle = ev.title.replace(/'/g, "\\'");
 
-    let actionsHtml = `<button class="del-btn" onclick="deleteEvent('${safeTitle}', '${ev.date}')">Delete</button>`;
+    let actionsHtml = `<input type="checkbox" class="event-checkbox" data-index="${idx}" style="margin-right:10px;accent-color:var(--toc);">`;
+    actionsHtml += `<button class="del-btn" onclick="deleteEvent('${safeTitle}', '${ev.date}')">Delete</button>`;
 
-    // Add "Delete All" button for exam events that have 2+ entries with same title
     if (ev.type === 'exam' && examTitleCount[ev.title] > 1) {
       actionsHtml += `<button class="del-btn" onclick="deleteSeries('${safeTitle}')" style="background:var(--ink-soft);margin-left:6px;">Delete All</button>`;
     }
 
     item.innerHTML = `
-      <div>
-        <span style="font-weight: 700; font-size: 14px; display: block;">${displayTitle}</span>
-        <span style="font-size: 12px; color: var(--ink-soft); text-transform: capitalize;">${ev.date} · ${typeLabel}</span>
+      <div style="display:flex;align-items:center;gap:8px;">
+        ${actionsHtml}
+        <div>
+          <span style="font-weight: 700; font-size: 14px; display: block;">${displayTitle}</span>
+          <span style="font-size: 12px; color: var(--ink-soft); text-transform: capitalize;">${ev.date} · ${typeLabel}</span>
+        </div>
       </div>
-      <div style="display:flex;">${actionsHtml}</div>
     `;
+    item.querySelector('.event-checkbox').addEventListener('change', updateDeleteSelectedBtn);
     listEl.appendChild(item);
   });
+  document.getElementById('deleteSelectedBtn').style.display = events.length > 0 ? 'inline-block' : 'none';
+}
+
+function updateDeleteSelectedBtn() {
+  const checked = document.querySelectorAll('.event-checkbox:checked').length;
+  document.getElementById('deleteSelectedBtn').style.display = checked > 0 ? 'inline-block' : 'none';
 }
 
 function renderHolidaysList() {
@@ -241,10 +299,16 @@ async function sendToAPI(payload) {
     if (res.ok) {
       statusEl.textContent = "✅ Success! Devices will sync shortly.";
       statusEl.style.color = "var(--oop)";
-      if(payload.action === 'add') {
-        document.getElementById('adminForm').reset();
-        titleInput.value = "";
-        toggleEventType();
+      if(payload.action === 'add' || payload.action === 'clear_all') {
+        document.getElementById('eventRows').querySelectorAll('.event-row').forEach((r, i) => {
+          if (i > 0) r.remove();
+        });
+        const first = document.querySelector('.event-row');
+        if (first) {
+          first.querySelector('.event-subject').value = '';
+          first.querySelector('.event-title').value = typeSelect.options[typeSelect.selectedIndex].text;
+          first.querySelector('.event-date').value = '';
+        }
       }
       loadData();
     } else {
@@ -257,7 +321,7 @@ async function sendToAPI(payload) {
   }
 }
 
-document.getElementById('adminForm').addEventListener('submit', (e) => {
+document.getElementById('submitEventsBtn').addEventListener('click', (e) => {
   e.preventDefault();
 
   let events;
@@ -277,14 +341,22 @@ document.getElementById('adminForm').addEventListener('submit', (e) => {
       return;
     }
   } else {
-    events = [{
-      title: titleInput.value,
-      date: document.getElementById('date').value,
-      type: typeSelect.value
-    }];
-    // Include subject if a real one was selected
-    if (subjectSelect.value && !['general', 'reminder'].includes(typeSelect.value)) {
-      events[0].subject = subjectSelect.value;
+    events = [];
+    eventRows.querySelectorAll('.event-row').forEach(row => {
+      const subject = row.querySelector('.event-subject').value;
+      const title = row.querySelector('.event-title').value.trim();
+      const date = row.querySelector('.event-date').value;
+      if (title && date) {
+        const ev = { title: title, date: date, type: typeSelect.value };
+        if (subject && !['general', 'reminder'].includes(typeSelect.value)) {
+          ev.subject = subject;
+        }
+        events.push(ev);
+      }
+    });
+    if (events.length === 0) {
+      alert("Please fill in at least one event row.");
+      return;
     }
   }
 
@@ -315,6 +387,27 @@ window.deleteSeries = function(title) {
     sendToAPI({ password: pwdInput.value, action: 'delete_series', targetTitle: title });
   }
 };
+
+document.getElementById('deleteSelectedBtn').addEventListener('click', () => {
+  if (!pwdInput.value) { alert("Please enter the Admin Password at the top first."); return; }
+  const checked = document.querySelectorAll('.event-checkbox:checked');
+  if (checked.length === 0) return;
+  if (confirm(`Delete ${checked.length} selected event(s)?`)) {
+    checked.forEach(cb => {
+      const idx = parseInt(cb.dataset.index);
+      const ev = window._cachedEvents[idx];
+      if (ev) sendToAPI({ password: pwdInput.value, action: 'delete', targetTitle: ev.title, targetDate: ev.date });
+    });
+    setTimeout(loadData, 2000);
+  }
+});
+
+document.getElementById('clearAllBtn').addEventListener('click', () => {
+  if (!pwdInput.value) { alert("Please enter the Admin Password at the top first."); return; }
+  if (confirm("Delete ALL upcoming events? This cannot be undone.")) {
+    sendToAPI({ password: pwdInput.value, action: 'clear_all' });
+  }
+});
 
 document.getElementById('addHolidayBtn').addEventListener('click', () => {
   const date = document.getElementById('holidayDate').value;

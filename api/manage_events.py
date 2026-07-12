@@ -89,6 +89,10 @@ class handler(BaseHTTPRequestHandler):
                 data["HOLIDAYS"] = [d for d in data["HOLIDAYS"] if d != date]
                 commit_message = f"Admin UI: Removed holiday {date}"
 
+            elif action == "clear_all":
+                data["EVENTS"] = []
+                commit_message = "Admin UI: Cleared all events"
+
             new_content = base64.b64encode(json.dumps(data, indent=2, ensure_ascii=False).encode('utf-8')).decode('utf-8')
             put_data = json.dumps({
                 "message": commit_message,

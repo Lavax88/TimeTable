@@ -78,7 +78,7 @@
     },
     "LABCOMBO": {
       "name": "DS / DE Lab",
-      "subLine": "PCCSL307 - Ms. Shruthy Chandran | PCCSL308 - Ms. Anna Isabel John, Ms. Jefia R Wilson",
+      "subLine": "PCCSL307 - Ms. Shruthy Chandran<br>PCCSL308 - Ms. Anna Isabel John, Ms. Jefia R Wilson",
       "chipLabel": "Lab",
       "accentKey": "LAB"
     }
@@ -295,7 +295,7 @@
     [
       "LAB",
       "DS / DE Lab",
-      "PCCSL307 - Ms. Shruthy Chandran | PCCSL308 - Ms. Anna Isabel John, Ms. Jefia R Wilson"
+      "PCCSL307 - Ms. Shruthy Chandran / PCCSL308 - Ms. Anna Isabel John, Ms. Jefia R Wilson"
     ]
   ]
 }
