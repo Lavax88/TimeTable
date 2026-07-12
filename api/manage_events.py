@@ -5,6 +5,8 @@ import urllib.request
 import base64
 from datetime import datetime
 
+FILE_NAME = "events.json"
+
 def _not_expired(ev, now_ts):
     try:
         d = datetime.strptime(ev["date"], "%Y-%m-%d")
@@ -27,7 +29,7 @@ class handler(BaseHTTPRequestHandler):
 
         token = os.environ.get("GITHUB_TOKEN")
         repo = os.environ.get("GITHUB_REPO")
-        url = f"https://api.github.com/repos/{repo}/contents/data.json"
+        url = f"https://api.github.com/repos/{repo}/contents/{FILE_NAME}"
 
         headers = {
             "Authorization": f"Bearer {token}",
@@ -48,7 +50,6 @@ class handler(BaseHTTPRequestHandler):
             if "HOLIDAYS" not in data:
                 data["HOLIDAYS"] = []
 
-            # Remove expired events (past 1:30 PM on their date)
             now = datetime.now().timestamp()
             data["EVENTS"] = [ev for ev in data["EVENTS"] if _not_expired(ev, now)]
 
