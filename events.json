@@ -1,12 +1,6 @@
 {
   "EVENTS": [
     {
-      "title": "Test 1",
-      "date": "2026-07-16",
-      "type": "exam",
-      "subject": "Theory of Computation"
-    },
-    {
       "title": "The Sex Update",
       "date": "2026-07-13",
       "type": "general"
