@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+generate_vapid_keys.py
+serve.bat
+local_server.py
+subscriptions_local.json
