@@ -265,7 +265,7 @@ function renderHolidaysList() {
 
 async function sendToAPI(payload) {
   const statusEl = document.getElementById('status');
-  statusEl.textContent = "Connecting to repository...";
+  statusEl.textContent = "Updating events...";
   statusEl.style.color = "var(--ink-soft)";
 
   try {
@@ -276,7 +276,7 @@ async function sendToAPI(payload) {
     });
     const result = await res.json();
     if (res.ok) {
-      statusEl.textContent = "✅ Success! Devices will sync shortly.";
+      statusEl.textContent = "✅ Success! Events updated.";
       statusEl.style.color = "var(--oop)";
       if(payload.action === 'add' || payload.action === 'clear_all') {
         document.getElementById('eventRows').querySelectorAll('.event-row').forEach((r, i) => {
