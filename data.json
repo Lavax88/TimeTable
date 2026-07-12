@@ -77,8 +77,8 @@
       "accentKey": "ACT"
     },
     "LABCOMBO": {
-      "name": "Data Structures Lab / Digital Electronics Lab",
-      "subLine": "PCCSL307 · PCCSL308 · Ms. Shruthy Chandran, Ms. Anna Isabel John, Ms. Jefia R Wilson",
+      "name": "DS / DE Lab",
+      "subLine": "PCCSL307 - Ms. Shruthy Chandran | PCCSL308 - Ms. Anna Isabel John, Ms. Jefia R Wilson",
       "chipLabel": "Lab",
       "accentKey": "LAB"
     }
@@ -294,8 +294,8 @@
     ],
     [
       "LAB",
-      "Data Structures Lab / Digital Electronics Lab",
-      "PCCSL307 · PCCSL308"
+      "DS / DE Lab",
+      "PCCSL307 - Ms. Shruthy Chandran | PCCSL308 - Ms. Anna Isabel John, Ms. Jefia R Wilson"
     ]
   ]
 }

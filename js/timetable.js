@@ -19,8 +19,21 @@ function applyTheme(theme){
 /* ---------- Data Fetching & Initialization ---------- */
 async function initTimetableApp() {
   try {
-    const response = await fetch('/api/data');
-    const data = await response.json();
+    // Try sessionStorage cache first (5 min TTL)
+    let data = null;
+    const cached = sessionStorage.getItem('timetableData');
+    const cachedAt = sessionStorage.getItem('timetableDataAt');
+    if (cached && cachedAt && Date.now() - Number(cachedAt) < 300000) {
+      data = JSON.parse(cached);
+    }
+    if (!data) {
+      const response = await fetch('/api/data');
+      data = await response.json();
+      try {
+        sessionStorage.setItem('timetableData', JSON.stringify(data));
+        sessionStorage.setItem('timetableDataAt', String(Date.now()));
+      } catch (e) {}
+    }
 
     const ACCENT = data.ACCENT;
     const SUBJECTS = data.SUBJECTS;
@@ -150,6 +163,9 @@ async function initTimetableApp() {
         if (deadlines.length === 0) return;
         container.innerHTML = `<p class="legend-title" style="margin: 0 0 10px 4px;">Urgent Tasks</p>`;
         deadlines.forEach(ev => container.appendChild(createEventCard(ev)));
+        const sep = document.createElement('hr');
+        sep.style.cssText = 'border:none;border-top:1px solid var(--card-time-border);margin:20px 0 10px;';
+        container.appendChild(sep);
       } catch (e) {
         console.error("renderUpcomingTasks error:", e);
       }
