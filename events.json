@@ -5,6 +5,12 @@
       "date": "2026-07-16",
       "type": "exam",
       "subject": "Theory of Computation"
+    },
+    {
+      "title": "test",
+      "date": "2026-07-31",
+      "type": "test",
+      "subject": "Theory of Computation"
     }
   ],
   "HOLIDAYS": []
