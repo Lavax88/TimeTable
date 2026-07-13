@@ -26,6 +26,7 @@ document.getElementById('unlockBtn').addEventListener('click', async () => {
       lockScreen.style.display = 'none';
       eventBuilder.style.display = 'flex';
       document.getElementById('holidaysSection').style.display = 'block';
+      document.getElementById('examToggleSection').style.display = 'block';
     } else {
       alert(result.error || "Incorrect password.");
       unlockBtn.textContent = "Unlock Dashboard";
