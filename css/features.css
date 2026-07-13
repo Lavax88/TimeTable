@@ -179,6 +179,16 @@
   color: var(--ink);
 }
 
+/* Mobile: stack header buttons vertically to avoid overlapping the heading */
+@media (max-width: 520px) {
+  .header-actions {
+    flex-direction: column;
+    top: 12px;
+    right: 12px;
+    gap: 6px;
+  }
+}
+
 /* Firefox performance: disable heavy blur/filter/animation (main lag source) */
 @supports (-moz-appearance: none) {
   .blob {

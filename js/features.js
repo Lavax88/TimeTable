@@ -26,6 +26,9 @@
   function shouldShowBanner() {
     if (isAlreadyInstalled()) return false;
 
+    /* On mobile, always show if not standalone — ignore dismiss policy */
+    if (isMobile()) return true;
+
     var meta = getInstallMeta();
     if (meta.installed) return false;
     if (!meta.dismissCount) return true;
@@ -39,6 +42,10 @@
 
   function isIOS() {
     return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  }
+
+  function isMobile() {
+    return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
   }
 
   function supportsInstall() {
@@ -126,26 +133,37 @@
       hideHeaderBtn();
     }
 
-    /* Popup only if not already installed and not recently dismissed */
+    /* ---- Wire header button first — always, regardless of dismiss policy ---- */
+    var headerBtn = document.getElementById('installHeaderBtn');
+    if (headerBtn) {
+      headerBtn.addEventListener('click', function () {
+        if (isIOS()) {
+          showIOSBanner();
+        } else if (supportsInstall()) {
+          showChromeBanner();
+        } else {
+          showUnsupportedBanner();
+        }
+      });
+    }
+
+    /* ---- Auto-popup ---- */
     if (!shouldShowBanner()) return;
 
-    /* Don't auto-show on browsers that can't install PWAs */
+    /* Don't auto-show on desktop browsers that can't install PWAs */
     if (isIOS()) {
       showIOSBanner();
     } else if (supportsInstall()) {
       showChromeBanner();
-      /* Poll for deferredPrompt if event hasn't arrived yet */
       if (!deferredPrompt) {
         var pollTimer = setInterval(function () {
-          if (deferredPrompt) {
-            clearInterval(pollTimer);
-          }
+          if (deferredPrompt) clearInterval(pollTimer);
         }, 400);
         setTimeout(function () { clearInterval(pollTimer); }, 12000);
       }
     }
 
-    /* Close / dismiss buttons */
+    /* ---- Popup button wiring ---- */
     var closeEls = ['closeBtn', 'dismissBtn', 'dismissIOSBtn', 'dismissUnsupportedBtn'];
     closeEls.forEach(function (id) {
       var el = document.getElementById(id);
@@ -157,7 +175,6 @@
       }
     });
 
-    /* Install button inside the popup – needs the captured beforeinstallprompt event */
     var installBtnEl = document.getElementById('installBtn');
     if (installBtnEl) {
       installBtnEl.addEventListener('click', async function () {
@@ -178,23 +195,6 @@
       });
     }
 
-    /* Header install button – re-opens the popup on demand */
-    var headerBtn = document.getElementById('installHeaderBtn');
-    if (headerBtn) {
-      headerBtn.addEventListener('click', function () {
-        setInstallMeta({});
-
-        if (isIOS()) {
-          showIOSBanner();
-        } else if (supportsInstall()) {
-          showChromeBanner();
-        } else {
-          showUnsupportedBanner();
-        }
-      });
-    }
-
-    /* If installed mid-session, hide popup + header button and remember */
     window.addEventListener('appinstalled', function () {
       hideBanner();
       hideHeaderBtn();
