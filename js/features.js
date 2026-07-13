@@ -100,6 +100,8 @@
 
   function dismissBanner() {
     hideBanner();
+    /* Don't nullify deferredPrompt here — beforeinstallprompt fires only once
+       per page load, so the event must survive dismiss/reopen cycles. */
     var meta = getInstallMeta();
     meta.dismissCount = (meta.dismissCount || 0) + 1;
     meta.lastDismissed = Date.now();
@@ -169,7 +171,6 @@
       var el = document.getElementById(id);
       if (el) {
         el.addEventListener('click', function () {
-          deferredPrompt = null;
           dismissBanner();
         });
       }
