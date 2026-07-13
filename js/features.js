@@ -41,6 +41,10 @@
     return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
   }
 
+  function supportsInstall() {
+    return 'onbeforeinstallprompt' in window;
+  }
+
   /* ---------- Banner DOM helpers ---------- */
   var deferredPrompt = null;
 
@@ -53,6 +57,7 @@
     if (!banner) return;
     banner.querySelector('.install-chrome').style.display = '';
     banner.querySelector('.install-ios').style.display = 'none';
+    banner.querySelector('.install-unsupported').style.display = 'none';
     requestAnimationFrame(function () {
       banner.classList.add('visible');
     });
@@ -63,6 +68,18 @@
     if (!banner) return;
     banner.querySelector('.install-chrome').style.display = 'none';
     banner.querySelector('.install-ios').style.display = '';
+    banner.querySelector('.install-unsupported').style.display = 'none';
+    requestAnimationFrame(function () {
+      banner.classList.add('visible');
+    });
+  }
+
+  function showUnsupportedBanner() {
+    var banner = getBanner();
+    if (!banner) return;
+    banner.querySelector('.install-chrome').style.display = 'none';
+    banner.querySelector('.install-ios').style.display = 'none';
+    banner.querySelector('.install-unsupported').style.display = '';
     requestAnimationFrame(function () {
       banner.classList.add('visible');
     });
@@ -112,15 +129,24 @@
     /* Popup only if not already installed and not recently dismissed */
     if (!shouldShowBanner()) return;
 
-    /* Show the appropriate variant */
+    /* Don't auto-show on browsers that can't install PWAs */
     if (isIOS()) {
       showIOSBanner();
-    } else {
+    } else if (supportsInstall()) {
       showChromeBanner();
+      /* Poll for deferredPrompt if event hasn't arrived yet */
+      if (!deferredPrompt) {
+        var pollTimer = setInterval(function () {
+          if (deferredPrompt) {
+            clearInterval(pollTimer);
+          }
+        }, 400);
+        setTimeout(function () { clearInterval(pollTimer); }, 12000);
+      }
     }
 
     /* Close / dismiss buttons */
-    var closeEls = ['closeBtn', 'dismissBtn', 'dismissIOSBtn'];
+    var closeEls = ['closeBtn', 'dismissBtn', 'dismissIOSBtn', 'dismissUnsupportedBtn'];
     closeEls.forEach(function (id) {
       var el = document.getElementById(id);
       if (el) {
@@ -136,8 +162,14 @@
     if (installBtnEl) {
       installBtnEl.addEventListener('click', async function () {
         if (!deferredPrompt) {
-          dismissBanner();
-          return;
+          for (var i = 0; i < 15; i++) {
+            if (deferredPrompt) break;
+            await new Promise(function (r) { setTimeout(r, 400); });
+          }
+          if (!deferredPrompt) {
+            dismissBanner();
+            return;
+          }
         }
         deferredPrompt.prompt();
         await deferredPrompt.userChoice;
@@ -150,13 +182,14 @@
     var headerBtn = document.getElementById('installHeaderBtn');
     if (headerBtn) {
       headerBtn.addEventListener('click', function () {
-        /* Reset dismiss so the popup always opens from manual click */
         setInstallMeta({});
 
         if (isIOS()) {
           showIOSBanner();
-        } else {
+        } else if (supportsInstall()) {
           showChromeBanner();
+        } else {
+          showUnsupportedBanner();
         }
       });
     }

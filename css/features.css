@@ -179,3 +179,10 @@
   color: var(--ink);
 }
 
+/* Firefox performance: disable heavy blob animations */
+@supports (-moz-appearance: none) {
+  .blob {
+    animation: none !important;
+  }
+}
+
