@@ -21,6 +21,8 @@ let _ACCENT = null;
 let _SUBJECTS = null;
 let _events = [];
 let _holidays = [];
+let _settings = {};
+let _lastCheckedDate = new Date().toDateString();
 
 /* ---------- Event helpers ---------- */
 const typeCardLabels = {
@@ -95,12 +97,15 @@ async function loadEvents() {
     const data = await res.json();
     _events = data.EVENTS || [];
     _holidays = data.HOLIDAYS || [];
+    _settings = data.SETTINGS || {};
   } catch (e) {
     console.error('Failed to load events:', e);
     _events = [];
     _holidays = [];
+    _settings = {};
   }
   renderEvents();
+  checkExamMode();
 }
 
 function getFilteredEvents() {
@@ -549,6 +554,7 @@ async function initTimetableApp() {
     updateProgressBars();
 
     setInterval(updateProgressBars, 1000);
+    setInterval(checkForDateChange, 30000);
 
     /* ---------- Load events after timetable is ready ---------- */
     await loadEvents();
@@ -559,10 +565,70 @@ async function initTimetableApp() {
   }
 }
 
+/* ---------- Exam Mode ---------- */
+function checkExamMode() {
+  const manualForce = _settings && _settings.forceExamMode === true;
+  let autoActive = false;
+  let examInfo = null;
+
+  if (!manualForce) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    for (const ev of _events) {
+      if (ev.type !== 'exam') continue;
+      const evDate = new Date(ev.date);
+      evDate.setHours(0, 0, 0, 0);
+      if (evDate >= today && evDate <= tomorrow) {
+        autoActive = true;
+        examInfo = ev;
+        break;
+      }
+    }
+  }
+
+  const active = manualForce || autoActive;
+  document.body.classList.toggle('exam-mode', active);
+
+  const banner = document.getElementById('examModeBanner');
+  const content = document.getElementById('examModeContent');
+  if (!banner || !content) return;
+
+  if (active) {
+    const reason = manualForce
+      ? 'Exam mode manually enabled by admin.'
+      : (examInfo
+        ? `📝 ${examInfo.title}${examInfo.subject ? ' (' + examInfo.subject + ')' : ''} is scheduled ${new Date(examInfo.date).toDateString() === new Date().toDateString() ? 'today' : 'tomorrow'} — showing exam timetable.`
+        : 'Exam mode active.');
+    banner.innerHTML = `📌 Exam mode · ${reason}`;
+
+    const examEvents = _events.filter(e => e.type === 'exam').sort((a,b) => new Date(a.date) - new Date(b.date));
+    content.innerHTML = '';
+    if (examEvents.length === 0) {
+      content.innerHTML = `<div class="free-note">No upcoming exams scheduled.</div>`;
+    } else {
+      examEvents.forEach(ev => content.appendChild(createEventCard(ev)));
+    }
+  }
+}
+
+/* ---------- Midnight crossover ---------- */
+function checkForDateChange() {
+  const today = new Date().toDateString();
+  if (today !== _lastCheckedDate) {
+    _lastCheckedDate = today;
+    checkExamMode();
+  }
+}
+
 /* ---------- Auto-refresh events ---------- */
 document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) loadEvents();
+  if (!document.hidden) { loadEvents(); checkForDateChange(); }
 });
+
+window.checkForDateChange = checkForDateChange;
 
 /* --- Tap title 7 times with 1.5s delay to open admin --- */
 let titleClicks = 0;

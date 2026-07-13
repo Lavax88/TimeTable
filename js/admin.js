@@ -59,18 +59,20 @@ async function loadData() {
       fetch('/api/events?t=' + Date.now())
     ]);
     const data = await dataRes.json();
-    let eventsData = { EVENTS: [], HOLIDAYS: [] };
+    let eventsData = { EVENTS: [], HOLIDAYS: [], SETTINGS: {} };
     if (eventsRes.ok) {
       eventsData = await eventsRes.json();
     }
     window._subjects = data.SUBJECTS;
     window._holidays = eventsData.HOLIDAYS || [];
+    window._settings = eventsData.SETTINGS || {};
 
     populateSubjectSelect(document.querySelector('.event-subject'), 'Select a Subject');
     document.querySelectorAll('.series-subject').forEach(sel => populateSubjectSelect(sel, 'Select Subject'));
 
     renderEventsList(eventsData.EVENTS || []);
     renderHolidaysList();
+    initExamModeToggle();
   } catch (err) {
     console.error("Failed to load data", err);
   }
@@ -393,3 +395,32 @@ window.removeHoliday = function(date) {
     sendToAPI({ password: pwdInput.value, action: 'remove_holiday', holidayDate: date });
   }
 };
+
+/* ---------- Exam Mode Toggle ---------- */
+function initExamModeToggle() {
+  const toggle = document.getElementById('examModeToggle');
+  const status = document.getElementById('examModeStatus');
+  if (!toggle) return;
+
+  if (window._settings) {
+    toggle.checked = window._settings.forceExamMode || false;
+    status.textContent = window._settings.forceExamMode
+      ? '⚠️ Exam mode is currently forced for all users.'
+      : 'Auto-detection is active (exams within 1 day trigger mode).';
+  }
+
+  toggle.addEventListener('change', () => {
+    if (!pwdInput.value) {
+      alert("Please enter the Admin Password at the top first.");
+      toggle.checked = !toggle.checked;
+      return;
+    }
+    sendToAPI({
+      password: pwdInput.value,
+      action: 'update_settings',
+      settings: { forceExamMode: toggle.checked }
+    });
+  });
+}
+
+initExamModeToggle();

@@ -10,12 +10,13 @@ function unauthorized(res, msg) {
 
 async function readEdgeConfig() {
   if (!process.env.EDGE_CONFIG) {
-    return { EVENTS: [], HOLIDAYS: [] };
+    return { EVENTS: [], HOLIDAYS: [], SETTINGS: {} };
   }
   const data = await get('events');
   return {
     EVENTS: (data && data.EVENTS) || [],
     HOLIDAYS: (data && data.HOLIDAYS) || [],
+    SETTINGS: (data && data.SETTINGS) || {},
   };
 }
 
@@ -108,6 +109,10 @@ module.exports = async (req, res) => {
         current.HOLIDAYS = current.HOLIDAYS.filter(d => d !== date);
         break;
       }
+      case 'update_settings': {
+        current.SETTINGS = { ...current.SETTINGS, ...(body.settings || {}) };
+        break;
+      }
       default:
         return res.status(400).json({ error: `Unknown action: ${action}` });
     }
@@ -115,6 +120,7 @@ module.exports = async (req, res) => {
     await writeEdgeConfig({
       EVENTS: current.EVENTS,
       HOLIDAYS: current.HOLIDAYS,
+      SETTINGS: current.SETTINGS,
     });
 
     res.status(200).json({ success: true });
