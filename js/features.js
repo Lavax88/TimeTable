@@ -163,17 +163,24 @@
     if (installBtnEl) {
       installBtnEl.addEventListener('click', async function () {
         if (!deferredPrompt) {
-          for (var i = 0; i < 15; i++) {
+          /* Event hasn't arrived yet — show feedback and wait up to 12s */
+          installBtnEl.textContent = 'Preparing\u2026';
+          for (var i = 0; i < 30; i++) {
             if (deferredPrompt) break;
             await new Promise(function (r) { setTimeout(r, 400); });
           }
           if (!deferredPrompt) {
-            dismissBanner();
+            installBtnEl.textContent = 'Install App';
             return;
           }
+          installBtnEl.textContent = 'Install App';
         }
-        deferredPrompt.prompt();
-        await deferredPrompt.userChoice;
+        try {
+          deferredPrompt.prompt();
+          await deferredPrompt.userChoice;
+        } catch (_) {
+          /* prompt was already consumed — nothing we can do */
+        }
         deferredPrompt = null;
         hideBanner();
       });
