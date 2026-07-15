@@ -19,6 +19,7 @@ function applyTheme(theme){
 /* ---------- Globals ---------- */
 let _ACCENT = null;
 let _SUBJECTS = null;
+let _SCHEDULE = null;
 let _events = [];
 let _holidays = [];
 let _settings = {};
@@ -267,6 +268,7 @@ async function initTimetableApp() {
 
     _ACCENT = data.ACCENT;
     _SUBJECTS = data.SUBJECTS;
+    _SCHEDULE = data.SCHEDULE;
     const SCHEDULE = data.SCHEDULE;
 
     const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday", "Exams"];
@@ -650,31 +652,40 @@ async function initTimetableApp() {
       });
       injectCalendarBadges();
 
-      /* ---------- Break timer overlay ---------- */
+      /* ---------- Break timer overlay (detects gaps between classes) ---------- */
       const overlay = document.getElementById('breakOverlay');
-      const activeBreak = document.querySelector('.day-panel.active .card.break.now');
-      if (activeBreak) {
-        const endMin = Number(activeBreak.dataset.endMin);
-        const minsLeft = Math.max(0, Math.ceil(endMin - curMinutes));
-        document.getElementById('breakOverlayTime').textContent = minsLeft + ' min left';
-        
-        // Find next class after this break
-        const panel = activeBreak.closest('.day-panel');
-        let nextCard = activeBreak.nextElementSibling;
-        let nextSubject = '—';
-        while (nextCard) {
-          if (!nextCard.classList.contains('break')) {
-            const nameEl = nextCard.querySelector('.subj-name');
-            if (nameEl) { nextSubject = nameEl.textContent.trim(); break; }
+      const breakTimeEl = document.getElementById('breakOverlayTime');
+      const breakNextEl = document.getElementById('breakOverlayNext');
+      const panels = document.getElementById('panels');
+      let breakActive = false;
+
+      if (_SCHEDULE) {
+        const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+        const nowDayName = dayNames[t.getDay()];
+        const rawPeriods = _SCHEDULE[nowDayName];
+        if (rawPeriods && rawPeriods.length > 0) {
+          const isSaturday = nowDayName === 'Saturday';
+          const hasClass = isSaturday ? (Math.ceil(t.getDate() / 7) === 1 || Math.ceil(t.getDate() / 7) === 3) : true;
+          if (hasClass) {
+            for (let i = 0; i < rawPeriods.length - 1; i++) {
+              const currentEnd = minutesOf(rawPeriods[i][1]);
+              const nextStart = minutesOf(rawPeriods[i + 1][0]);
+              const gap = nextStart - currentEnd;
+              if (gap > 0 && curMinutes >= currentEnd && curMinutes < nextStart) {
+                breakActive = true;
+                const minsLeft = Math.ceil(nextStart - curMinutes);
+                breakTimeEl.textContent = minsLeft + ' min left';
+                const nextKey = rawPeriods[i + 1][2];
+                const nextSubj = _SUBJECTS && _SUBJECTS[nextKey] ? _SUBJECTS[nextKey].name : nextKey;
+                breakNextEl.textContent = nextSubj;
+                break;
+              }
+            }
           }
-          nextCard = nextCard.nextElementSibling;
         }
-        document.getElementById('breakOverlayNext').textContent = nextSubject;
-        if (overlay) overlay.style.display = '';
-      } else {
-        if (overlay) overlay.style.display = 'none';
       }
-    }
+      if (overlay) overlay.style.display = breakActive ? '' : 'none';
+      if (panels) panels.style.display = breakActive ? 'none' : '';
 
     updateProgressBars();
 
