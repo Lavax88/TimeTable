@@ -686,6 +686,7 @@ async function initTimetableApp() {
       }
       if (overlay) overlay.style.display = breakActive ? '' : 'none';
       if (panels) panels.style.display = breakActive ? 'none' : '';
+    }
 
     updateProgressBars();
 
