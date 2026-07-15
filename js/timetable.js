@@ -655,6 +655,7 @@ async function initTimetableApp() {
       /* ---------- Break timer overlay (detects gaps between classes) ---------- */
       const overlay = document.getElementById('breakOverlay');
       const breakTimeEl = document.getElementById('breakOverlayTime');
+      const breakCircleFill = document.querySelector('#breakOverlay .break-circle-fill');
       const breakNextEl = document.getElementById('breakOverlayNext');
       const panels = document.getElementById('panels');
       let breakActive = false;
@@ -673,8 +674,17 @@ async function initTimetableApp() {
               const gap = nextStart - currentEnd;
               if (gap > 0 && curMinutes >= currentEnd && curMinutes < nextStart) {
                 breakActive = true;
-                const minsLeft = Math.ceil(nextStart - curMinutes);
-                breakTimeEl.textContent = minsLeft + ' min left';
+                const gapMins = nextStart - currentEnd;
+                const elapsedMins = curMinutes - currentEnd;
+                const pct = Math.min(100, Math.max(0, (elapsedMins / gapMins) * 100));
+                if(breakCircleFill){
+                  const circumference = 100;
+                  breakCircleFill.style.strokeDashoffset = circumference - (pct / 100) * circumference;
+                }
+                const totalSecs = Math.max(0, Math.round((nextStart - curMinutes) * 60));
+                const m = Math.floor(totalSecs / 60);
+                const s = totalSecs % 60;
+                breakTimeEl.textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
                 const nextKey = rawPeriods[i + 1][2];
                 const nextSubj = _SUBJECTS && _SUBJECTS[nextKey] ? _SUBJECTS[nextKey].name : nextKey;
                 breakNextEl.textContent = nextSubj;
