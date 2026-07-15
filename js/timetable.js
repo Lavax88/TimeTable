@@ -24,6 +24,16 @@ let _holidays = [];
 let _settings = {};
 let _lastCheckedDate = new Date().toDateString();
 
+/* ---------- Dev date override (DEV-ONLY, hostname-gated) ---------- */
+const IS_DEV = window.location.hostname === 'time-table-git-dev-cseb.vercel.app';
+function getDevNow() {
+  if (!IS_DEV) return new Date();
+  const stored = sessionStorage.getItem('timetableTestDate');
+  const storedAt = sessionStorage.getItem('timetableTestAt');
+  if (!stored || !storedAt) return new Date();
+  return new Date(new Date(stored).getTime() + (Date.now() - Number(storedAt)));
+}
+
 /* ---------- Event helpers ---------- */
 const typeCardLabels = {
   exam: 'Upcoming Exam',
@@ -288,7 +298,7 @@ async function initTimetableApp() {
       return out;
     }
 
-    const now = new Date();
+    const now = getDevNow();
     const dayNames = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
     const nowDayName = dayNames[now.getDay()];
     const nowMinutes = now.getHours()*60 + now.getMinutes();
@@ -580,7 +590,7 @@ async function initTimetableApp() {
 
     /* ---------- LIVE PROGRESS TRACKERS ---------- */
     function updateProgressBars(){
-      const t = new Date();
+      const t = getDevNow();
       const curMinutes = t.getHours() * 60 + t.getMinutes() + t.getSeconds() / 60;
 
       const classCards = document.querySelectorAll(".card.now[data-start-min]");
@@ -652,12 +662,59 @@ async function initTimetableApp() {
     await loadEvents();
     injectCalendarBadges();
 
-
+    if (IS_DEV) setupDevDatePicker();
   } catch (error) {
     console.error("Failed to load timetable data:", error);
     document.getElementById("panels").innerHTML = `<div class="free-note">Error loading schedule. Please check your connection.<br><span style="font-size:12px;color:var(--ds);">${error.message || error}</span></div>`;
   }
 }
+
+/* ---------- Dev date picker (DEV-ONLY) ---------- */
+function setupDevDatePicker() {
+  const panel = document.getElementById('devPanel');
+  if (!panel) return;
+  panel.style.display = '';
+
+  const dateInput = document.getElementById('devDateInput');
+  const timeInput = document.getElementById('devTimeInput');
+  const resetBtn = document.getElementById('devDateReset');
+  const label = document.getElementById('devDateLabel');
+
+  const stored = sessionStorage.getItem('timetableTestDate');
+  if (stored) {
+    const d = new Date(stored);
+    dateInput.value = d.toISOString().slice(0, 10);
+    timeInput.value = d.toTimeString().slice(0, 5);
+    const diff = Date.now() - Number(sessionStorage.getItem('timetableTestAt'));
+    const totalSec = Math.floor(diff / 1000);
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    label.textContent = 'Virtual time: ' + d.toLocaleString() + ' (running ' + (h ? h + 'h ' : '') + (m ? m + 'm ' : '') + s + 's ago)';
+  } else {
+    const now = new Date();
+    dateInput.valueAsDate = now;
+    timeInput.value = now.toTimeString().slice(0, 5);
+    label.textContent = 'Live mode. Set date/time below to test future schedule.';
+  }
+
+  dateInput.addEventListener('change', setDevDateTime);
+  timeInput.addEventListener('change', setDevDateTime);
+  resetBtn.addEventListener('click', () => {
+    sessionStorage.removeItem('timetableTestDate');
+    sessionStorage.removeItem('timetableTestAt');
+    location.reload();
+  });
+
+  function setDevDateTime() {
+    if (!dateInput.value || !timeInput.value) return;
+    const iso = dateInput.value + 'T' + timeInput.value + ':00';
+    sessionStorage.setItem('timetableTestDate', iso);
+    sessionStorage.setItem('timetableTestAt', String(Date.now()));
+    location.reload();
+  }
+}
+
 
 /* ---------- Exam Mode ---------- */
 function checkExamMode() {
