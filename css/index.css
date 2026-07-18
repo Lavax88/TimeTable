@@ -1,4 +1,4 @@
-﻿:root{
+:root{
   color-scheme: light;
   --bg-1:#F3EEFF;
   --bg-2:#FFF3EE;
@@ -626,4 +626,24 @@ footer{ text-align:center; margin-top:40px; font-size:12.5px; color:var(--ink-so
   font-size:18px;
   font-weight:700;
   color:var(--ink);
+}
+.break-view-timetable-btn{
+  margin-top:14px;
+  padding:9px 20px;
+  border-radius:20px;
+  border:1.5px solid var(--card-time-border, var(--glass-border));
+  background:transparent;
+  color:var(--ink-soft);
+  font-family:inherit;
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:0.04em;
+  cursor:pointer;
+  transition:background 0.18s, color 0.18s, transform 0.15s, border-color 0.18s;
+}
+.break-view-timetable-btn:hover{
+  background:var(--card-time-bg);
+  color:var(--ink);
+  border-color:var(--ink-soft);
+  transform:translateY(-1px);
 }

@@ -453,6 +453,7 @@ async function initTimetableApp() {
 
     let currentDay = null;
     let isAnimating = false;
+    let breakTimetableVisible = false; // user-override: show timetable during a break
     const h1El = document.querySelector("h1");
     const originalH1 = h1El ? h1El.textContent : "Weekly Class Timetable";
 
@@ -695,11 +696,41 @@ async function initTimetableApp() {
           }
         }
       }
+
+      // Show/hide overlay
       if (overlay) overlay.style.display = (breakActive && !inExamMode) ? '' : 'none';
-      if (panels && !inExamMode) panels.style.display = breakActive ? 'none' : '';
+
+      // Only hide/show the *active* (today's) panel — leave other day panels untouched
+      if (!inExamMode) {
+        const todayPanel = panelsEl.querySelector('.day-panel.active');
+        if (todayPanel) {
+          if (breakActive && !breakTimetableVisible) {
+            todayPanel.style.display = 'none';
+          } else {
+            todayPanel.style.display = '';
+          }
+        }
+        // When break ends, reset the user override
+        if (!breakActive) breakTimetableVisible = false;
+      }
+
+      // Keep button label in sync
+      const viewBtn = document.getElementById('breakViewTimetableBtn');
+      if (viewBtn) {
+        viewBtn.textContent = breakTimetableVisible ? 'Hide Timetable' : 'View Timetable';
+      }
     }
 
     updateProgressBars();
+
+    /* ---------- "View Timetable" button wired up after updateProgressBars is defined ---------- */
+    const breakViewBtn = document.getElementById('breakViewTimetableBtn');
+    if (breakViewBtn) {
+      breakViewBtn.addEventListener('click', () => {
+        breakTimetableVisible = !breakTimetableVisible;
+        updateProgressBars();
+      });
+    }
 
     setInterval(updateProgressBars, 1000);
     setInterval(checkForDateChange, 30000);
@@ -708,6 +739,7 @@ async function initTimetableApp() {
 
     /* ---------- Load events after timetable is ready ---------- */
     await loadEvents();
+
     injectCalendarBadges();
 
     if (IS_DEV) setupDevDatePicker();
