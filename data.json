@@ -66,7 +66,7 @@
     },
     "DAL": {
       "name": "Digital Electronics and Logic Design",
-      "subLine": "GAEST305 · Ms. Anna Isabel John",
+      "subLine": "GAEST305 · Ms. Jefia R Wilson",
       "chipLabel": "DAL",
       "accentKey": "DAL"
     },
@@ -78,7 +78,7 @@
     },
     "LABCOMBO": {
       "name": "DS / DE Lab",
-      "subLine": "PCCSL307 - Ms. Shruthy Chandran<br>PCCSL308 - Ms. Anna Isabel John, Ms. Jefia R Wilson",
+      "subLine": "PCCSL307 - Ms. Shruthy Chandran<br>PCCSL308 - Ms. Jefia R Wilson",
       "chipLabel": "Lab",
       "accentKey": "LAB"
     }
@@ -290,12 +290,12 @@
     [
       "DAL",
       "Digital Electronics & Logic Design",
-      "GAEST305 · Ms. Anna Isabel John"
+      "GAEST305 · Ms. Jefia R Wilson"
     ],
     [
       "LAB",
       "DS / DE Lab",
-      "PCCSL307 - Ms. Shruthy Chandran / PCCSL308 - Ms. Anna Isabel John, Ms. Jefia R Wilson"
+      "PCCSL307 - Ms. Shruthy Chandran / PCCSL308 - Ms. Jefia R Wilson"
     ]
   ]
 }
