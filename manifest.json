@@ -3,8 +3,9 @@
   "short_name": "Timetable",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#FAF8FC",
-  "theme_color": "#1D1A22",
+  "display_override": ["standalone", "minimal-ui"],
+  "background_color": "#221A35",
+  "theme_color": "#221A35",
   "icons": [
     {
       "src": "logo.png",

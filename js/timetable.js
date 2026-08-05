@@ -1,8 +1,9 @@
 /* ---------- Theme ---------- */
 const root = document.documentElement;
 const themeToggle = document.getElementById("themeToggle");
+const savedTheme = localStorage.getItem("timetableTheme");
 const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-let currentTheme = prefersDark ? "dark" : "light";
+let currentTheme = savedTheme ? savedTheme : (prefersDark ? "dark" : "light");
 applyTheme(currentTheme);
 
 themeToggle.addEventListener("click", () => {
@@ -14,6 +15,10 @@ function applyTheme(theme){
   root.setAttribute("data-theme", theme);
   themeToggle.textContent = theme === "dark" ? "☀️" : "🌙";
   localStorage.setItem("timetableTheme", theme);
+  const meta = document.getElementById("themeColorMeta");
+  if (meta) {
+    meta.setAttribute("content", theme === "dark" ? "#221A35" : "#F5F2FA");
+  }
 }
 
 /* ---------- Globals ---------- */

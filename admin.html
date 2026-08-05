@@ -1,16 +1,31 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Admin Dashboard</title>
+
+  <meta name="theme-color" id="themeColorMeta" content="#221A35">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F5F2FA">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#221A35">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/index.css">
   <link rel="stylesheet" href="css/admin.css">
   <script>
-    const savedTheme = localStorage.getItem("timetableTheme");
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    document.documentElement.setAttribute("data-theme", savedTheme ? savedTheme : (prefersDark ? "dark" : "light"));
+    (function() {
+      const savedTheme = localStorage.getItem("timetableTheme");
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const theme = savedTheme ? savedTheme : (prefersDark ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+      const meta = document.getElementById("themeColorMeta");
+      if (meta) {
+        meta.setAttribute("content", theme === "dark" ? "#221A35" : "#F5F2FA");
+      }
+    })();
   </script>
 </head>
 <body>

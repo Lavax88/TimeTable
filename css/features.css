@@ -189,7 +189,7 @@
 @media (max-width: 520px) {
   .header-actions {
     flex-direction: column;
-    top: 12px;
+    top: calc(12px + env(safe-area-inset-top, 24px));
     right: 12px;
     gap: 6px;
   }

@@ -2,8 +2,28 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>S3 CSE · Room A214 · Timetable</title>
+
+  <meta name="theme-color" id="themeColorMeta" content="#221A35">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F5F2FA">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#221A35">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem("timetableTheme");
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const theme = savedTheme ? savedTheme : (prefersDark ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+      const meta = document.getElementById("themeColorMeta");
+      if (meta) {
+        meta.setAttribute("content", theme === "dark" ? "#221A35" : "#F5F2FA");
+      }
+    })();
+  </script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
