@@ -125,7 +125,11 @@ function createEventCard(ev) {
       if (d.name === ev.subject) { subjLabel = d.chipLabel; break; }
     }
   }
-  const mainHeading = ev.title + (subjLabel ? ' (' + subjLabel + ')' : '');
+  const displayTitle = (ev.type === 'exam' && ev.subject) ? ev.subject : ev.title;
+  let mainHeading = displayTitle;
+  if (subjLabel && !displayTitle.includes('(' + subjLabel + ')') && displayTitle !== subjLabel) {
+    mainHeading += ' (' + subjLabel + ')';
+  }
 
   card.innerHTML = `
     <div class="card-main">
