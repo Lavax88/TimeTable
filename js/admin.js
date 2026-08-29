@@ -191,10 +191,18 @@ const typeShortLabels = {
   reminder: 'REMINDER'
 };
 
+function isEventExpired(ev) {
+  if (!ev || !ev.date) return false;
+  const parts = ev.date.split('-').map(Number);
+  const expiry = new Date(parts[0], parts[1] - 1, parts[2], 13, 30, 0, 0).getTime();
+  return Date.now() >= expiry;
+}
+
 function renderEventsList(events) {
   const listEl = document.getElementById('eventsList');
-  window._cachedEvents = events;
-  if (events.length === 0) {
+  const activeEvents = (events || []).filter(e => !isEventExpired(e));
+  window._cachedEvents = activeEvents;
+  if (activeEvents.length === 0) {
     listEl.innerHTML = `<p style="color: var(--ink-soft); font-size: 14px;">No upcoming events found.</p>`;
     document.getElementById('deleteSelectedBtn').style.display = 'none';
     return;
@@ -202,13 +210,13 @@ function renderEventsList(events) {
   listEl.innerHTML = '';
 
   const examTitleCount = {};
-  events.forEach(ev => {
+  activeEvents.forEach(ev => {
     if (ev.type === 'exam' && ev.title) {
       examTitleCount[ev.title] = (examTitleCount[ev.title] || 0) + 1;
     }
   });
 
-  events.forEach((ev, idx) => {
+  activeEvents.forEach((ev, idx) => {
     const item = document.createElement('div');
     item.className = 'event-item';
     const displayTitle = ev.title || ev.subject || 'Untitled';

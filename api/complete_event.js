@@ -42,6 +42,12 @@ async function writeEdgeConfig(payload) {
   }
 }
 
+function isExpired(ev) {
+  if (!ev || !ev.date) return false;
+  const expiry = new Date(`${ev.date}T13:30:00+05:30`).getTime();
+  return Date.now() >= expiry;
+}
+
 module.exports = async (req, res) => {
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -61,9 +67,9 @@ module.exports = async (req, res) => {
 
     const before = current.EVENTS.length;
 
-    // Only remove events that are of a completable type — safety guard
+    // Remove the completed event AND any expired events
     current.EVENTS = current.EVENTS.filter(
-      ev => !(ev.title === title && ev.date === date && COMPLETABLE_TYPES.has(ev.type))
+      ev => !isExpired(ev) && !(ev.title === title && ev.date === date && COMPLETABLE_TYPES.has(ev.type))
     );
 
     const removed = before - current.EVENTS.length;
