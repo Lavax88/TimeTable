@@ -284,18 +284,16 @@ function renderEvents() {
 async function initTimetableApp() {
   try {
     let data = null;
-    const cached = sessionStorage.getItem('timetableData');
-    const cachedAt = sessionStorage.getItem('timetableDataAt');
-    if (cached && cachedAt && Date.now() - Number(cachedAt) < 300000) {
-      data = JSON.parse(cached);
-    }
-    if (!data) {
-      const response = await fetch('/api/data');
+    try {
+      const response = await fetch('/api/data?t=' + Date.now());
       data = await response.json();
       try {
         sessionStorage.setItem('timetableData', JSON.stringify(data));
         sessionStorage.setItem('timetableDataAt', String(Date.now()));
       } catch (e) {}
+    } catch (e) {
+      const cached = sessionStorage.getItem('timetableData');
+      if (cached) data = JSON.parse(cached);
     }
 
     _ACCENT = data.ACCENT;
