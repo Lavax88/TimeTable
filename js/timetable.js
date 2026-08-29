@@ -165,10 +165,18 @@ function createEventCard(ev) {
 }
 
 
+function isEventExpired(ev) {
+  if (!ev || !ev.date) return false;
+  const parts = ev.date.split('-').map(Number);
+  const expiry = new Date(parts[0], parts[1] - 1, parts[2], 13, 30, 0, 0).getTime();
+  const now = getDevNow().getTime();
+  return now >= expiry;
+}
+
 function injectCalendarBadges() {
   document.querySelectorAll('.event-calendar-badge').forEach(el => el.remove());
 
-  const now = new Date();
+  const now = getDevNow();
   const nowDay = now.getDay();
   const nowMinutes = now.getHours() * 60 + now.getMinutes();
   const dayNames = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
@@ -182,7 +190,7 @@ function injectCalendarBadges() {
 
   if (!_events || !_events.length) return;
 
-  _events.forEach(ev => {
+  _events.filter(ev => !isEventExpired(ev)).forEach(ev => {
     if (!ev.subject) return;
     const parts = ev.date.split('-').map(Number);
     const evDate = new Date(parts[0], parts[1] - 1, parts[2]);
@@ -238,12 +246,9 @@ async function loadEvents() {
 }
 
 function getFilteredEvents() {
-  const nowTime = new Date().getTime();
-  const upcoming = _events.filter(ev => {
-    const evDate = new Date(ev.date);
-    evDate.setHours(13, 30, 0, 0);
-    return evDate.getTime() > nowTime;
-  }).sort((a,b) => new Date(a.date) - new Date(b.date));
+  const upcoming = _events
+    .filter(ev => !isEventExpired(ev))
+    .sort((a,b) => new Date(a.date) - new Date(b.date));
   return {
     exams: upcoming.filter(e => e.type === 'exam'),
     deadlines: upcoming.filter(e => e.type !== 'exam'),
@@ -854,15 +859,18 @@ function checkExamMode() {
   let autoActive = false;
   let examInfo = null;
 
+  const activeExams = (_events || []).filter(e => e.type === 'exam' && !isEventExpired(e));
+
   if (!manualForce) {
-    const today = new Date();
+    const now = getDevNow();
+    const today = new Date(now);
     today.setHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    for (const ev of _events) {
-      if (ev.type !== 'exam') continue;
-      const evDate = new Date(ev.date);
+    for (const ev of activeExams) {
+      const parts = ev.date.split('-').map(Number);
+      const evDate = new Date(parts[0], parts[1] - 1, parts[2]);
       evDate.setHours(0, 0, 0, 0);
       if (evDate >= today && evDate <= tomorrow) {
         autoActive = true;
@@ -883,11 +891,11 @@ function checkExamMode() {
     const reason = manualForce
       ? 'Exam mode manually enabled by admin.'
       : (examInfo
-        ? `📝 ${examInfo.title}${examInfo.subject ? ' (' + examInfo.subject + ')' : ''} is scheduled ${new Date(examInfo.date).toDateString() === new Date().toDateString() ? 'today' : 'tomorrow'} — showing exam timetable.`
+        ? `📝 ${examInfo.title}${examInfo.subject ? ' (' + examInfo.subject + ')' : ''} is scheduled ${new Date(examInfo.date).toDateString() === getDevNow().toDateString() ? 'today' : 'tomorrow'} — showing exam timetable.`
         : 'Exam mode active.');
     banner.innerHTML = `📌 Exam mode · ${reason}`;
 
-    const examEvents = _events.filter(e => e.type === 'exam').sort((a,b) => new Date(a.date) - new Date(b.date));
+    const examEvents = activeExams.sort((a,b) => new Date(a.date) - new Date(b.date));
     content.innerHTML = '';
     if (examEvents.length === 0) {
       content.innerHTML = `<div class="free-note">No upcoming exams scheduled.</div>`;
@@ -899,9 +907,10 @@ function checkExamMode() {
 
 /* ---------- Midnight crossover ---------- */
 function checkForDateChange() {
-  const today = new Date().toDateString();
+  const today = getDevNow().toDateString();
   if (today !== _lastCheckedDate) {
     _lastCheckedDate = today;
+    renderEvents();
     checkExamMode();
   }
 }

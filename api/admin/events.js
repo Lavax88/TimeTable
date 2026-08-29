@@ -49,9 +49,9 @@ async function writeEdgeConfig(payload) {
 }
 
 function isExpired(ev) {
-  const d = new Date(ev.date);
-  d.setHours(13, 30, 0, 0);
-  return d.getTime() <= Date.now();
+  if (!ev || !ev.date) return false;
+  const expiry = new Date(`${ev.date}T13:30:00+05:30`).getTime();
+  return Date.now() >= expiry;
 }
 
 module.exports = async (req, res) => {
