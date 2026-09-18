@@ -104,8 +104,86 @@
     <div class="dev-section">
       <div class="dev-label">Dev: Override date &amp; time</div>
       <div class="dev-controls-row">
-        <input type="date" id="devDateInput" class="dev-input">
-        <input type="time" id="devTimeInput" class="dev-input">
+        <!-- Themed Date Picker -->
+        <div class="dev-picker-wrapper" id="devDatePickerWrapper">
+          <div class="dev-picker-input-box">
+            <input type="text" id="devDateInput" class="dev-input dev-picker-input" placeholder="YYYY-MM-DD" readonly autocomplete="off">
+            <button type="button" class="dev-picker-btn" id="devDateBtn" title="Select date" aria-label="Select date">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+            </button>
+          </div>
+          <div class="dev-popup dev-calendar-popup" id="devCalendarPopup" style="display:none;" role="dialog" aria-label="Calendar">
+            <div class="dev-popup-header">
+              <button type="button" class="dev-popup-nav-btn" id="devCalPrev" aria-label="Previous month">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+              </button>
+              <span class="dev-popup-title" id="devCalTitle">September 2026</span>
+              <button type="button" class="dev-popup-nav-btn" id="devCalNext" aria-label="Next month">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            </div>
+            <div class="dev-cal-weekdays">
+              <span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span><span>Su</span>
+            </div>
+            <div class="dev-cal-grid" id="devCalGrid"></div>
+            <div class="dev-popup-footer">
+              <button type="button" class="dev-popup-action-btn" id="devCalTodayBtn">Today</button>
+              <button type="button" class="dev-popup-action-btn secondary" id="devCalCloseBtn">Close</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Themed Time Picker -->
+        <div class="dev-picker-wrapper" id="devTimePickerWrapper">
+          <div class="dev-picker-input-box">
+            <input type="text" id="devTimeInput" class="dev-input dev-picker-input" placeholder="HH:MM" readonly autocomplete="off">
+            <button type="button" class="dev-picker-btn" id="devTimeBtn" title="Select time" aria-label="Select time">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+            </button>
+          </div>
+          <div class="dev-popup dev-time-popup" id="devTimePopup" style="display:none;" role="dialog" aria-label="Time picker">
+            <div class="dev-popup-header">
+              <span class="dev-popup-title">Select Time</span>
+            </div>
+            <div class="dev-time-section-label">Class Periods</div>
+            <div class="dev-time-presets" id="devTimePresets">
+              <button type="button" class="dev-time-preset-btn" data-time="08:30">08:30</button>
+              <button type="button" class="dev-time-preset-btn" data-time="09:25">09:25</button>
+              <button type="button" class="dev-time-preset-btn" data-time="10:35">10:35</button>
+              <button type="button" class="dev-time-preset-btn" data-time="11:30">11:30</button>
+              <button type="button" class="dev-time-preset-btn" data-time="12:25">12:25</button>
+              <button type="button" class="dev-time-preset-btn" data-time="13:15">13:15</button>
+              <button type="button" class="dev-time-preset-btn" data-time="14:10">14:10</button>
+              <button type="button" class="dev-time-preset-btn" data-time="15:05">15:05</button>
+            </div>
+            <div class="dev-time-section-label">Custom Hour &amp; Min</div>
+            <div class="dev-time-custom-row">
+              <div class="dev-time-col">
+                <label for="devTimeHourSelect" class="dev-time-sublabel">Hour</label>
+                <select id="devTimeHourSelect" class="dev-time-select"></select>
+              </div>
+              <div class="dev-time-colon">:</div>
+              <div class="dev-time-col">
+                <label for="devTimeMinSelect" class="dev-time-sublabel">Min</label>
+                <select id="devTimeMinSelect" class="dev-time-select"></select>
+              </div>
+              <button type="button" class="dev-popup-action-btn" id="devTimeApplyBtn" style="align-self:flex-end;">Apply</button>
+            </div>
+            <div class="dev-popup-footer">
+              <button type="button" class="dev-popup-action-btn" id="devTimeNowBtn">Now</button>
+              <button type="button" class="dev-popup-action-btn secondary" id="devTimeCloseBtn">Close</button>
+            </div>
+          </div>
+        </div>
+
         <button type="button" id="devDateReset" class="dev-btn">Reset</button>
       </div>
       <div class="dev-hint" id="devDateLabel"></div>

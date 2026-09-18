@@ -878,14 +878,45 @@ function setupDevDatePicker() {
   /* Date & time override */
   const dateInput = document.getElementById('devDateInput');
   const timeInput = document.getElementById('devTimeInput');
+  const dateBtn = document.getElementById('devDateBtn');
+  const timeBtn = document.getElementById('devTimeBtn');
   const resetBtn = document.getElementById('devDateReset');
   const label = document.getElementById('devDateLabel');
+
+  const calPopup = document.getElementById('devCalendarPopup');
+  const calTitle = document.getElementById('devCalTitle');
+  const calGrid = document.getElementById('devCalGrid');
+  const calPrev = document.getElementById('devCalPrev');
+  const calNext = document.getElementById('devCalNext');
+  const calTodayBtn = document.getElementById('devCalTodayBtn');
+  const calCloseBtn = document.getElementById('devCalCloseBtn');
+
+  const timePopup = document.getElementById('devTimePopup');
+  const timeHourSelect = document.getElementById('devTimeHourSelect');
+  const timeMinSelect = document.getElementById('devTimeMinSelect');
+  const timeApplyBtn = document.getElementById('devTimeApplyBtn');
+  const timeNowBtn = document.getElementById('devTimeNowBtn');
+  const timeCloseBtn = document.getElementById('devTimeCloseBtn');
+  const timePresetBtns = document.querySelectorAll('.dev-time-preset-btn');
+
+  function formatLocalDate(d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  function formatLocalTime(d) {
+    const h = String(d.getHours()).padStart(2, '0');
+    const min = String(d.getMinutes()).padStart(2, '0');
+    return `${h}:${min}`;
+  }
 
   const stored = sessionStorage.getItem('timetableTestDate');
   if (stored) {
     const d = new Date(stored);
-    dateInput.value = d.toISOString().slice(0, 10);
-    timeInput.value = d.toTimeString().slice(0, 5);
+    dateInput.value = formatLocalDate(d);
+    timeInput.value = formatLocalTime(d);
     const diff = Date.now() - Number(sessionStorage.getItem('timetableTestAt'));
     const totalSec = Math.floor(diff / 1000);
     const h = Math.floor(totalSec / 3600);
@@ -894,13 +925,230 @@ function setupDevDatePicker() {
     label.textContent = 'Virtual time: ' + d.toLocaleString() + ' (running ' + (h ? h + 'h ' : '') + (m ? m + 'm ' : '') + s + 's ago)';
   } else {
     const now = new Date();
-    dateInput.valueAsDate = now;
-    timeInput.value = now.toTimeString().slice(0, 5);
+    dateInput.value = formatLocalDate(now);
+    timeInput.value = formatLocalTime(now);
     label.textContent = 'Live mode. Set date/time below to test future schedule.';
   }
 
-  dateInput.addEventListener('change', setDevDateTime);
-  timeInput.addEventListener('change', setDevDateTime);
+  /* --- Calendar Popover Logic --- */
+  let calViewYear = new Date().getFullYear();
+  let calViewMonth = new Date().getMonth();
+
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
+  function renderCalendar(year, month) {
+    if (!calTitle || !calGrid) return;
+    calTitle.textContent = `${monthNames[month]} ${year}`;
+    calGrid.innerHTML = '';
+
+    const firstDay = new Date(year, month, 1);
+    let startDay = firstDay.getDay() - 1;
+    if (startDay === -1) startDay = 6;
+
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const todayStr = formatLocalDate(new Date());
+    const selectedStr = dateInput.value;
+
+    for (let i = 0; i < startDay; i++) {
+      const empty = document.createElement('div');
+      empty.className = 'dev-cal-day empty';
+      calGrid.appendChild(empty);
+    }
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dayBtn = document.createElement('button');
+      dayBtn.type = 'button';
+      dayBtn.className = 'dev-cal-day';
+      dayBtn.textContent = String(d);
+
+      const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      if (dStr === todayStr) dayBtn.classList.add('today');
+      if (dStr === selectedStr) dayBtn.classList.add('selected');
+
+      dayBtn.addEventListener('click', () => {
+        dateInput.value = dStr;
+        if (calPopup) calPopup.style.display = 'none';
+        setDevDateTime();
+      });
+
+      calGrid.appendChild(dayBtn);
+    }
+  }
+
+  function toggleCalendar(e) {
+    if (e) e.stopPropagation();
+    if (!calPopup) return;
+    if (timePopup) timePopup.style.display = 'none';
+
+    if (calPopup.style.display === 'none') {
+      const curParts = (dateInput.value || '').split('-').map(Number);
+      if (curParts.length === 3 && !isNaN(curParts[0])) {
+        calViewYear = curParts[0];
+        calViewMonth = curParts[1] - 1;
+      } else {
+        const now = new Date();
+        calViewYear = now.getFullYear();
+        calViewMonth = now.getMonth();
+      }
+      renderCalendar(calViewYear, calViewMonth);
+      calPopup.style.display = 'block';
+    } else {
+      calPopup.style.display = 'none';
+    }
+  }
+
+  if (dateInput) dateInput.addEventListener('click', toggleCalendar);
+  if (dateBtn) dateBtn.addEventListener('click', toggleCalendar);
+
+  if (calPrev) {
+    calPrev.addEventListener('click', (e) => {
+      e.stopPropagation();
+      calViewMonth--;
+      if (calViewMonth < 0) {
+        calViewMonth = 11;
+        calViewYear--;
+      }
+      renderCalendar(calViewYear, calViewMonth);
+    });
+  }
+
+  if (calNext) {
+    calNext.addEventListener('click', (e) => {
+      e.stopPropagation();
+      calViewMonth++;
+      if (calViewMonth > 11) {
+        calViewMonth = 0;
+        calViewYear++;
+      }
+      renderCalendar(calViewYear, calViewMonth);
+    });
+  }
+
+  if (calTodayBtn) {
+    calTodayBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dateInput.value = formatLocalDate(new Date());
+      if (calPopup) calPopup.style.display = 'none';
+      setDevDateTime();
+    });
+  }
+
+  if (calCloseBtn) {
+    calCloseBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (calPopup) calPopup.style.display = 'none';
+    });
+  }
+
+  /* --- Time Picker Popover Logic --- */
+  if (timeHourSelect && timeMinSelect) {
+    timeHourSelect.innerHTML = '';
+    for (let h = 0; h < 24; h++) {
+      const opt = document.createElement('option');
+      const val = String(h).padStart(2, '0');
+      opt.value = val;
+      opt.textContent = val;
+      timeHourSelect.appendChild(opt);
+    }
+
+    timeMinSelect.innerHTML = '';
+    for (let m = 0; m < 60; m += 5) {
+      const opt = document.createElement('option');
+      const val = String(m).padStart(2, '0');
+      opt.value = val;
+      opt.textContent = val;
+      timeMinSelect.appendChild(opt);
+    }
+  }
+
+  function syncTimeSelects() {
+    const parts = (timeInput.value || '09:00').split(':');
+    if (timeHourSelect && parts[0]) timeHourSelect.value = parts[0];
+    if (timeMinSelect && parts[1]) {
+      const minNum = Math.round(Number(parts[1]) / 5) * 5;
+      const roundedVal = String(minNum >= 60 ? 55 : minNum).padStart(2, '0');
+      timeMinSelect.value = roundedVal;
+    }
+  }
+
+  function toggleTimePicker(e) {
+    if (e) e.stopPropagation();
+    if (!timePopup) return;
+    if (calPopup) calPopup.style.display = 'none';
+
+    if (timePopup.style.display === 'none') {
+      syncTimeSelects();
+      timePopup.style.display = 'block';
+    } else {
+      timePopup.style.display = 'none';
+    }
+  }
+
+  if (timeInput) timeInput.addEventListener('click', toggleTimePicker);
+  if (timeBtn) timeBtn.addEventListener('click', toggleTimePicker);
+
+  timePresetBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const presetTime = btn.dataset.time;
+      if (presetTime) {
+        timeInput.value = presetTime;
+        if (timePopup) timePopup.style.display = 'none';
+        setDevDateTime();
+      }
+    });
+  });
+
+  if (timeApplyBtn) {
+    timeApplyBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (timeHourSelect && timeMinSelect) {
+        timeInput.value = `${timeHourSelect.value}:${timeMinSelect.value}`;
+        if (timePopup) timePopup.style.display = 'none';
+        setDevDateTime();
+      }
+    });
+  }
+
+  if (timeNowBtn) {
+    timeNowBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      timeInput.value = formatLocalTime(new Date());
+      if (timePopup) timePopup.style.display = 'none';
+      setDevDateTime();
+    });
+  }
+
+  if (timeCloseBtn) {
+    timeCloseBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (timePopup) timePopup.style.display = 'none';
+    });
+  }
+
+  /* Dismiss popovers on outside click or Escape key */
+  document.addEventListener('click', (e) => {
+    const dateWrap = document.getElementById('devDatePickerWrapper');
+    const timeWrap = document.getElementById('devTimePickerWrapper');
+    if (calPopup && dateWrap && !dateWrap.contains(e.target)) {
+      calPopup.style.display = 'none';
+    }
+    if (timePopup && timeWrap && !timeWrap.contains(e.target)) {
+      timePopup.style.display = 'none';
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (calPopup) calPopup.style.display = 'none';
+      if (timePopup) timePopup.style.display = 'none';
+    }
+  });
+
+  /* Reset button */
   resetBtn.addEventListener('click', () => {
     sessionStorage.removeItem('timetableTestDate');
     sessionStorage.removeItem('timetableTestAt');
