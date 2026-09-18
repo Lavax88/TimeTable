@@ -26,7 +26,7 @@
   function shouldShowBanner() {
     if (isAlreadyInstalled()) return false;
 
-    /* On mobile, always show if not standalone — ignore dismiss policy */
+    /* On mobile, always show if not standalone: ignore dismiss policy */
     if (isMobile()) return true;
 
     var meta = getInstallMeta();
@@ -100,7 +100,7 @@
 
   function dismissBanner() {
     hideBanner();
-    /* Don't nullify deferredPrompt here — beforeinstallprompt fires only once
+    /* Don't nullify deferredPrompt here: beforeinstallprompt fires only once
        per page load, so the event must survive dismiss/reopen cycles. */
     var meta = getInstallMeta();
     meta.dismissCount = (meta.dismissCount || 0) + 1;
@@ -135,7 +135,7 @@
       hideHeaderBtn();
     }
 
-    /* ---- Wire all popup buttons — always, regardless of dismiss policy ---- */
+    /* ---- Wire all popup buttons: always, regardless of dismiss policy ---- */
 
     var headerBtn = document.getElementById('installHeaderBtn');
     if (headerBtn) {
@@ -163,8 +163,8 @@
     if (installBtnEl) {
       installBtnEl.addEventListener('click', async function () {
         if (!deferredPrompt) {
-          /* Event hasn't arrived yet — show feedback and wait up to 12s */
-          installBtnEl.textContent = 'Preparing\u2026';
+          /* Event hasn't arrived yet: show feedback and wait up to 12s */
+          installBtnEl.textContent = 'Preparing...';
           for (var i = 0; i < 30; i++) {
             if (deferredPrompt) break;
             await new Promise(function (r) { setTimeout(r, 400); });
@@ -179,7 +179,7 @@
           deferredPrompt.prompt();
           await deferredPrompt.userChoice;
         } catch (_) {
-          /* prompt was already consumed — nothing we can do */
+          /* prompt was already consumed: nothing we can do */
         }
         deferredPrompt = null;
         hideBanner();
@@ -210,7 +210,7 @@
   }
 
   /* =====================================================================
-   *  INIT – wait for DOM
+   *  INIT - wait for DOM
    * ===================================================================== */
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);

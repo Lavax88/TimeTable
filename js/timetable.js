@@ -13,11 +13,13 @@ themeToggle.addEventListener("click", () => {
 
 function applyTheme(theme){
   root.setAttribute("data-theme", theme);
-  themeToggle.textContent = theme === "dark" ? "☀️" : "🌙";
+  if (themeToggle) {
+    themeToggle.setAttribute("aria-label", theme === "dark" ? "Switch to light mode" : "Switch to dark mode");
+  }
   localStorage.setItem("timetableTheme", theme);
   const meta = document.getElementById("themeColorMeta");
   if (meta) {
-    meta.setAttribute("content", theme === "dark" ? "#221A35" : "#F5F2FA");
+    meta.setAttribute("content", theme === "dark" ? "#0B0F17" : "#F8FAFC");
   }
 }
 
@@ -121,7 +123,7 @@ function createEventCard(ev) {
   const completedLabels = { exam: 'Completed Exam', test: 'Completed Class Test', deadline: 'Completed Assignment', general: 'Completed Event', reminder: 'Completed Reminder' };
   const canComplete = ev.type === 'deadline' || ev.type === 'reminder';
   const completed = canComplete && isEventCompleted(ev);
-  const displayTag = completed ? '✓ ' + (completedLabels[ev.type] || tagLabel) : tagLabel;
+  const displayTag = completed ? (completedLabels[ev.type] || tagLabel) : tagLabel;
   const shortLabel = typeShortLabels[ev.type] || ev.type.toUpperCase();
 
     let subjLabel = '';
@@ -136,6 +138,12 @@ function createEventCard(ev) {
     mainHeading += ' (' + subjLabel + ')';
   }
 
+  const completeBtnHtml = canComplete
+    ? (completed
+        ? ` <button class="complete-btn" aria-label="Undo completion"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:3px;"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>Undo</button>`
+        : ` <button class="complete-btn" aria-label="Mark as completed"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:3px;"><polyline points="20 6 9 17 4 12"/></svg>Done</button>`)
+    : '';
+
   card.innerHTML = `
     <div class="card-main">
       <div class="card-time" style="flex-basis: 90px;">
@@ -144,7 +152,7 @@ function createEventCard(ev) {
       </div>
       <div class="card-body">
         <div class="card-info">
-          <span class="now-tag" style="background:${accent[0]}">${displayTag}</span>${canComplete ? ' <button class="complete-btn">' + (completed ? '↩' : '✓') + '</button>' : ''}<br>
+          <span class="now-tag" style="background:${accent[0]}">${displayTag}</span>${completeBtnHtml}<br>
           <p class="subj-name" style="margin-top:4px;">${mainHeading}</p>
           <div class="progress-wrap">
             <div class="progress-track"><div class="progress-fill"></div></div>
@@ -386,7 +394,7 @@ async function initTimetableApp() {
       panel.dataset.day = day;
 
       if (isExamsTab) {
-        panel.innerHTML = `<div class="free-note">No upcoming exams scheduled. You're safe (for now).</div>`;
+        panel.innerHTML = `<div class="free-note">No upcoming exams scheduled.</div>`;
         panelsEl.appendChild(panel);
         return;
       }
@@ -395,7 +403,7 @@ async function initTimetableApp() {
         const banner = document.createElement("div");
         if(thisWeekHasNoSaturdayClass){
           banner.className = "caution-banner";
-          banner.textContent = "No classes this Saturday — classes only run on the 1st & 3rd Saturdays of the month.";
+          banner.textContent = "No classes this Saturday. Classes only run on the 1st & 3rd Saturdays of the month.";
         } else {
           banner.className = "caution-banner success";
           banner.textContent = "Saturday class is scheduled this week.";
@@ -430,7 +438,7 @@ async function initTimetableApp() {
               <div class="card-body">
                 <div class="card-info">
                   ${isBreakNow ? `<span class="now-tag break-now-tag">Ongoing break</span><br>` : ""}
-                  <p class="subj-name">☕ Break</p>
+                  <p class="subj-name">Break</p>
                   <p class="subj-sub">${note} free</p>
                   ${isBreakNow ? `<div class="progress-wrap"><div class="progress-track"><div class="progress-fill"></div></div><span class="progress-remaining"></span></div>` : ""}
                 </div>
@@ -678,7 +686,7 @@ async function initTimetableApp() {
           if (lectureStartMins !== null) {
             evDate.setHours(Math.floor(lectureStartMins / 60), lectureStartMins % 60, 0, 0);
           } else {
-            evDate.setHours(23, 59, 59, 0); // subject not scheduled that day — fall back
+            evDate.setHours(23, 59, 59, 0); // subject not scheduled that day: fall back
           }
         } else {
           evDate.setHours(23, 59, 59, 0);
@@ -757,7 +765,7 @@ async function initTimetableApp() {
       // Show/hide overlay
       if (overlay) overlay.style.display = (breakActive && !inExamMode) ? '' : 'none';
 
-      // Only hide/show the *active* (today's) panel — leave other day panels untouched
+      // Only hide/show the active (today's) panel; leave other day panels untouched
       if (!inExamMode) {
         const todayPanel = panelsEl.querySelector('.day-panel.active');
         if (todayPanel) {
@@ -891,9 +899,9 @@ function checkExamMode() {
     const reason = manualForce
       ? 'Exam mode manually enabled by admin.'
       : (examInfo
-        ? `📝 ${examInfo.title}${examInfo.subject ? ' (' + examInfo.subject + ')' : ''} is scheduled ${new Date(examInfo.date).toDateString() === getDevNow().toDateString() ? 'today' : 'tomorrow'} — showing exam timetable.`
+        ? `${examInfo.title}${examInfo.subject ? ' (' + examInfo.subject + ')' : ''} is scheduled ${new Date(examInfo.date).toDateString() === getDevNow().toDateString() ? 'today' : 'tomorrow'}. Showing exam timetable.`
         : 'Exam mode active.');
-    banner.innerHTML = `📌 Exam mode · ${reason}`;
+    banner.textContent = `Exam mode · ${reason}`;
 
     const examEvents = activeExams.sort((a,b) => new Date(a.date) - new Date(b.date));
     content.innerHTML = '';
