@@ -90,15 +90,26 @@
   <p class="legend-title">Subjects &amp; faculty</p>
   <div class="legend-grid" id="legend"></div>
 
-  <!-- DEV-ONLY: date/time override (only activates on dev.vercel.app) -->
-  <div id="devPanel" style="display:none;margin-top:20px;padding:14px 18px;border-radius:18px;background:var(--card-bg);border:1px solid var(--bd);">
-    <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--ink)">Dev: override date &amp; time</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-      <input type="date" id="devDateInput" style="padding:8px 12px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--ink);font-size:13px;">
-      <input type="time" id="devTimeInput" style="padding:8px 12px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--ink);font-size:13px;">
-      <button id="devDateReset" style="font-size:12px;padding:8px 14px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--ink);cursor:pointer;">Reset</button>
+  <!-- DEV-ONLY: dev controls (activates on dev environments) -->
+  <div id="devPanel" class="dev-panel" style="display:none;">
+    <div class="dev-section">
+      <div class="dev-label">Dev: Viewport UI</div>
+      <div class="dev-btn-group" id="devViewportGroup">
+        <button type="button" class="dev-toggle-btn active" data-viewport="auto">Auto (Default)</button>
+        <button type="button" class="dev-toggle-btn" data-viewport="mobile">Mobile UI</button>
+        <button type="button" class="dev-toggle-btn" data-viewport="desktop">Desktop UI</button>
+      </div>
     </div>
-    <div style="font-size:12px;color:var(--ink-soft);margin-top:6px;" id="devDateLabel"></div>
+
+    <div class="dev-section">
+      <div class="dev-label">Dev: Override date &amp; time</div>
+      <div class="dev-controls-row">
+        <input type="date" id="devDateInput" class="dev-input">
+        <input type="time" id="devTimeInput" class="dev-input">
+        <button type="button" id="devDateReset" class="dev-btn">Reset</button>
+      </div>
+      <div class="dev-hint" id="devDateLabel"></div>
+    </div>
   </div>
 
 </div>

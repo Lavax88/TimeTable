@@ -33,7 +33,26 @@ let _settings = {};
 let _lastCheckedDate = new Date().toDateString();
 
 /* ---------- Dev date override (DEV-ONLY, hostname-gated) ---------- */
-const IS_DEV = window.location.hostname === 'time-table-git-dev-cseb.vercel.app';
+const IS_DEV =
+  window.location.hostname === 'time-table-git-dev-cseb.vercel.app' ||
+  window.location.hostname === 'localhost' ||
+  window.location.hostname === '127.0.0.1' ||
+  window.location.hostname.includes('dev') ||
+  window.location.search.includes('dev=1') ||
+  window.location.protocol === 'file:';
+
+/* Apply dev viewport simulation mode early if stored */
+if (IS_DEV) {
+  try {
+    const storedViewport = sessionStorage.getItem('timetableDevViewport');
+    if (storedViewport === 'mobile') {
+      document.body.classList.add('dev-mobile-ui');
+    } else if (storedViewport === 'desktop') {
+      document.body.classList.add('dev-desktop-ui');
+    }
+  } catch (_) {}
+}
+
 function getDevNow() {
   if (!IS_DEV) return new Date();
   const stored = sessionStorage.getItem('timetableTestDate');
@@ -814,12 +833,49 @@ async function initTimetableApp() {
   }
 }
 
-/* ---------- Dev date picker (DEV-ONLY) ---------- */
+/* ---------- Dev controls (DEV-ONLY) ---------- */
 function setupDevDatePicker() {
   const panel = document.getElementById('devPanel');
   if (!panel) return;
   panel.style.display = '';
 
+  /* Viewport UI mode toggle */
+  const viewportBtns = panel.querySelectorAll('#devViewportGroup .dev-toggle-btn');
+  let currentViewport = 'auto';
+  try {
+    currentViewport = sessionStorage.getItem('timetableDevViewport') || 'auto';
+  } catch (_) {}
+
+  function setViewport(mode) {
+    document.body.classList.remove('dev-mobile-ui', 'dev-desktop-ui');
+    if (mode === 'mobile') {
+      document.body.classList.add('dev-mobile-ui');
+    } else if (mode === 'desktop') {
+      document.body.classList.add('dev-desktop-ui');
+    }
+    viewportBtns.forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.viewport === mode);
+    });
+    window.dispatchEvent(new Event('resize'));
+  }
+
+  setViewport(currentViewport);
+
+  viewportBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const mode = btn.dataset.viewport;
+      try {
+        if (mode === 'auto') {
+          sessionStorage.removeItem('timetableDevViewport');
+        } else {
+          sessionStorage.setItem('timetableDevViewport', mode);
+        }
+      } catch (_) {}
+      setViewport(mode);
+    });
+  });
+
+  /* Date & time override */
   const dateInput = document.getElementById('devDateInput');
   const timeInput = document.getElementById('devTimeInput');
   const resetBtn = document.getElementById('devDateReset');

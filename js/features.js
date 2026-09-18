@@ -45,6 +45,8 @@
   }
 
   function isMobile() {
+    if (document.body.classList.contains('dev-mobile-ui')) return true;
+    if (document.body.classList.contains('dev-desktop-ui')) return false;
     return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
   }
 
