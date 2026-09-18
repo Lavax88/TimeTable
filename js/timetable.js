@@ -41,7 +41,31 @@ const IS_DEV =
   window.location.search.includes('dev=1') ||
   window.location.protocol === 'file:';
 
-/* Apply dev viewport simulation mode early if stored */
+/* Apply background pattern and dev viewport simulation mode */
+const ALL_PATTERNS = ['dots', 'grid', 'blueprint', 'mesh', 'screentone', 'none'];
+const RANDOM_PATTERNS = ['dots', 'grid', 'blueprint', 'mesh', 'screentone'];
+
+let currentPattern = 'dots';
+try {
+  if (IS_DEV) {
+    currentPattern = sessionStorage.getItem('timetableDevPattern') || 'dots';
+  } else {
+    let randomPattern = sessionStorage.getItem('timetableMainPattern');
+    if (!randomPattern || !RANDOM_PATTERNS.includes(randomPattern)) {
+      randomPattern = RANDOM_PATTERNS[Math.floor(Math.random() * RANDOM_PATTERNS.length)];
+      sessionStorage.setItem('timetableMainPattern', randomPattern);
+    }
+    currentPattern = randomPattern;
+  }
+} catch (_) {}
+
+document.documentElement.classList.remove(...ALL_PATTERNS.map(p => 'pattern-' + p));
+document.documentElement.classList.add('pattern-' + currentPattern);
+if (document.body) {
+  document.body.classList.remove(...ALL_PATTERNS.map(p => 'pattern-' + p));
+  document.body.classList.add('pattern-' + currentPattern);
+}
+
 if (IS_DEV) {
   try {
     const storedViewport = sessionStorage.getItem('timetableDevViewport');
@@ -872,6 +896,32 @@ function setupDevDatePicker() {
         }
       } catch (_) {}
       setViewport(mode);
+    });
+  });
+
+  /* Background Pattern toggle (Dev-only switcher) */
+  const patternBtns = panel.querySelectorAll('#devPatternGroup .dev-toggle-btn');
+  function setPattern(pattern) {
+    const patternClasses = ALL_PATTERNS.map(p => 'pattern-' + p);
+    document.body.classList.remove(...patternClasses);
+    document.documentElement.classList.remove(...patternClasses);
+    document.body.classList.add('pattern-' + pattern);
+    document.documentElement.classList.add('pattern-' + pattern);
+    patternBtns.forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.pattern === pattern);
+    });
+  }
+
+  setPattern(currentPattern);
+
+  patternBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const pattern = btn.dataset.pattern;
+      try {
+        sessionStorage.setItem('timetableDevPattern', pattern);
+      } catch (_) {}
+      currentPattern = pattern;
+      setPattern(pattern);
     });
   });
 

@@ -22,6 +22,28 @@
       if (meta) {
         meta.setAttribute("content", theme === "dark" ? "#0B0F17" : "#F8FAFC");
       }
+      try {
+        const isDev =
+          window.location.hostname === "localhost" ||
+          window.location.hostname === "127.0.0.1" ||
+          window.location.hostname.includes("dev") ||
+          window.location.search.includes("dev=1") ||
+          window.location.protocol === "file:";
+
+        const patterns = ["dots", "grid", "blueprint", "mesh", "screentone"];
+        let pattern = "dots";
+
+        if (isDev) {
+          pattern = sessionStorage.getItem("timetableDevPattern") || "dots";
+        } else {
+          pattern = sessionStorage.getItem("timetableMainPattern");
+          if (!pattern || !patterns.includes(pattern)) {
+            pattern = patterns[Math.floor(Math.random() * patterns.length)];
+            sessionStorage.setItem("timetableMainPattern", pattern);
+          }
+        }
+        document.documentElement.classList.add("pattern-" + pattern);
+      } catch (_) {}
     })();
   </script>
 
@@ -98,6 +120,18 @@
         <button type="button" class="dev-toggle-btn active" data-viewport="auto">Auto (Default)</button>
         <button type="button" class="dev-toggle-btn" data-viewport="mobile">Mobile UI</button>
         <button type="button" class="dev-toggle-btn" data-viewport="desktop">Desktop UI</button>
+      </div>
+    </div>
+
+    <div class="dev-section">
+      <div class="dev-label">Dev: Background Pattern</div>
+      <div class="dev-btn-group" id="devPatternGroup">
+        <button type="button" class="dev-toggle-btn active" data-pattern="dots">Dots</button>
+        <button type="button" class="dev-toggle-btn" data-pattern="grid">Grid</button>
+        <button type="button" class="dev-toggle-btn" data-pattern="blueprint">Blueprint</button>
+        <button type="button" class="dev-toggle-btn" data-pattern="mesh">Diagonal Mesh</button>
+        <button type="button" class="dev-toggle-btn" data-pattern="screentone">Screentone</button>
+        <button type="button" class="dev-toggle-btn" data-pattern="none">None</button>
       </div>
     </div>
 
