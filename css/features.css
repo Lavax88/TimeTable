@@ -33,6 +33,8 @@
   padding: 24px 22px 18px;
   border-radius: 12px;
   background: var(--glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border);
   box-shadow: 0 16px 40px var(--shadow-col);
   transform: translateY(12px);
