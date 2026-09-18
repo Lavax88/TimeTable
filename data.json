@@ -73,7 +73,7 @@
     "ACT": {
       "name": "Activity Hour",
       "subLine": "Break from routine classes",
-      "chipLabel": "—",
+      "chipLabel": "ACT",
       "accentKey": "ACT"
     },
     "LABCOMBO": {

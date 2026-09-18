@@ -41,7 +41,7 @@ document.getElementById('unlockBtn').addEventListener('click', async () => {
 
 function populateSubjectSelect(sel, placeholder) {
   sel.innerHTML = `<option value="" disabled selected>${placeholder}</option>`;
-  sel.innerHTML += `<option value="">— No subject —</option>`;
+  sel.innerHTML += `<option value="">(No subject)</option>`;
   for (const [key, details] of Object.entries(window._subjects || {})) {
     if(key !== "ACT" && key !== "LABCOMBO") {
       const opt = document.createElement('option');
@@ -287,7 +287,7 @@ async function sendToAPI(payload) {
     });
     const result = await res.json();
     if (res.ok) {
-      statusEl.textContent = "✅ Success! Events updated.";
+      statusEl.textContent = "Success! Events updated.";
       statusEl.style.color = "var(--oop)";
       if(payload.action === 'add' || payload.action === 'clear_all') {
         document.getElementById('eventRows').querySelectorAll('.event-row').forEach((r, i) => {
@@ -304,11 +304,11 @@ async function sendToAPI(payload) {
       }
       loadData();
     } else {
-      statusEl.textContent = "❌ " + (result.error || "Authentication failed.");
+      statusEl.textContent = result.error || "Authentication failed.";
       statusEl.style.color = "var(--ds)";
     }
   } catch (err) {
-    statusEl.textContent = "❌ Network error. Check your connection.";
+    statusEl.textContent = "Network error. Check your connection.";
     statusEl.style.color = "var(--ds)";
   }
 }
@@ -414,7 +414,7 @@ function initExamModeToggle() {
   if (window._settings) {
     toggle.checked = window._settings.forceExamMode || false;
     status.textContent = window._settings.forceExamMode
-      ? '⚠️ Exam mode is currently forced for all users.'
+      ? 'Exam mode is currently forced for all users.'
       : 'Auto-detection is active (exams within 1 day trigger mode).';
   }
 

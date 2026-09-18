@@ -8,7 +8,7 @@
   justify-content: center;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.35s ease;
+  transition: opacity 0.25s ease;
 }
 
 .install-banner.visible {
@@ -19,7 +19,7 @@
 .install-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.45);
+  background: rgba(0,0,0,0.5);
 }
 
 .install-banner.visible .install-backdrop {
@@ -30,82 +30,62 @@
 .install-card {
   position: relative;
   width: min(88vw, 380px);
-  padding: 28px 24px 20px;
-  border-radius: 24px;
+  padding: 24px 22px 18px;
+  border-radius: 12px;
   background: var(--glass);
   border: 1px solid var(--glass-border);
-  box-shadow: 0 24px 64px var(--shadow-col);
-  transform: scale(0.88) translateY(24px);
-  transition: transform 0.4s cubic-bezier(.34,1.3,.4,1);
-  isolation: isolate;
+  box-shadow: 0 16px 40px var(--shadow-col);
+  transform: translateY(12px);
+  transition: transform 0.25s ease;
 }
 
 .install-banner.visible .install-card {
-  backdrop-filter: blur(20px) saturate(1.6);
-  -webkit-backdrop-filter: blur(20px) saturate(1.6);
-}
-
-.install-card::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(135deg, var(--glass-specular) 0%, transparent 40%, transparent 60%, var(--glass-specular-dim) 100%);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-}
-
-.install-banner.visible .install-card {
-  transform: scale(1) translateY(0);
+  transform: translateY(0);
 }
 
 .install-close {
   position: absolute;
   top: 12px;
   right: 12px;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border: none;
-  border-radius: 50%;
+  border-radius: 6px;
   background: var(--card-time-bg);
   color: var(--ink-soft);
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
 .install-close:hover {
   background: var(--card-time-border);
-  transform: scale(1.1);
+  color: var(--ink);
 }
 
 .install-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 16px;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
   background: var(--toc-soft);
   color: var(--toc);
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .install-text {
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .install-text strong {
   display: block;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--ink);
   margin-bottom: 4px;
@@ -124,7 +104,7 @@
   align-items: center;
   gap: 6px;
   margin-top: 6px;
-  font-size: 14px !important;
+  font-size: 13.5px !important;
 }
 
 .install-hint svg {
@@ -135,27 +115,26 @@
 .install-btn {
   display: block;
   width: 100%;
-  padding: 14px;
+  padding: 12px;
   border: none;
-  border-radius: 14px;
+  border-radius: 8px;
   background: var(--toc);
   color: #fff;
   font-family: inherit;
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: opacity 0.15s ease;
   text-align: center;
   margin-bottom: 8px;
 }
 
 .install-btn:hover {
-  transform: scale(1.02);
-  box-shadow: 0 6px 20px rgba(110, 86, 207, 0.35);
+  opacity: 0.9;
 }
 
 .install-btn:active {
-  transform: scale(0.98);
+  transform: translateY(1px);
 }
 
 .install-btn-secondary {
@@ -163,7 +142,7 @@
 }
 
 .install-btn-secondary:hover {
-  box-shadow: 0 6px 20px rgba(91, 85, 102, 0.35);
+  opacity: 0.9;
 }
 
 .install-link {
@@ -174,11 +153,11 @@
   padding: 8px;
   font-family: inherit;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--ink-soft);
   cursor: pointer;
   text-align: center;
-  transition: color 0.2s ease;
+  transition: color 0.15s ease;
 }
 
 .install-link:hover {
@@ -195,14 +174,10 @@
   }
 }
 
-/* Firefox performance: disable heavy blur/filter/animation (main lag source) */
+/* Firefox performance: disable heavy blur/filter */
 @supports (-moz-appearance: none) {
-  .blob {
-    animation: none !important;
-  }
-
-  header::before,
-  .tabs::before,
+  header,
+  .tabs,
   .card {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
@@ -212,10 +187,4 @@
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
   }
-
-  .install-banner.visible .install-card {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-  }
 }
-
