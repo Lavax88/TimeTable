@@ -76,8 +76,8 @@
   width: 44px;
   height: 44px;
   border-radius: 8px;
-  background: var(--toc-soft);
-  color: var(--toc);
+  background: var(--accent-primary-soft);
+  color: var(--accent-primary);
   margin-bottom: 14px;
 }
 
@@ -120,7 +120,7 @@
   padding: 12px;
   border: none;
   border-radius: 8px;
-  background: var(--toc);
+  background: var(--accent-primary);
   color: #fff;
   font-family: inherit;
   font-size: 14px;
