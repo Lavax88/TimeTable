@@ -1,4 +1,4 @@
-/* ---------- Install Popup Overlay ---------- */
+/* ---------- Install Popup Overlay (Neo-Brutalist) ---------- */
 .install-banner {
   position: fixed;
   inset: 0;
@@ -8,7 +8,7 @@
   justify-content: center;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.25s ease;
+  transition: opacity 0.2s ease;
 }
 
 .install-banner.visible {
@@ -19,26 +19,19 @@
 .install-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.5);
-}
-
-.install-banner.visible .install-backdrop {
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.6);
 }
 
 .install-card {
   position: relative;
-  width: min(88vw, 380px);
-  padding: 24px 22px 18px;
-  border-radius: 12px;
-  background: var(--glass);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--glass-border);
-  box-shadow: 0 16px 40px var(--shadow-col);
+  width: min(88vw, 390px);
+  padding: 26px 24px 20px;
+  border-radius: var(--radius-lg, 12px);
+  background: var(--page-base, #ffffff);
+  border: var(--border-width, 2.5px) solid var(--border-color, #121212);
+  box-shadow: var(--neo-shadow-modal, 8px 8px 0px var(--border-color, #121212));
   transform: translateY(12px);
-  transition: transform 0.25s ease;
+  transition: transform 0.2s ease;
 }
 
 .install-banner.visible .install-card {
@@ -47,38 +40,48 @@
 
 .install-close {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 28px;
-  height: 28px;
-  border: none;
-  border-radius: 6px;
-  background: var(--card-time-bg);
-  color: var(--ink-soft);
-  font-size: 16px;
+  top: 14px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  border: 1.5px solid var(--border-color, #121212);
+  border-radius: var(--radius-sm, 6px);
+  background: var(--card-time-bg, #f4f4f5);
+  color: var(--ink, #121212);
+  font-size: 18px;
+  font-weight: 800;
   line-height: 1;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s ease, color 0.15s ease;
+  box-shadow: 2px 2px 0px var(--border-color, #121212);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 
 .install-close:hover {
-  background: var(--card-time-border);
-  color: var(--ink);
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px var(--border-color, #121212);
+  background: var(--page-base, #ffffff);
+}
+
+.install-close:active {
+  transform: translate(1px, 1px);
+  box-shadow: 0px 0px 0px var(--border-color, #121212);
 }
 
 .install-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 8px;
-  background: var(--toc-soft);
-  color: var(--toc);
-  margin-bottom: 14px;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm, 6px);
+  background: var(--toc-soft, #dbeafe);
+  color: var(--toc, #2563eb);
+  border: 2px solid var(--border-color, #121212);
+  box-shadow: 3px 3px 0px var(--border-color, #121212);
+  margin-bottom: 16px;
 }
 
 .install-text {
@@ -87,16 +90,17 @@
 
 .install-text strong {
   display: block;
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--ink);
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--ink, #121212);
   margin-bottom: 4px;
+  letter-spacing: -0.01em;
 }
 
 .install-text span {
   display: block;
   font-size: 13.5px;
-  color: var(--ink-soft);
+  color: var(--ink-soft, #4b5563);
   font-weight: 500;
   line-height: 1.4;
 }
@@ -105,46 +109,51 @@
   display: inline-flex !important;
   align-items: center;
   gap: 6px;
-  margin-top: 6px;
-  font-size: 13.5px !important;
+  margin-top: 8px;
+  font-size: 13px !important;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--card-time-bg, #f4f4f5);
+  border: 1.5px solid var(--border-color, #121212);
 }
 
 .install-hint svg {
   flex-shrink: 0;
-  color: var(--ink);
+  color: var(--ink, #121212);
 }
 
 .install-btn {
   display: block;
   width: 100%;
   padding: 12px;
-  border: none;
-  border-radius: 8px;
-  background: var(--toc);
+  border: var(--border-width, 2.5px) solid var(--border-color, #121212);
+  border-radius: var(--radius-sm, 6px);
+  background: var(--toc, #2563eb);
   color: #fff;
   font-family: inherit;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 800;
   cursor: pointer;
-  transition: opacity 0.15s ease;
+  box-shadow: var(--neo-shadow, 4px 4px 0px var(--border-color, #121212));
   text-align: center;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 
 .install-btn:hover {
-  opacity: 0.9;
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0px var(--border-color, #121212);
 }
 
 .install-btn:active {
-  transform: translateY(1px);
+  transform: translate(2px, 2px);
+  box-shadow: 0px 0px 0px var(--border-color, #121212);
 }
 
 .install-btn-secondary {
-  background: var(--ink-soft);
-}
-
-.install-btn-secondary:hover {
-  opacity: 0.9;
+  background: var(--card-time-bg, #f4f4f5);
+  color: var(--ink, #121212);
 }
 
 .install-link {
@@ -155,38 +164,24 @@
   padding: 8px;
   font-family: inherit;
   font-size: 13px;
-  font-weight: 500;
-  color: var(--ink-soft);
+  font-weight: 700;
+  color: var(--ink-soft, #4b5563);
   cursor: pointer;
   text-align: center;
   transition: color 0.15s ease;
 }
 
 .install-link:hover {
-  color: var(--ink);
+  color: var(--ink, #121212);
+  text-decoration: underline;
 }
 
-/* Mobile: stack header buttons vertically to avoid overlapping the heading */
+/* Mobile: stack header buttons vertically */
 @media (max-width: 520px) {
   .header-actions {
     flex-direction: column;
-    top: calc(12px + env(safe-area-inset-top, 24px));
-    right: 12px;
+    top: calc(14px + env(safe-area-inset-top, 24px));
+    right: 14px;
     gap: 6px;
-  }
-}
-
-/* Firefox performance: disable heavy blur/filter */
-@supports (-moz-appearance: none) {
-  header,
-  .tabs,
-  .card {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-  }
-
-  .install-banner.visible .install-backdrop {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
   }
 }
