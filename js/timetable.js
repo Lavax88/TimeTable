@@ -19,7 +19,7 @@ function applyTheme(theme){
   localStorage.setItem("timetableTheme", theme);
   const meta = document.getElementById("themeColorMeta");
   if (meta) {
-    meta.setAttribute("content", theme === "dark" ? "#0B0F17" : "#FAF8F5");
+    meta.setAttribute("content", theme === "dark" ? "#121214" : "#FAF8F5");
   }
 }
 
