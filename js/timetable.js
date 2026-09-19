@@ -19,7 +19,7 @@ function applyTheme(theme){
   localStorage.setItem("timetableTheme", theme);
   const meta = document.getElementById("themeColorMeta");
   if (meta) {
-    meta.setAttribute("content", theme === "dark" ? "#0B0F17" : "#F8FAFC");
+    meta.setAttribute("content", theme === "dark" ? "#121214" : "#FAF8F5");
   }
 }
 
@@ -143,7 +143,7 @@ function createEventCard(ev) {
   card.className = "card now";
 
   const subAccent = subjectAccent(ev.subject);
-  const accent = subAccent || (_ACCENT && _ACCENT.MAT) || ['#6366f1', '#eef2ff'];
+  const accent = subAccent || (_ACCENT && _ACCENT.ACT) || ['#27272A', '#F4F4F5'];
   card.style.setProperty("--card-accent", accent[0]);
 
   card.dataset.eventDate = ev.date;
