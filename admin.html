@@ -6,11 +6,9 @@
   <title>Admin Dashboard</title>
 
   <meta name="theme-color" id="themeColorMeta" content="#121214">
-  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#FAF8F5">
-  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#121214">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" id="appleStatusBarMeta" content="black-translucent">
 
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/index.css">
@@ -21,9 +19,14 @@
       const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
       const theme = savedTheme ? savedTheme : (prefersDark ? "dark" : "light");
       document.documentElement.setAttribute("data-theme", theme);
+      const themeColor = theme === "dark" ? "#121214" : "#FFFFFF";
       const meta = document.getElementById("themeColorMeta");
       if (meta) {
-        meta.setAttribute("content", theme === "dark" ? "#121214" : "#FAF8F5");
+        meta.setAttribute("content", themeColor);
+      }
+      const appleMeta = document.getElementById("appleStatusBarMeta");
+      if (appleMeta) {
+        appleMeta.setAttribute("content", theme === "dark" ? "black-translucent" : "default");
       }
     })();
   </script>

@@ -6,11 +6,9 @@
   <title>S3 CSE · Room A409 · Timetable</title>
 
   <meta name="theme-color" id="themeColorMeta" content="#121214">
-  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#FAF8F5">
-  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#121214">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" id="appleStatusBarMeta" content="black-translucent">
 
   <script>
     (function() {
@@ -18,9 +16,14 @@
       const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
       const theme = savedTheme ? savedTheme : (prefersDark ? "dark" : "light");
       document.documentElement.setAttribute("data-theme", theme);
+      const themeColor = theme === "dark" ? "#121214" : "#FFFFFF";
       const meta = document.getElementById("themeColorMeta");
       if (meta) {
-        meta.setAttribute("content", theme === "dark" ? "#121214" : "#FAF8F5");
+        meta.setAttribute("content", themeColor);
+      }
+      const appleMeta = document.getElementById("appleStatusBarMeta");
+      if (appleMeta) {
+        appleMeta.setAttribute("content", theme === "dark" ? "black-translucent" : "default");
       }
       try {
         const isDev =
@@ -272,6 +275,17 @@
 
 <script src="js/timetable.js"></script>
 <script src="js/features.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('./sw.js')
+        .then(function(reg) {
+          reg.update();
+        })
+        .catch(function() {});
+    });
+  }
+</script>
 
 </body>
 </html>
