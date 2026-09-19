@@ -19,12 +19,12 @@
 .install-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0,0,0,0.45);
 }
 
 .install-banner.visible .install-backdrop {
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .install-card {
@@ -33,10 +33,10 @@
   padding: 24px 22px 18px;
   border-radius: 12px;
   background: var(--glass);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
   border: 1px solid var(--glass-border);
-  box-shadow: 0 16px 40px var(--shadow-col);
+  box-shadow: var(--glass-highlight), 0 16px 40px var(--shadow-col);
   transform: translateY(12px);
   transition: transform 0.25s ease;
 }
@@ -51,9 +51,11 @@
   right: 12px;
   width: 28px;
   height: 28px;
-  border: none;
+  border: 1px solid var(--chip-border);
   border-radius: 6px;
   background: var(--card-time-bg);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
   color: var(--ink-soft);
   font-size: 16px;
   line-height: 1;
@@ -176,17 +178,3 @@
   }
 }
 
-/* Firefox performance: disable heavy blur/filter */
-@supports (-moz-appearance: none) {
-  header,
-  .tabs,
-  .card {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-  }
-
-  .install-banner.visible .install-backdrop {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-  }
-}
