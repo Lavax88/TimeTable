@@ -6,6 +6,8 @@
   <title>Admin Dashboard</title>
 
   <meta name="theme-color" id="themeColorMeta" content="#121214">
+  <meta name="theme-color" id="themeColorLight" media="(prefers-color-scheme: light)" content="#FFFFFF">
+  <meta name="theme-color" id="themeColorDark" media="(prefers-color-scheme: dark)" content="#121214">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" id="appleStatusBarMeta" content="black-translucent">
@@ -19,14 +21,17 @@
       const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
       const theme = savedTheme ? savedTheme : (prefersDark ? "dark" : "light");
       document.documentElement.setAttribute("data-theme", theme);
-      const themeColor = theme === "dark" ? "#121214" : "#FFFFFF";
-      const meta = document.getElementById("themeColorMeta");
-      if (meta) {
-        meta.setAttribute("content", themeColor);
-      }
+      const isDark = theme === "dark";
+      const color = isDark ? "#121214" : "#FFFFFF";
+      const mMeta = document.getElementById("themeColorMeta");
+      if (mMeta) mMeta.setAttribute("content", color);
+      const mLight = document.getElementById("themeColorLight");
+      if (mLight) mLight.setAttribute("content", color);
+      const mDark = document.getElementById("themeColorDark");
+      if (mDark) mDark.setAttribute("content", color);
       const appleMeta = document.getElementById("appleStatusBarMeta");
       if (appleMeta) {
-        appleMeta.setAttribute("content", theme === "dark" ? "black-translucent" : "default");
+        appleMeta.setAttribute("content", isDark ? "black-translucent" : "default");
       }
     })();
   </script>
