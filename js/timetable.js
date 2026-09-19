@@ -17,18 +17,21 @@ function applyTheme(theme){
     themeToggle.setAttribute("aria-label", theme === "dark" ? "Switch to light mode" : "Switch to dark mode");
   }
   localStorage.setItem("timetableTheme", theme);
-  const themeColor = theme === "dark" ? "#121214" : "#FFFFFF";
-  const meta = document.getElementById("themeColorMeta");
-  if (meta) {
-    meta.setAttribute("content", themeColor);
-  }
-  document.querySelectorAll('meta[name="theme-color"]').forEach(m => {
-    m.setAttribute("content", themeColor);
-    m.removeAttribute("media");
+  const isDark = theme === "dark";
+  const color = isDark ? "#121214" : "#FFFFFF";
+
+  const metaIds = ["themeColorMeta", "themeColorLight", "themeColorDark"];
+  metaIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.setAttribute("content", color);
   });
+  document.querySelectorAll('meta[name="theme-color"]').forEach(m => {
+    m.setAttribute("content", color);
+  });
+
   const appleMeta = document.getElementById("appleStatusBarMeta") || document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
   if (appleMeta) {
-    appleMeta.setAttribute("content", theme === "dark" ? "black-translucent" : "default");
+    appleMeta.setAttribute("content", isDark ? "black-translucent" : "default");
   }
 }
 
