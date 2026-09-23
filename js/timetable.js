@@ -43,6 +43,7 @@ let _events = [];
 let _holidays = [];
 let _settings = {};
 let _lastCheckedDate = new Date().toDateString();
+let _lastBadgeMinute = -1;
 
 /* ---------- Dev date override (DEV-ONLY, hostname-gated) ---------- */
 const IS_DEV =
@@ -242,6 +243,7 @@ function injectCalendarBadges() {
   const now = getDevNow();
   const nowDay = now.getDay();
   const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  _lastBadgeMinute = nowMinutes;
   const dayNames = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
   const nowDayName = dayNames[nowDay];
 
@@ -771,7 +773,10 @@ async function initTimetableApp() {
           if(fill) fill.style.width = Math.min(100, pct) + "%";
         }
       });
-      injectCalendarBadges();
+      const curIntMinute = t.getHours() * 60 + t.getMinutes();
+      if (curIntMinute !== _lastBadgeMinute) {
+        injectCalendarBadges();
+      }
 
       /* ---------- Break timer overlay (detects gaps between classes) ---------- */
       const overlay = document.getElementById('breakOverlay');
@@ -1284,6 +1289,7 @@ function checkForDateChange() {
   const today = getDevNow().toDateString();
   if (today !== _lastCheckedDate) {
     _lastCheckedDate = today;
+    _lastBadgeMinute = -1;
     renderEvents();
     checkExamMode();
   }

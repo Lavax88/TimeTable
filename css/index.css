@@ -83,27 +83,17 @@
 }
 
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-html,body{margin:0; padding:0; background-color:var(--bg-1); accent-color:var(--accent-primary);}
+html,body{margin:0; padding:0; accent-color:var(--accent-primary);}
 html{
   min-height:100vh;
   min-height:100dvh;
   background-color: var(--bg-1);
-  background-image:
-    radial-gradient(var(--bg-pattern-dot) 1.2px, transparent 1.2px),
-    linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
-  background-size: 24px 24px, 100% 100%;
-  background-attachment: fixed;
   transition: background-color 0.2s ease;
 }
 body{
   font-family:'Space Grotesk', sans-serif;
   color:var(--ink);
-  background-color: var(--bg-1);
-  background-image:
-    radial-gradient(var(--bg-pattern-dot) 1.2px, transparent 1.2px),
-    linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
-  background-size: 24px 24px, 100% 100%;
-  background-attachment: fixed;
+  background-color: transparent;
   min-height:100vh;
   min-height:100dvh;
   overflow-x:hidden;
@@ -111,21 +101,37 @@ body{
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
+/* Hardware-accelerated fixed background canvas (eliminates mobile background-attachment: fixed repaints) */
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  background-color:var(--bg-1);
+  background-image:
+    radial-gradient(var(--bg-pattern-dot) 1.2px, transparent 1.2px),
+    linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
+  background-size: 24px 24px, 100% 100%;
+  transform: translateZ(0);
+  transition: background-color 0.2s ease;
+}
+
 /* Background Pattern Presets */
-html.pattern-dots, body.pattern-dots{
+html.pattern-dots body::before, body.pattern-dots::before{
   background-image:
     radial-gradient(var(--bg-pattern-dot) 1.2px, transparent 1.2px),
     linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
   background-size: 24px 24px, 100% 100%;
 }
-html.pattern-grid, body.pattern-grid{
+html.pattern-grid body::before, body.pattern-grid::before{
   background-image:
     linear-gradient(to right, var(--bg-pattern-line) 1px, transparent 1px),
     linear-gradient(to bottom, var(--bg-pattern-line) 1px, transparent 1px),
     linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
   background-size: 32px 32px, 32px 32px, 100% 100%;
 }
-html.pattern-blueprint, body.pattern-blueprint{
+html.pattern-blueprint body::before, body.pattern-blueprint::before{
   background-image:
     linear-gradient(to right, var(--bg-grid-major) 1px, transparent 1px),
     linear-gradient(to bottom, var(--bg-grid-major) 1px, transparent 1px),
@@ -134,20 +140,20 @@ html.pattern-blueprint, body.pattern-blueprint{
     linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
   background-size: 96px 96px, 96px 96px, 24px 24px, 24px 24px, 100% 100%;
 }
-html.pattern-mesh, body.pattern-mesh{
+html.pattern-mesh body::before, body.pattern-mesh::before{
   background-image:
     linear-gradient(45deg, var(--bg-pattern-line) 1px, transparent 1px),
     linear-gradient(-45deg, var(--bg-pattern-line) 1px, transparent 1px),
     linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
   background-size: 32px 32px, 32px 32px, 100% 100%;
 }
-html.pattern-screentone, body.pattern-screentone{
+html.pattern-screentone body::before, body.pattern-screentone::before{
   background-image:
     radial-gradient(var(--bg-pattern-dot) 1.5px, transparent 1.6px),
     linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
   background-size: 14px 14px, 100% 100%;
 }
-html.pattern-none, body.pattern-none{
+html.pattern-none body::before, body.pattern-none::before{
   background-image: none;
   background-color: var(--bg-1);
 }
@@ -158,6 +164,7 @@ html.pattern-none, body.pattern-none{
   max-width:900px;
   margin:0 auto;
   padding: 0 calc(18px + env(safe-area-inset-right, 0px)) calc(110px + env(safe-area-inset-bottom, 0px)) calc(18px + env(safe-area-inset-left, 0px));
+  touch-action: pan-y;
 }
 
 header{
@@ -337,10 +344,10 @@ h1{
 }
 .tab.active .dot{ background:var(--page-base); }
 
-#panels{ position:relative; }
+#panels{ position:relative; touch-action: pan-y; }
 #panels.sliding{ overflow:hidden; }
 
-.day-panel{ display:none; }
+.day-panel{ display:none; touch-action: pan-y; }
 .day-panel.active{ display:block; }
 .day-panel.sliding-panel{
   position:absolute;
@@ -362,7 +369,9 @@ h1{
   box-shadow: var(--glass-highlight), 0 2px 10px var(--shadow-col);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-.card:hover{ border-color:var(--chip-border); box-shadow: var(--glass-highlight), 0 6px 18px var(--shadow-col); }
+@media (hover: hover) and (pointer: fine){
+  .card:hover{ border-color:var(--chip-border); box-shadow: var(--glass-highlight), 0 6px 18px var(--shadow-col); }
+}
 .card.now{ box-shadow: var(--glass-highlight), 0 0 0 1.5px var(--card-accent, var(--accent-primary)), 0 6px 20px var(--shadow-col); border-color:var(--card-accent, var(--accent-primary)); }
 .card-main{ display:flex; align-items:stretch; }
 .card.now .card-body{ align-items:flex-start; }
@@ -424,8 +433,6 @@ h1{
   gap:2px;
   padding:16px 8px;
   background: var(--card-time-bg);
-  backdrop-filter: blur(14px) saturate(160%);
-  -webkit-backdrop-filter: blur(14px) saturate(160%);
   border-right:1px solid var(--card-time-border);
 }
 .card-time .p-num{
@@ -588,6 +595,42 @@ footer{ text-align:center; margin-top:40px; font-size:12.5px; color:var(--ink-so
   transition: opacity 0.2s ease;
 }
 .complete-btn:hover { opacity: 0.85; }
+
+/* Mobile Scroll Performance & Density Optimizations */
+@media (max-width: 768px) {
+  :root {
+    --glass: rgba(255, 255, 255, 0.90);
+    --card-time-bg: rgba(244, 244, 245, 0.85);
+    --legend-bg: rgba(255, 255, 255, 0.88);
+  }
+  [data-theme="dark"] {
+    --glass: rgba(24, 24, 27, 0.88);
+    --card-time-bg: rgba(39, 39, 42, 0.82);
+    --legend-bg: rgba(24, 24, 27, 0.82);
+  }
+
+  /* Disable expensive multi-pass blur shaders on repetitive scrolling elements */
+  header,
+  .meta-chip,
+  .theme-toggle,
+  .admin-toggle,
+  .card,
+  .card.break,
+  .free-note,
+  .caution-banner,
+  .legend-item,
+  .exam-banner,
+  #breakOverlay,
+  .break-view-timetable-btn,
+  .dev-panel,
+  .dev-btn-group,
+  .dev-input,
+  .dev-time-select,
+  .dev-btn {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
 
 @media (max-width:520px){
   .card-time{ flex-basis:78px; padding:12px 4px; }
