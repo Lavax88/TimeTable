@@ -299,6 +299,7 @@ h1{
   -webkit-backdrop-filter: blur(24px) saturate(190%);
   border:1px solid var(--navbar-border);
   box-shadow: var(--glass-highlight), 0 4px 24px var(--shadow-col);
+  touch-action: manipulation;
 }
 .tab-indicator{
   position:absolute;
@@ -309,6 +310,7 @@ h1{
   box-shadow:0 2px 6px var(--shadow-col);
   transition: left 0.22s ease, width 0.22s ease;
   z-index:2;
+  pointer-events: none;
 }
 .tab{
   flex:1 1 0;
@@ -326,6 +328,10 @@ h1{
   z-index:3;
   white-space:nowrap;
   text-align:center;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
 }
 .tab .dot{
   position:absolute;
@@ -345,14 +351,14 @@ h1{
 .tab.active .dot{ background:var(--page-base); }
 
 #panels{ position:relative; touch-action: pan-y; }
-#panels.sliding{ overflow:hidden; }
+#panels.sliding{ overflow:hidden; transition: height 0.22s cubic-bezier(0.25, 1, 0.5, 1); }
 
 .day-panel{ display:none; touch-action: pan-y; }
 .day-panel.active{ display:block; }
 .day-panel.sliding-panel{
   position:absolute;
   top:0; left:0; right:0;
-  transition: transform 0.35s ease;
+  transition: transform 0.22s cubic-bezier(0.25, 1, 0.5, 1);
   will-change: transform;
 }
 
@@ -368,12 +374,14 @@ h1{
   border:1px solid var(--glass-border);
   box-shadow: var(--glass-highlight), 0 2px 10px var(--shadow-col);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  isolation: isolate;
+  transform: translateZ(0);
 }
 @media (hover: hover) and (pointer: fine){
   .card:hover{ border-color:var(--chip-border); box-shadow: var(--glass-highlight), 0 6px 18px var(--shadow-col); }
 }
 .card.now{ box-shadow: var(--glass-highlight), 0 0 0 1.5px var(--card-accent, var(--accent-primary)), 0 6px 20px var(--shadow-col); border-color:var(--card-accent, var(--accent-primary)); }
-.card-main{ display:flex; align-items:stretch; }
+.card-main{ display:flex; align-items:stretch; flex:1 1 auto; width:100%; min-height:100%; }
 .card.now .card-body{ align-items:flex-start; }
 .card-info{ flex:1 1 auto; min-width:0; }
 
@@ -434,6 +442,9 @@ h1{
   padding:16px 8px;
   background: var(--card-time-bg);
   border-right:1px solid var(--card-time-border);
+  align-self:stretch;
+  box-sizing:border-box;
+  min-height:100%;
 }
 .card-time .p-num{
   font-size:11px; font-weight:600; letter-spacing:0.08em;
@@ -462,7 +473,8 @@ h1{
   box-shadow:none;
 }
 .card.break:hover{ transform:none; box-shadow:none; }
-.card.break .card-time{ background:transparent; border-right:1px dashed var(--break-border); }
+.card.break .card-main{ align-items:stretch; flex:1 1 auto; width:100%; }
+.card.break .card-time{ background:transparent; border-right:1px dashed var(--break-border); align-self:stretch; height:auto; }
 .card.break .subj-name{ font-size:14px; font-weight:600; color:var(--ink-soft); }
 .card.break .subj-sub{ font-size:12px; }
 .card.break.now{

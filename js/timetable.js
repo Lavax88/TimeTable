@@ -443,7 +443,13 @@ async function initTimetableApp() {
 
       const tabLabel = isExamsTab ? "Exams" : day.slice(0,3);
       btn.innerHTML = `${tabLabel}<span class="dot"></span>`;
-      btn.onclick = () => selectDay(day);
+      btn.addEventListener("pointerdown", (e) => {
+        if (e.pointerType === "mouse" && e.button !== 0) return;
+        selectDay(day);
+      });
+      btn.addEventListener("click", () => {
+        selectDay(day);
+      });
       tabsEl.appendChild(btn);
 
       const panel = document.createElement("div");
@@ -552,13 +558,39 @@ async function initTimetableApp() {
     });
 
     let currentDay = null;
-    let isAnimating = false;
+    let animTimer = null;
+    let animRaf = null;
+    let lastSwitchTime = 0;
     let breakTimetableVisible = false; // user-override: show timetable during a break
     const h1El = document.querySelector("h1");
     const originalH1 = h1El ? h1El.textContent : "Weekly Class Timetable";
 
+    function finishCurrentAnimation(){
+      if(animRaf){
+        cancelAnimationFrame(animRaf);
+        animRaf = null;
+      }
+      if(animTimer){
+        clearTimeout(animTimer);
+        animTimer = null;
+      }
+      panelsEl.querySelectorAll(".day-panel").forEach(p => {
+        p.classList.remove("sliding-panel");
+        p.style.transition = "";
+        p.style.transform = "";
+        if(p.dataset.day === currentDay){
+          p.classList.add("active");
+        } else {
+          p.classList.remove("active");
+        }
+      });
+      panelsEl.classList.remove("sliding");
+      panelsEl.style.height = "";
+    }
+
     function selectDay(day){
-      if(isAnimating) return;
+      if(!day) return;
+
       if (day === "Exams") {
         const { exams } = getFilteredEvents();
         const label = exams.length > 0 ? exams[0].title : "Exam Timetable";
@@ -568,8 +600,22 @@ async function initTimetableApp() {
       }
       const tasksEl = document.getElementById('upcomingTasks');
       if (tasksEl) tasksEl.style.display = day === 'Exams' ? 'none' : '';
+
+      // Immediately reflect active tab selection and move indicator
       document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.day === day));
       moveIndicator();
+
+      if(day === currentDay && !animTimer && !animRaf) return;
+
+      const nowTime = Date.now();
+      const timeSinceLastSwitch = nowTime - lastSwitchTime;
+      lastSwitchTime = nowTime;
+
+      const wasAnimating = !!(animTimer || animRaf);
+      const isRapidSwitch = wasAnimating || (timeSinceLastSwitch < 200);
+
+      finishCurrentAnimation();
+
       if(day === currentDay) return;
 
       const newPanel = panelsEl.querySelector(`.day-panel[data-day="${day}"]`);
@@ -584,6 +630,11 @@ async function initTimetableApp() {
       const oldPanel = panelsEl.querySelector(`.day-panel[data-day="${oldDay}"]`);
       currentDay = day;
 
+      if(!oldPanel){
+        newPanel.classList.add("active");
+        return;
+      }
+
       const n = DAYS.length;
       const oldIndex = DAYS.indexOf(oldDay);
       const newIndex = DAYS.indexOf(day);
@@ -591,7 +642,10 @@ async function initTimetableApp() {
       const backwardDist = (oldIndex - newIndex + n) % n;
       const forward = forwardDist <= backwardDist;
 
-      isAnimating = true;
+      // Adaptive duration: 140ms for rapid consecutive taps / interruptions, 220ms for normal
+      const durationMs = isRapidSwitch ? 140 : 220;
+      const transitionStyle = `transform ${durationMs}ms cubic-bezier(0.25, 1, 0.5, 1)`;
+
       const startHeight = panelsEl.offsetHeight;
       panelsEl.style.height = startHeight + "px";
       panelsEl.classList.add("sliding");
@@ -600,26 +654,24 @@ async function initTimetableApp() {
       newPanel.classList.add("active", "sliding-panel");
       newPanel.style.transition = "none";
       newPanel.style.transform = forward ? "translateX(100%)" : "translateX(-100%)";
+      oldPanel.style.transition = "none";
+      oldPanel.style.transform = "translateX(0)";
 
       void newPanel.offsetWidth;
       const endHeight = newPanel.scrollHeight;
 
-      requestAnimationFrame(() => {
-        newPanel.style.transition = "";
+      animRaf = requestAnimationFrame(() => {
+        newPanel.style.transition = transitionStyle;
+        oldPanel.style.transition = transitionStyle;
         newPanel.style.transform = "translateX(0)";
         oldPanel.style.transform = forward ? "translateX(-100%)" : "translateX(100%)";
         panelsEl.style.height = endHeight + "px";
+        animRaf = null;
       });
 
-      setTimeout(() => {
-        oldPanel.classList.remove("active", "sliding-panel");
-        oldPanel.style.transform = "";
-        newPanel.classList.remove("sliding-panel");
-        newPanel.style.transform = "";
-        panelsEl.classList.remove("sliding");
-        panelsEl.style.height = "";
-        isAnimating = false;
-      }, 440);
+      animTimer = setTimeout(() => {
+        finishCurrentAnimation();
+      }, durationMs + 20);
     }
 
     function moveIndicator(){
@@ -633,7 +685,6 @@ async function initTimetableApp() {
 
     /* ---------- Swipe / horizontal scroll to change day ---------- */
     function goToDay(offset){
-      if(isAnimating) return;
       const idx = DAYS.indexOf(currentDay);
       const nextIdx = (idx + offset + DAYS.length) % DAYS.length;
       selectDay(DAYS[nextIdx]);
@@ -641,6 +692,10 @@ async function initTimetableApp() {
 
     let touchStartX = 0, touchStartY = 0, touchTracking = false;
     panelsEl.addEventListener("touchstart", (e) => {
+      // Touch takes priority: settle any active sliding animation immediately
+      if(animTimer || animRaf){
+        finishCurrentAnimation();
+      }
       touchStartX = e.touches[0].clientX;
       touchStartY = e.touches[0].clientY;
       touchTracking = true;
@@ -651,7 +706,7 @@ async function initTimetableApp() {
       touchTracking = false;
       const dx = e.changedTouches[0].clientX - touchStartX;
       const dy = e.changedTouches[0].clientY - touchStartY;
-      const SWIPE_THRESHOLD = 55;
+      const SWIPE_THRESHOLD = 45;
       if(Math.abs(dx) > SWIPE_THRESHOLD && Math.abs(dx) > Math.abs(dy) * 1.2){
         goToDay(dx < 0 ? 1 : -1);
       }
@@ -663,7 +718,7 @@ async function initTimetableApp() {
         if(wheelCooldown) return;
         wheelCooldown = true;
         goToDay(e.deltaX > 0 ? 1 : -1);
-        setTimeout(() => { wheelCooldown = false; }, 550);
+        setTimeout(() => { wheelCooldown = false; }, 260);
       }
     }, { passive: true });
 
