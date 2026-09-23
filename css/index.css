@@ -16,7 +16,7 @@
   --legend-bg: rgba(255, 255, 255, 0.65);
   --legend-border: rgba(228, 228, 231, 0.7);
   --break-border: rgba(212, 212, 216, 0.7);
-  --break-bg: rgba(244, 244, 245, 0.5);
+  --break-bg: rgba(240, 240, 243, 0.70);
   --navbar-bg: rgba(255, 255, 255, 0.75);
   --navbar-bg-glass: rgba(255, 255, 255, 0.68);
   --navbar-border: rgba(228, 228, 231, 0.75);
@@ -58,7 +58,7 @@
   --legend-bg: rgba(24, 24, 27, 0.45);
   --legend-border: rgba(255, 255, 255, 0.08);
   --break-border: rgba(255, 255, 255, 0.12);
-  --break-bg: rgba(24, 24, 27, 0.3);
+  --break-bg: rgba(28, 28, 32, 0.65);
   --navbar-bg: rgba(24, 24, 27, 0.65);
   --navbar-bg-glass: rgba(24, 24, 27, 0.55);
   --navbar-border: rgba(255, 255, 255, 0.12);
@@ -299,7 +299,7 @@ h1{
   -webkit-backdrop-filter: blur(24px) saturate(190%);
   border:1px solid var(--navbar-border);
   box-shadow: var(--glass-highlight), 0 4px 24px var(--shadow-col);
-  touch-action: manipulation;
+  touch-action: none;
 }
 .tab-indicator{
   position:absolute;
@@ -308,7 +308,7 @@ h1{
   border-radius:6px;
   background:var(--ink);
   box-shadow:0 2px 6px var(--shadow-col);
-  transition: left 0.22s ease, width 0.22s ease;
+  transition: left 0.18s cubic-bezier(0.25, 1, 0.5, 1), width 0.18s cubic-bezier(0.25, 1, 0.5, 1);
   z-index:2;
   pointer-events: none;
 }
@@ -323,12 +323,12 @@ h1{
   background:transparent;
   color:var(--ink-soft);
   cursor:pointer;
-  transition: color 0.2s ease;
+  transition: color 0.18s ease;
   position:relative;
   z-index:3;
   white-space:nowrap;
   text-align:center;
-  touch-action: manipulation;
+  touch-action: none;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   -webkit-user-select: none;
@@ -351,14 +351,14 @@ h1{
 .tab.active .dot{ background:var(--page-base); }
 
 #panels{ position:relative; touch-action: pan-y; }
-#panels.sliding{ overflow:hidden; transition: height 0.22s cubic-bezier(0.25, 1, 0.5, 1); }
+#panels.sliding{ overflow:hidden; }
 
 .day-panel{ display:none; touch-action: pan-y; }
 .day-panel.active{ display:block; }
 .day-panel.sliding-panel{
   position:absolute;
   top:0; left:0; right:0;
-  transition: transform 0.22s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: transform 0.18s cubic-bezier(0.25, 1, 0.5, 1);
   will-change: transform;
 }
 
@@ -614,11 +614,13 @@ footer{ text-align:center; margin-top:40px; font-size:12.5px; color:var(--ink-so
     --glass: rgba(255, 255, 255, 0.90);
     --card-time-bg: rgba(244, 244, 245, 0.85);
     --legend-bg: rgba(255, 255, 255, 0.88);
+    --break-bg: rgba(240, 240, 243, 0.88);
   }
   [data-theme="dark"] {
     --glass: rgba(24, 24, 27, 0.88);
     --card-time-bg: rgba(39, 39, 42, 0.82);
     --legend-bg: rgba(24, 24, 27, 0.82);
+    --break-bg: rgba(28, 28, 32, 0.80);
   }
 
   /* Disable expensive multi-pass blur shaders on repetitive scrolling elements */

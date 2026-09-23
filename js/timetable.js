@@ -441,13 +441,24 @@ async function initTimetableApp() {
       btn.className = "tab" + (isToday && !isExamsTab ? " today" : "");
       btn.dataset.day = day;
 
-      const tabLabel = isExamsTab ? "Exams" : day.slice(0,3);
-      btn.innerHTML = `${tabLabel}<span class="dot"></span>`;
+      let touchTriggered = false;
+      btn.addEventListener("touchstart", (e) => {
+        touchTriggered = true;
+        e.preventDefault();
+        selectDay(day);
+      }, { passive: false });
+
       btn.addEventListener("pointerdown", (e) => {
-        if (e.pointerType === "mouse" && e.button !== 0) return;
+        if (e.pointerType === "touch") return;
+        if (e.button !== 0) return;
         selectDay(day);
       });
+
       btn.addEventListener("click", () => {
+        if (touchTriggered) {
+          touchTriggered = false;
+          return;
+        }
         selectDay(day);
       });
       tabsEl.appendChild(btn);
@@ -612,7 +623,7 @@ async function initTimetableApp() {
       lastSwitchTime = nowTime;
 
       const wasAnimating = !!(animTimer || animRaf);
-      const isRapidSwitch = wasAnimating || (timeSinceLastSwitch < 200);
+      const isRapidSwitch = wasAnimating || (timeSinceLastSwitch < 250);
 
       finishCurrentAnimation();
 
@@ -623,6 +634,18 @@ async function initTimetableApp() {
       if(!currentDay){
         currentDay = day;
         newPanel.classList.add("active");
+        return;
+      }
+
+      if(isRapidSwitch){
+        // Instant tab switch on fast taps: zero latency, zero layout reflow, zero animation lag
+        panelsEl.querySelectorAll(".day-panel").forEach(p => {
+          p.classList.remove("sliding-panel");
+          p.style.transition = "";
+          p.style.transform = "";
+          p.classList.toggle("active", p.dataset.day === day);
+        });
+        currentDay = day;
         return;
       }
 
@@ -642,12 +665,9 @@ async function initTimetableApp() {
       const backwardDist = (oldIndex - newIndex + n) % n;
       const forward = forwardDist <= backwardDist;
 
-      // Adaptive duration: 140ms for rapid consecutive taps / interruptions, 220ms for normal
-      const durationMs = isRapidSwitch ? 140 : 220;
+      const durationMs = 180;
       const transitionStyle = `transform ${durationMs}ms cubic-bezier(0.25, 1, 0.5, 1)`;
 
-      const startHeight = panelsEl.offsetHeight;
-      panelsEl.style.height = startHeight + "px";
       panelsEl.classList.add("sliding");
 
       oldPanel.classList.add("sliding-panel");
@@ -658,20 +678,18 @@ async function initTimetableApp() {
       oldPanel.style.transform = "translateX(0)";
 
       void newPanel.offsetWidth;
-      const endHeight = newPanel.scrollHeight;
 
       animRaf = requestAnimationFrame(() => {
         newPanel.style.transition = transitionStyle;
         oldPanel.style.transition = transitionStyle;
         newPanel.style.transform = "translateX(0)";
         oldPanel.style.transform = forward ? "translateX(-100%)" : "translateX(100%)";
-        panelsEl.style.height = endHeight + "px";
         animRaf = null;
       });
 
       animTimer = setTimeout(() => {
         finishCurrentAnimation();
-      }, durationMs + 20);
+      }, durationMs + 10);
     }
 
     function moveIndicator(){
