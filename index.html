@@ -19,17 +19,43 @@
       const theme = savedTheme ? savedTheme : (prefersDark ? "dark" : "light");
       document.documentElement.setAttribute("data-theme", theme);
       const isDark = theme === "dark";
-      const color = isDark ? "#121214" : "#FFFFFF";
-      const mMeta = document.getElementById("themeColorMeta");
-      if (mMeta) mMeta.setAttribute("content", color);
-      const mLight = document.getElementById("themeColorLight");
-      if (mLight) mLight.setAttribute("content", color);
-      const mDark = document.getElementById("themeColorDark");
-      if (mDark) mDark.setAttribute("content", color);
+      const surfaceColor = isDark ? "#101418" : "#F8F9FE";
+
+      // Match PWA status bar seamlessly with surface background
+      document.querySelectorAll('meta[name="theme-color"]').forEach(m => {
+        m.setAttribute("content", surfaceColor);
+        m.removeAttribute("media");
+      });
       const appleMeta = document.getElementById("appleStatusBarMeta");
       if (appleMeta) {
         appleMeta.setAttribute("content", isDark ? "black-translucent" : "default");
       }
+
+      // Early color theme application
+      try {
+        let savedColor = localStorage.getItem("timetableThemeColor");
+        if (savedColor && savedColor !== "dynamic") {
+          const legacyMap = {
+            "#00629E": "#99CBFF",
+            "#006C4C": "#80D5C9",
+            "#6750A4": "#D0BCFF",
+            "#855300": "#FFD580",
+            "#BA1A1A": "#FFB4AB",
+            "#984061": "#FFAFD1",
+            "#006A6A": "#80D5D4",
+            "#A14000": "#FFB68E",
+            "#526070": "#B9C8DA"
+          };
+          if (legacyMap[savedColor.toUpperCase()]) {
+            savedColor = legacyMap[savedColor.toUpperCase()];
+            localStorage.setItem("timetableThemeColor", savedColor);
+          }
+          document.documentElement.style.setProperty("--md-sys-color-primary", savedColor);
+          document.documentElement.style.setProperty("--accent-primary", savedColor);
+        }
+      } catch (_) {}
+
+      // Early pattern application
       try {
         const isDev =
           window.location.hostname === "localhost" ||
@@ -38,16 +64,18 @@
           window.location.search.includes("dev=1") ||
           window.location.protocol === "file:";
 
-        const patterns = ["dots", "grid", "blueprint", "mesh", "screentone"];
-        let pattern = "dots";
+        const patterns = ["dots", "grid", "blueprint", "mesh", "screentone", "none"];
+        let pattern = localStorage.getItem("timetableUserPattern");
 
-        if (isDev) {
-          pattern = sessionStorage.getItem("timetableDevPattern") || "dots";
-        } else {
-          pattern = sessionStorage.getItem("timetableMainPattern");
-          if (!pattern || !patterns.includes(pattern)) {
-            pattern = patterns[Math.floor(Math.random() * patterns.length)];
-            sessionStorage.setItem("timetableMainPattern", pattern);
+        if (!pattern || !patterns.includes(pattern)) {
+          if (isDev) {
+            pattern = sessionStorage.getItem("timetableDevPattern") || "dots";
+          } else {
+            pattern = sessionStorage.getItem("timetableMainPattern");
+            if (!pattern || !patterns.includes(pattern)) {
+              pattern = patterns[Math.floor(Math.random() * (patterns.length - 1))]; // exclude none by default
+              sessionStorage.setItem("timetableMainPattern", pattern);
+            }
           }
         }
         document.documentElement.classList.add("pattern-" + pattern);
@@ -58,6 +86,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@m3e/web@2.8.2/dist/all.min.js"></script>
 
   <link rel="stylesheet" href="css/index.css">
   <link rel="stylesheet" href="css/features.css">
@@ -71,23 +102,25 @@
 </head>
 <body>
 
+<m3e-theme id="m3eTheme" color="#D0BCFF" motion="expressive" scheme="auto" strong-focus></m3e-theme>
+<div id="bgPattern" class="bg-pattern" aria-hidden="true"></div>
+
 <div class="wrap">
   <header>
       <div class="header-actions">
-        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
-          <svg class="theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-          <svg class="theme-icon-sun" style="display:none;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <button class="theme-toggle" id="appearanceBtn" aria-label="Appearance & colors" title="Customize appearance & theme colors">
+          <span class="material-symbols-rounded">palette</span>
         </button>
         <button class="theme-toggle" id="installHeaderBtn" aria-label="Install app">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span class="material-symbols-rounded">install_mobile</span>
         </button>
       </div>
 
     <p class="eyebrow">CSE Department · Semester S3 · 2026-2027</p>
     <h1 id="mainTitle">Weekly Class Timetable</h1>
     <div class="meta-row">
-      <span class="meta-chip"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:4px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>Room A409</span>
-      <span class="meta-chip">Batch advisors: Sweety C Joy · Preeja Mol</span>
+      <span class="meta-chip"><span class="material-symbols-rounded chip-icon">meeting_room</span>Room A409</span>
+      <span class="meta-chip"><span class="material-symbols-rounded chip-icon">supervisor_account</span>Advisors: Sweety C Joy · Preeja Mol</span>
     </div>
   </header>
 
@@ -151,22 +184,17 @@
           <div class="dev-picker-input-box">
             <input type="text" id="devDateInput" class="dev-input dev-picker-input" placeholder="YYYY-MM-DD" readonly autocomplete="off">
             <button type="button" class="dev-picker-btn" id="devDateBtn" title="Select date" aria-label="Select date">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                <line x1="16" y1="2" x2="16" y2="6"/>
-                <line x1="8" y1="2" x2="8" y2="6"/>
-                <line x1="3" y1="10" x2="21" y2="10"/>
-              </svg>
+              <span class="material-symbols-rounded">calendar_today</span>
             </button>
           </div>
           <div class="dev-popup dev-calendar-popup" id="devCalendarPopup" style="display:none;" role="dialog" aria-label="Calendar">
             <div class="dev-popup-header">
               <button type="button" class="dev-popup-nav-btn" id="devCalPrev" aria-label="Previous month">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                <span class="material-symbols-rounded">chevron_left</span>
               </button>
               <span class="dev-popup-title" id="devCalTitle">September 2026</span>
               <button type="button" class="dev-popup-nav-btn" id="devCalNext" aria-label="Next month">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                <span class="material-symbols-rounded">chevron_right</span>
               </button>
             </div>
             <div class="dev-cal-weekdays">
@@ -185,10 +213,7 @@
           <div class="dev-picker-input-box">
             <input type="text" id="devTimeInput" class="dev-input dev-picker-input" placeholder="HH:MM" readonly autocomplete="off">
             <button type="button" class="dev-picker-btn" id="devTimeBtn" title="Select time" aria-label="Select time">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <polyline points="12 6 12 12 16 14"/>
-              </svg>
+              <span class="material-symbols-rounded">schedule</span>
             </button>
           </div>
           <div class="dev-popup dev-time-popup" id="devTimePopup" style="display:none;" role="dialog" aria-label="Time picker">
@@ -238,15 +263,17 @@
 <div id="installBanner" class="install-banner" role="alert" aria-live="polite">
   <div class="install-backdrop"></div>
   <div class="install-card">
-    <button class="install-close" id="closeBtn">&times;</button>
+    <button class="install-close" id="closeBtn" aria-label="Close">
+      <span class="material-symbols-rounded">close</span>
+    </button>
 
     <div class="install-chrome">
       <div class="install-icon">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4" ry="4"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        <span class="material-symbols-rounded" style="font-size:28px;">install_mobile</span>
       </div>
       <div class="install-text">
         <strong>Install Timetable</strong>
-        <span>Add to your home screen for quick access</span>
+        <span>Add to your home screen for instant, offline access</span>
       </div>
       <button class="install-btn" id="installBtn">Install App</button>
       <button class="install-link" id="dismissBtn">Maybe later</button>
@@ -254,7 +281,7 @@
 
     <div class="install-ios" style="display:none;">
       <div class="install-icon">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+        <span class="material-symbols-rounded" style="font-size:28px;">ios_share</span>
       </div>
       <div class="install-text">
         <strong>Install on iPhone</strong>
@@ -267,13 +294,147 @@
 
     <div class="install-unsupported" style="display:none;">
       <div class="install-icon">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span class="material-symbols-rounded" style="font-size:28px;">devices</span>
       </div>
       <div class="install-text">
         <strong>Install not available</strong>
-        <span>Open this site in Chrome or Edge to install the timetable as an app</span>
+        <span>Open this site in Chrome, Edge, or Safari to install as an app</span>
       </div>
       <button class="install-btn install-btn-secondary" id="dismissUnsupportedBtn">Got it</button>
+    </div>
+  </div>
+</div>
+
+<!-- Material 3 Expressive Appearance & Colors Modal -->
+<div id="appearanceModal" class="m3-modal-backdrop" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="appearanceModalTitle">
+  <div class="m3-modal-sheet">
+    <div class="m3-modal-header">
+      <div class="m3-modal-title-wrap">
+        <span class="material-symbols-rounded m3-modal-title-icon">palette</span>
+        <div>
+          <h2 id="appearanceModalTitle" class="m3-modal-title">Theme &amp; Appearance</h2>
+          <p class="m3-modal-subtitle">Colors, background patterns &amp; display styles</p>
+        </div>
+      </div>
+      <button type="button" class="m3-icon-btn" id="closeAppearanceBtn" aria-label="Close dialog">
+        <span class="material-symbols-rounded">close</span>
+      </button>
+    </div>
+
+    <div class="m3-modal-body">
+      <!-- Section 1: Color Themes -->
+      <div class="m3-setting-section">
+        <div class="m3-setting-header">
+          <label class="m3-setting-label">Accent Theme Color</label>
+          <span class="m3-setting-badge" id="activeColorBadge">Pastel Lavender</span>
+        </div>
+        <p class="m3-setting-desc">Select a Material You Monet dynamic theme, curated preset, or custom color.</p>
+        <div class="m3-color-grid" id="colorGrid">
+          <!-- Dynamic Monet System Accent -->
+          <button type="button" class="m3-color-swatch dynamic" data-color="dynamic" title="Dynamic Monet (System Palette)" aria-label="Dynamic System Monet">
+            <span class="material-symbols-rounded swatch-icon">auto_awesome</span>
+            <span class="material-symbols-rounded swatch-check">check</span>
+          </button>
+
+          <!-- Curated M3 Palettes (Pastel Tones) -->
+          <button type="button" class="m3-color-swatch" data-color="#D0BCFF" data-name="Pastel Lavender" style="--swatch-color:#D0BCFF;" title="Pastel Lavender" aria-label="Pastel Lavender">
+            <span class="material-symbols-rounded swatch-check">check</span>
+          </button>
+          <button type="button" class="m3-color-swatch" data-color="#99CBFF" data-name="Pastel Sky" style="--swatch-color:#99CBFF;" title="Pastel Sky" aria-label="Pastel Sky">
+            <span class="material-symbols-rounded swatch-check">check</span>
+          </button>
+          <button type="button" class="m3-color-swatch" data-color="#80D5C9" data-name="Pastel Mint" style="--swatch-color:#80D5C9;" title="Pastel Mint" aria-label="Pastel Mint">
+            <span class="material-symbols-rounded swatch-check">check</span>
+          </button>
+          <button type="button" class="m3-color-swatch" data-color="#FFD580" data-name="Pastel Amber" style="--swatch-color:#FFD580;" title="Pastel Amber" aria-label="Pastel Amber">
+            <span class="material-symbols-rounded swatch-check">check</span>
+          </button>
+          <button type="button" class="m3-color-swatch" data-color="#FFB4AB" data-name="Pastel Coral" style="--swatch-color:#FFB4AB;" title="Pastel Coral" aria-label="Pastel Coral">
+            <span class="material-symbols-rounded swatch-check">check</span>
+          </button>
+          <button type="button" class="m3-color-swatch" data-color="#FFAFD1" data-name="Pastel Rose" style="--swatch-color:#FFAFD1;" title="Pastel Rose" aria-label="Pastel Rose">
+            <span class="material-symbols-rounded swatch-check">check</span>
+          </button>
+          <button type="button" class="m3-color-swatch" data-color="#80D5D4" data-name="Pastel Teal" style="--swatch-color:#80D5D4;" title="Pastel Teal" aria-label="Pastel Teal">
+            <span class="material-symbols-rounded swatch-check">check</span>
+          </button>
+          <button type="button" class="m3-color-swatch" data-color="#FFB68E" data-name="Pastel Peach" style="--swatch-color:#FFB68E;" title="Pastel Peach" aria-label="Pastel Peach">
+            <span class="material-symbols-rounded swatch-check">check</span>
+          </button>
+          <button type="button" class="m3-color-swatch" data-color="#B9C8DA" data-name="Pastel Slate" style="--swatch-color:#B9C8DA;" title="Pastel Slate" aria-label="Pastel Slate">
+            <span class="material-symbols-rounded swatch-check">check</span>
+          </button>
+
+          <!-- Custom Color Picker Swatch -->
+          <label class="m3-color-swatch custom" id="customColorLabel" title="Custom Hex Color" aria-label="Custom Hex Color">
+            <input type="color" id="customColorInput" class="custom-color-input" value="#D0BCFF" aria-label="Choose custom color">
+            <span class="material-symbols-rounded swatch-icon">colorize</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Section 2: Background Pattern -->
+      <div class="m3-setting-section">
+        <div class="m3-setting-header">
+          <label class="m3-setting-label">Background Pattern</label>
+          <span class="m3-setting-badge" id="activePatternBadge">Dots</span>
+        </div>
+        <div class="m3-pattern-grid" id="patternGrid">
+          <button type="button" class="m3-pattern-chip" data-pattern="dots">
+            <span class="pattern-preview preview-dots"></span>
+            <span>Dots</span>
+          </button>
+          <button type="button" class="m3-pattern-chip" data-pattern="grid">
+            <span class="pattern-preview preview-grid"></span>
+            <span>Grid</span>
+          </button>
+          <button type="button" class="m3-pattern-chip" data-pattern="blueprint">
+            <span class="pattern-preview preview-blueprint"></span>
+            <span>Blueprint</span>
+          </button>
+          <button type="button" class="m3-pattern-chip" data-pattern="mesh">
+            <span class="pattern-preview preview-mesh"></span>
+            <span>Mesh</span>
+          </button>
+          <button type="button" class="m3-pattern-chip" data-pattern="screentone">
+            <span class="pattern-preview preview-screentone"></span>
+            <span>Screentone</span>
+          </button>
+          <button type="button" class="m3-pattern-chip" data-pattern="none">
+            <span class="pattern-preview preview-none"></span>
+            <span>Plain</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Section 3: Display Mode -->
+      <div class="m3-setting-section">
+        <div class="m3-setting-header">
+          <label class="m3-setting-label">Theme Mode</label>
+        </div>
+        <div class="m3-segmented-control" id="themeModeSegment">
+          <button type="button" class="m3-segment-btn" data-theme-mode="light">
+            <span class="material-symbols-rounded">light_mode</span>
+            <span>Light</span>
+          </button>
+          <button type="button" class="m3-segment-btn" data-theme-mode="dark">
+            <span class="material-symbols-rounded">dark_mode</span>
+            <span>Dark</span>
+          </button>
+          <button type="button" class="m3-segment-btn" data-theme-mode="auto">
+            <span class="material-symbols-rounded">contrast</span>
+            <span>Auto</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="m3-modal-footer">
+      <button type="button" class="m3-btn m3-btn-tonal" id="resetAppearanceBtn">
+        <span class="material-symbols-rounded" style="font-size:18px;">restart_alt</span>
+        <span>Reset Defaults</span>
+      </button>
+      <button type="button" class="m3-btn m3-btn-filled" id="doneAppearanceBtn">Done</button>
     </div>
   </div>
 </div>

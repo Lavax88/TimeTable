@@ -1,14 +1,19 @@
-/* ---------- Install Popup Overlay ---------- */
+/* ==========================================================================
+   MATERIAL 3 EXPRESSIVE (M3E) - FEATURES & DIALOGS
+   ========================================================================== */
+
+/* ---------- Install Dialog (M3 Expressive Modal) ---------- */
 .install-banner {
   position: fixed;
   inset: 0;
-  z-index: 100;
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.25s ease;
+  transition: opacity 250ms cubic-bezier(0.2, 0, 0, 1);
+  padding: 16px;
 }
 
 .install-banner.visible {
@@ -19,88 +24,85 @@
 .install-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.45);
-}
-
-.install-banner.visible .install-backdrop {
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: rgba(16, 20, 24, 0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
 .install-card {
   position: relative;
-  width: min(88vw, 380px);
-  padding: 24px 22px 18px;
-  border-radius: 12px;
-  background: var(--glass);
-  backdrop-filter: blur(28px) saturate(190%);
-  -webkit-backdrop-filter: blur(28px) saturate(190%);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-highlight), 0 16px 40px var(--shadow-col);
-  transform: translateY(12px);
-  transition: transform 0.25s ease;
+  width: min(92vw, 360px);
+  padding: 28px 24px 20px;
+  border-radius: var(--md-shape-corner-extra-large, 28px);
+  background: color-mix(in srgb, var(--md-sys-color-primary) 6%, var(--md-sys-color-surface-container-high, #ECEEF4));
+  border: 1px solid color-mix(in srgb, var(--md-sys-color-primary) 18%, var(--md-sys-color-outline-variant, #C2C7CF));
+  box-shadow: 0 16px 40px color-mix(in srgb, var(--md-sys-color-primary) 15%, var(--md-sys-color-shadow, rgba(0, 0, 0, 0.25)));
+  transform: translateY(16px) scale(0.96);
+  transition: transform 350ms cubic-bezier(0.38, 1.21, 0.22, 1.00);
 }
 
 .install-banner.visible .install-card {
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
 }
 
 .install-close {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 28px;
-  height: 28px;
-  border: 1px solid var(--chip-border);
-  border-radius: 6px;
-  background: var(--card-time-bg);
-  backdrop-filter: blur(12px) saturate(150%);
-  -webkit-backdrop-filter: blur(12px) saturate(150%);
-  color: var(--ink-soft);
-  font-size: 16px;
-  line-height: 1;
+  top: 14px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--md-sys-color-outline-variant, #C2C7CF);
+  border-radius: var(--md-shape-corner-full, 9999px);
+  background: var(--md-sys-color-surface-container, #E6E8EE);
+  color: var(--md-sys-color-on-surface-variant, #42474E);
+  font-size: 18px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition: background 150ms ease, color 150ms ease, transform 150ms ease;
 }
 
 .install-close:hover {
-  background: var(--card-time-border);
-  color: var(--ink);
+  background: var(--md-sys-color-surface-container-highest, #E0E2E8);
+  color: var(--md-sys-color-on-surface, #191C20);
+}
+
+.install-close:active {
+  transform: scale(0.92);
 }
 
 .install-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 8px;
-  background: var(--accent-primary-soft);
-  color: var(--accent-primary);
-  margin-bottom: 14px;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--md-shape-corner-full, 9999px);
+  background: var(--md-sys-color-primary-container, #CFE5FF);
+  color: var(--md-sys-color-on-primary-container, #001D34);
+  margin-bottom: 16px;
 }
 
 .install-text {
-  margin-bottom: 18px;
+  margin-bottom: 20px;
 }
 
 .install-text strong {
   display: block;
-  font-size: 17px;
+  font-size: 19px;
   font-weight: 700;
-  color: var(--ink);
-  margin-bottom: 4px;
+  color: var(--md-sys-color-on-surface, #191C20);
+  margin-bottom: 6px;
+  letter-spacing: -0.01em;
 }
 
 .install-text span {
   display: block;
   font-size: 13.5px;
-  color: var(--ink-soft);
-  font-weight: 500;
-  line-height: 1.4;
+  color: var(--md-sys-color-on-surface-variant, #42474E);
+  font-weight: 400;
+  line-height: 1.45;
 }
 
 .install-hint {
@@ -108,73 +110,179 @@
   align-items: center;
   gap: 6px;
   margin-top: 6px;
-  font-size: 13.5px !important;
+  font-size: 13px !important;
 }
 
-.install-hint svg {
-  flex-shrink: 0;
-  color: var(--ink);
-}
-
+/* M3 Filled Button */
 .install-btn {
   display: block;
   width: 100%;
-  padding: 12px;
+  padding: 12px 20px;
   border: none;
-  border-radius: 8px;
-  background: var(--accent-primary);
-  color: #fff;
+  border-radius: var(--md-shape-corner-full, 9999px);
+  background: var(--md-sys-color-primary, #00629E);
+  color: var(--md-sys-color-on-primary, #FFFFFF);
   font-family: inherit;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.15s ease;
+  transition: all 250ms cubic-bezier(0.38, 1.21, 0.22, 1.00);
   text-align: center;
   margin-bottom: 8px;
+  box-shadow: 0 2px 8px rgba(0, 98, 158, 0.25);
 }
 
 .install-btn:hover {
-  opacity: 0.9;
+  opacity: 0.92;
+  box-shadow: 0 4px 14px rgba(0, 98, 158, 0.35);
+  transform: translateY(-1px);
 }
 
 .install-btn:active {
-  transform: translateY(1px);
+  transform: scale(0.97);
 }
 
+/* M3 Tonal Button */
 .install-btn-secondary {
-  background: var(--ink-soft);
+  background: var(--md-sys-color-secondary-container, #D6E4F7);
+  color: var(--md-sys-color-on-secondary-container, #0F1D2A);
+  box-shadow: none;
 }
 
 .install-btn-secondary:hover {
-  opacity: 0.9;
+  background: var(--md-sys-color-surface-variant, #DEE3EB);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
+/* M3 Text Button */
 .install-link {
   display: block;
   width: 100%;
   background: none;
   border: none;
-  padding: 8px;
+  padding: 8px 16px;
+  border-radius: var(--md-shape-corner-full, 9999px);
   font-family: inherit;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--ink-soft);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--md-sys-color-primary, #00629E);
   cursor: pointer;
   text-align: center;
-  transition: color 0.15s ease;
+  transition: background 150ms ease, color 150ms ease;
 }
 
 .install-link:hover {
-  color: var(--ink);
+  background: rgba(0, 98, 158, 0.08);
 }
 
-/* Mobile: stack header buttons vertically to avoid overlapping the heading */
-@media (max-width: 520px) {
-  .header-actions {
-    flex-direction: column;
-    top: calc(12px + env(safe-area-inset-top, 24px));
-    right: 12px;
-    gap: 6px;
-  }
+/* Break Overlay Styles */
+#breakOverlay {
+  margin: 0 0 16px;
+  padding: 24px 20px;
+  border-radius: var(--md-shape-corner-extra-large, 26px);
+  background: color-mix(in srgb, var(--md-sys-color-primary) 7%, var(--md-sys-color-surface-container, #ECEEF4));
+  border: 1px solid color-mix(in srgb, var(--md-sys-color-primary) 18%, var(--md-sys-color-outline-variant, #C2C7CF));
+  box-shadow: 0 4px 20px color-mix(in srgb, var(--md-sys-color-primary) 10%, var(--md-sys-color-shadow, rgba(0, 0, 0, 0.08)));
+  transition: all 250ms cubic-bezier(0.2, 0, 0, 1);
 }
 
+.break-overlay-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.break-overlay-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: var(--md-sys-color-primary-container, #CFE5FF);
+  color: var(--md-sys-color-on-primary-container, #001D34);
+  padding: 4px 14px;
+  border-radius: var(--md-shape-corner-full, 9999px);
+}
+
+.break-circle-wrap {
+  position: relative;
+  width: 130px;
+  height: 130px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 6px 0;
+}
+
+.break-circle-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.break-circle-bg {
+  fill: none;
+  stroke: var(--md-sys-color-surface-container-highest, #E0E2E8);
+  stroke-width: 3.5;
+}
+
+.break-circle-fill {
+  fill: none;
+  stroke: var(--md-sys-color-primary, #00629E);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s linear;
+}
+
+.break-circle-time {
+  font-size: 30px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  color: var(--md-sys-color-on-surface, #191C20);
+  line-height: 1;
+}
+
+.break-overlay-next-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--md-sys-color-on-surface-variant, #42474E);
+  margin-top: 6px;
+}
+
+.break-overlay-next {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--md-sys-color-on-surface, #191C20);
+}
+
+.break-view-timetable-btn {
+  margin-top: 14px;
+  padding: 10px 22px;
+  border-radius: var(--md-shape-corner-full, 9999px);
+  border: 1px solid var(--md-sys-color-outline-variant, #C2C7CF);
+  background: var(--md-sys-color-surface-container-high, #E6E8EE);
+  color: var(--md-sys-color-on-surface, #191C20);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 1px 3px var(--md-sys-color-shadow, rgba(0, 0, 0, 0.08));
+  transition: all 250ms cubic-bezier(0.38, 1.21, 0.22, 1.00);
+}
+
+.break-view-timetable-btn:hover {
+  background: var(--md-sys-color-primary, #00629E);
+  color: var(--md-sys-color-on-primary, #FFFFFF);
+  border-color: var(--md-sys-color-primary, #00629E);
+  transform: translateY(-1px);
+}
+
+.break-view-timetable-btn:active {
+  transform: scale(0.96);
+}

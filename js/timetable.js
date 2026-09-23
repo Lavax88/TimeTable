@@ -1,41 +1,9 @@
-/* ---------- Theme ---------- */
+/* ---------- Core Globals & Environment ---------- */
 const root = document.documentElement;
-const themeToggle = document.getElementById("themeToggle");
-const savedTheme = localStorage.getItem("timetableTheme");
-const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-let currentTheme = savedTheme ? savedTheme : (prefersDark ? "dark" : "light");
-applyTheme(currentTheme);
+const savedTheme = localStorage.getItem("timetableTheme") || "auto";
+const prefersDark = window.matchMedia("(prefers-color-scheme: dark)");
 
-themeToggle.addEventListener("click", () => {
-  currentTheme = currentTheme === "dark" ? "light" : "dark";
-  applyTheme(currentTheme);
-});
-
-function applyTheme(theme){
-  root.setAttribute("data-theme", theme);
-  if (themeToggle) {
-    themeToggle.setAttribute("aria-label", theme === "dark" ? "Switch to light mode" : "Switch to dark mode");
-  }
-  localStorage.setItem("timetableTheme", theme);
-  const isDark = theme === "dark";
-  const color = isDark ? "#121214" : "#FFFFFF";
-
-  const metaIds = ["themeColorMeta", "themeColorLight", "themeColorDark"];
-  metaIds.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.setAttribute("content", color);
-  });
-  document.querySelectorAll('meta[name="theme-color"]').forEach(m => {
-    m.setAttribute("content", color);
-  });
-
-  const appleMeta = document.getElementById("appleStatusBarMeta") || document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-  if (appleMeta) {
-    appleMeta.setAttribute("content", isDark ? "black-translucent" : "default");
-  }
-}
-
-/* ---------- Globals ---------- */
+let currentThemeMode = savedTheme; // "light" | "dark" | "auto"
 let _ACCENT = null;
 let _SUBJECTS = null;
 let _SCHEDULE = null;
@@ -54,30 +22,289 @@ const IS_DEV =
   window.location.search.includes('dev=1') ||
   window.location.protocol === 'file:';
 
-/* Apply background pattern and dev viewport simulation mode */
+/* ---------- Color System Constants & Helpers ---------- */
+const COLOR_NAMES = {
+  "#D0BCFF": "Pastel Lavender",
+  "#99CBFF": "Pastel Sky",
+  "#80D5C9": "Pastel Mint",
+  "#FFD580": "Pastel Amber",
+  "#FFB4AB": "Pastel Coral",
+  "#FFAFD1": "Pastel Rose",
+  "#80D5D4": "Pastel Teal",
+  "#FFB68E": "Pastel Peach",
+  "#B9C8DA": "Pastel Slate",
+  // Legacy mappings for backwards compatibility
+  "#00629E": "Pastel Sky",
+  "#006C4C": "Pastel Mint",
+  "#6750A4": "Pastel Lavender",
+  "#855300": "Pastel Amber",
+  "#BA1A1A": "Pastel Coral",
+  "#984061": "Pastel Rose",
+  "#006A6A": "Pastel Teal",
+  "#A14000": "Pastel Peach",
+  "#526070": "Pastel Slate"
+};
+
+const LEGACY_COLOR_MAP = {
+  "#00629E": "#99CBFF",
+  "#006C4C": "#80D5C9",
+  "#6750A4": "#D0BCFF",
+  "#855300": "#FFD580",
+  "#BA1A1A": "#FFB4AB",
+  "#984061": "#FFAFD1",
+  "#006A6A": "#80D5D4",
+  "#A14000": "#FFB68E",
+  "#526070": "#B9C8DA"
+};
+
+function getSystemAccentColor() {
+  try {
+    const probe = document.createElement("div");
+    probe.style.cssText = "color: AccentColor !important; display: none !important;";
+    document.documentElement.appendChild(probe);
+    const computed = window.getComputedStyle(probe).color;
+    document.documentElement.removeChild(probe);
+    if (computed && computed.startsWith("rgb")) {
+      const nums = computed.match(/\d+/g);
+      if (nums && nums.length >= 3) {
+        const r = parseInt(nums[0], 10);
+        const g = parseInt(nums[1], 10);
+        const b = parseInt(nums[2], 10);
+        if (!(r === 0 && g === 0 && b === 0) && !(r === 255 && g === 255 && b === 255)) {
+          return "#" + [r, g, b].map(x => x.toString(16).padStart(2, "0")).join("");
+        }
+      }
+    }
+  } catch (_) {}
+  return "#D0BCFF"; // default Pastel Lavender fallback
+}
+
+function adjustHex(hex, percent) {
+  let num = parseInt(hex.replace('#', ''), 16);
+  if (isNaN(num)) return hex;
+  let r = (num >> 16) + Math.round(255 * (percent / 100));
+  let g = ((num >> 8) & 0x00FF) + Math.round(255 * (percent / 100));
+  let b = (num & 0x0000FF) + Math.round(255 * (percent / 100));
+  r = Math.min(255, Math.max(0, r));
+  g = Math.min(255, Math.max(0, g));
+  b = Math.min(255, Math.max(0, b));
+  return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+
+function getContrastColor(hex) {
+  try {
+    const num = parseInt(hex.replace('#', ''), 16);
+    const r = (num >> 16);
+    const g = (num >> 8) & 0x00FF;
+    const b = num & 0x0000FF;
+    const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+    return yiq >= 135 ? "#001D34" : "#FFFFFF";
+  } catch (_) {
+    return "#FFFFFF";
+  }
+}
+
+const LIGHT_MODE_PRIMARY = {
+  "#D0BCFF": "#6750A4",
+  "#99CBFF": "#00629E",
+  "#80D5C9": "#006C4C",
+  "#FFD580": "#855300",
+  "#FFB4AB": "#BA1A1A",
+  "#FFAFD1": "#984061",
+  "#80D5D4": "#006A6A",
+  "#FFB68E": "#A14000",
+  "#B9C8DA": "#526070"
+};
+
+const DARK_MODE_PRIMARY = {
+  "#D0BCFF": "#D0BCFF",
+  "#99CBFF": "#99CBFF",
+  "#80D5C9": "#80D5C9",
+  "#FFD580": "#FFD580",
+  "#FFB4AB": "#FFB4AB",
+  "#FFAFD1": "#FFAFD1",
+  "#80D5D4": "#80D5D4",
+  "#FFB68E": "#FFB68E",
+  "#B9C8DA": "#B9C8DA"
+};
+
+let rawColorSetting = localStorage.getItem("timetableThemeColor") || "#D0BCFF";
+let currentColorSetting = (rawColorSetting !== "dynamic" && LEGACY_COLOR_MAP[rawColorSetting.toUpperCase()])
+  ? LEGACY_COLOR_MAP[rawColorSetting.toUpperCase()]
+  : rawColorSetting;
+
+function applyThemeColor(colorVal, displayName, save = true) {
+  const isDynamic = colorVal === "dynamic";
+  const normalizedVal = (!isDynamic && LEGACY_COLOR_MAP[colorVal.toUpperCase()]) ? LEGACY_COLOR_MAP[colorVal.toUpperCase()] : colorVal;
+  const effectiveHex = isDynamic ? getSystemAccentColor() : normalizedVal;
+  const isDark = root.getAttribute("data-theme") === "dark";
+
+  // In dark mode, ensure primary is radiant (tone 80 pastel)
+  // In light mode, ensure primary has sufficient contrast (tone 40)
+  const primaryHex = isDark
+    ? (DARK_MODE_PRIMARY[effectiveHex.toUpperCase()] || (getContrastColor(effectiveHex) === "#FFFFFF" ? adjustHex(effectiveHex, 45) : effectiveHex))
+    : (LIGHT_MODE_PRIMARY[effectiveHex.toUpperCase()] || effectiveHex);
+
+  // Update m3e-theme element
+  const m3eTheme = document.getElementById("m3eTheme");
+  if (m3eTheme) {
+    m3eTheme.setAttribute("color", effectiveHex);
+    m3eTheme.color = effectiveHex;
+  }
+
+  // Update CSS Custom Properties
+  root.style.setProperty("--md-sys-color-primary", primaryHex);
+  root.style.setProperty("--accent-primary", primaryHex);
+
+  const onPrimary = getContrastColor(primaryHex);
+  root.style.setProperty("--md-sys-color-on-primary", onPrimary);
+
+  const containerFill = isDark ? adjustHex(effectiveHex, -35) : adjustHex(effectiveHex, 50);
+  const onContainer = isDark ? adjustHex(effectiveHex, 65) : adjustHex(effectiveHex, -45);
+  root.style.setProperty("--md-sys-color-primary-container", containerFill);
+  root.style.setProperty("--md-sys-color-on-primary-container", onContainer);
+  root.style.setProperty("--accent-primary-soft", containerFill);
+
+  if (save) {
+    const toSave = isDynamic ? "dynamic" : normalizedVal;
+    localStorage.setItem("timetableThemeColor", toSave);
+    currentColorSetting = toSave;
+  }
+
+  // Update Badge and Swatch UI
+  const badge = document.getElementById("activeColorBadge");
+  if (badge) {
+    badge.textContent = displayName || (isDynamic ? "Dynamic (System)" : (COLOR_NAMES[effectiveHex.toUpperCase()] || "Custom"));
+  }
+
+  document.querySelectorAll(".m3-color-swatch").forEach(swatch => {
+    const swatchColor = swatch.dataset?.color || swatch.getAttribute("data-color");
+    if (swatch.classList.contains("dynamic")) {
+      swatch.classList.toggle("active", isDynamic);
+    } else if (swatchColor) {
+      swatch.classList.toggle("active", !isDynamic && (swatchColor.toLowerCase() === effectiveHex.toLowerCase() || swatchColor.toLowerCase() === normalizedVal.toLowerCase()));
+    }
+  });
+
+  const customInput = document.getElementById("customColorInput");
+  if (customInput && !isDynamic) {
+    customInput.value = effectiveHex;
+  }
+
+  updateStatusBar();
+}
+
+/* ---------- Theme & Status Bar Sync ---------- */
+function updateStatusBar() {
+  const isDark = root.getAttribute("data-theme") === "dark";
+  let surfaceColor = isDark ? "#0C0F14" : "#FAFBFD";
+  try {
+    const probe = document.createElement("div");
+    probe.style.cssText = "position:absolute;visibility:hidden;pointer-events:none;background-color:var(--md-sys-color-surface);";
+    (document.body || document.documentElement).appendChild(probe);
+    const resolved = window.getComputedStyle(probe).backgroundColor;
+    probe.remove();
+    if (resolved && resolved.startsWith("rgb")) {
+      surfaceColor = resolved;
+    }
+  } catch (_) {}
+
+  document.querySelectorAll('meta[name="theme-color"]').forEach(m => {
+    m.setAttribute("content", surfaceColor);
+    m.removeAttribute("media");
+  });
+
+  const appleMeta = document.getElementById("appleStatusBarMeta") || document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+  if (appleMeta) {
+    appleMeta.setAttribute("content", isDark ? "black-translucent" : "default");
+  }
+}
+
+function applyTheme(mode) {
+  currentThemeMode = mode;
+  let resolvedTheme = mode;
+  if (mode === "auto" || !mode) {
+    resolvedTheme = prefersDark.matches ? "dark" : "light";
+  }
+  root.setAttribute("data-theme", resolvedTheme);
+  const isDark = resolvedTheme === "dark";
+
+  const m3eTheme = document.getElementById("m3eTheme");
+  if (m3eTheme) {
+    m3eTheme.setAttribute("scheme", isDark ? "dark" : "light");
+    m3eTheme.scheme = isDark ? "dark" : "light";
+  }
+
+  localStorage.setItem("timetableTheme", mode);
+
+  // Update theme mode segment control if available
+  document.querySelectorAll("#themeModeSegment .m3-segment-btn").forEach(btn => {
+    const btnMode = btn.dataset?.themeMode || btn.getAttribute("data-theme-mode");
+    btn.classList.toggle("active", btnMode === mode);
+  });
+
+  // Re-sync theme color tokens for light/dark tonal shifts & update status bar
+  applyThemeColor(currentColorSetting, null, false);
+}
+
+// Listen to OS prefers-color-scheme changes when in auto mode
+prefersDark.addEventListener("change", () => {
+  if (currentThemeMode === "auto") {
+    applyTheme("auto");
+  }
+});
+
+/* ---------- Background Pattern System ---------- */
 const ALL_PATTERNS = ['dots', 'grid', 'blueprint', 'mesh', 'screentone', 'none'];
 const RANDOM_PATTERNS = ['dots', 'grid', 'blueprint', 'mesh', 'screentone'];
 
-let currentPattern = 'dots';
-try {
-  if (IS_DEV) {
-    currentPattern = sessionStorage.getItem('timetableDevPattern') || 'dots';
-  } else {
-    let randomPattern = sessionStorage.getItem('timetableMainPattern');
-    if (!randomPattern || !RANDOM_PATTERNS.includes(randomPattern)) {
-      randomPattern = RANDOM_PATTERNS[Math.floor(Math.random() * RANDOM_PATTERNS.length)];
-      sessionStorage.setItem('timetableMainPattern', randomPattern);
-    }
-    currentPattern = randomPattern;
+let currentPattern = localStorage.getItem("timetableUserPattern");
+if (!currentPattern || !ALL_PATTERNS.includes(currentPattern)) {
+  let rand = sessionStorage.getItem('timetableMainPattern');
+  if (!rand || !RANDOM_PATTERNS.includes(rand)) {
+    rand = RANDOM_PATTERNS[Math.floor(Math.random() * RANDOM_PATTERNS.length)];
+    sessionStorage.setItem('timetableMainPattern', rand);
   }
-} catch (_) {}
-
-document.documentElement.classList.remove(...ALL_PATTERNS.map(p => 'pattern-' + p));
-document.documentElement.classList.add('pattern-' + currentPattern);
-if (document.body) {
-  document.body.classList.remove(...ALL_PATTERNS.map(p => 'pattern-' + p));
-  document.body.classList.add('pattern-' + currentPattern);
+  currentPattern = rand;
 }
+
+function applyPattern(pattern, save = true) {
+  if (!ALL_PATTERNS.includes(pattern)) pattern = "dots";
+  currentPattern = pattern;
+
+  const patternClasses = ALL_PATTERNS.map(p => 'pattern-' + p);
+  document.documentElement.classList.remove(...patternClasses);
+  document.documentElement.classList.add('pattern-' + pattern);
+  if (document.body) {
+    document.body.classList.remove(...patternClasses);
+    document.body.classList.add('pattern-' + pattern);
+  }
+
+  if (save) {
+    localStorage.setItem("timetableUserPattern", pattern);
+  }
+
+  const badge = document.getElementById("activePatternBadge");
+  if (badge) {
+    badge.textContent = pattern.charAt(0).toUpperCase() + pattern.slice(1);
+  }
+
+  document.querySelectorAll(".m3-pattern-chip").forEach(chip => {
+    const chipPat = chip.dataset?.pattern || chip.getAttribute("data-pattern");
+    chip.classList.toggle("active", chipPat === pattern);
+  });
+
+  // Sync dev panel pattern buttons if present
+  document.querySelectorAll("#devPatternGroup .dev-toggle-btn").forEach(btn => {
+    const btnPat = btn.dataset?.pattern || btn.getAttribute("data-pattern");
+    btn.classList.toggle("active", btnPat === pattern);
+  });
+}
+
+// Early application of theme, color, and pattern
+applyTheme(currentThemeMode);
+applyThemeColor(currentColorSetting, null, false);
+applyPattern(currentPattern, false);
 
 if (IS_DEV) {
   try {
@@ -196,19 +423,19 @@ function createEventCard(ev) {
 
   const completeBtnHtml = canComplete
     ? (completed
-        ? ` <button class="complete-btn" aria-label="Undo completion"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:3px;"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>Undo</button>`
-        : ` <button class="complete-btn" aria-label="Mark as completed"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:3px;"><polyline points="20 6 9 17 4 12"/></svg>Done</button>`)
+        ? ` <button class="complete-btn" aria-label="Undo completion"><span class="material-symbols-rounded" style="font-size:13px;vertical-align:-2px;margin-right:2px;">undo</span>Undo</button>`
+        : ` <button class="complete-btn" aria-label="Mark as completed"><span class="material-symbols-rounded" style="font-size:13px;vertical-align:-2px;margin-right:2px;">check</span>Done</button>`)
     : '';
 
   card.innerHTML = `
     <div class="card-main">
       <div class="card-time" style="flex-basis: 90px;">
-        <span class="p-num" style="font-size:15px; color:var(--ink);">${dateStr}</span>
-        <span class="p-time" style="font-size: 11px; margin-top:6px; color:var(--ink-soft);">${shortLabel}</span>
+        <span class="p-num" style="font-size:14px; color:var(--ink);">${dateStr}</span>
+        <span class="p-time" style="font-size: 11px; margin-top:4px; color:var(--ink-soft);">${shortLabel}</span>
       </div>
       <div class="card-body">
         <div class="card-info">
-          <span class="now-tag" style="background:${accent[0]}">${displayTag}</span>${completeBtnHtml}<br>
+          <span class="now-tag" style="background:${accent[0]}"><span class="live-pulse"></span>${displayTag}</span>${completeBtnHtml}<br>
           <p class="subj-name" style="margin-top:4px;">${mainHeading}</p>
           <div class="progress-wrap">
             <div class="progress-track"><div class="progress-fill"></div></div>
@@ -441,6 +668,9 @@ async function initTimetableApp() {
       btn.className = "tab" + (isToday && !isExamsTab ? " today" : "");
       btn.dataset.day = day;
 
+      const tabLabel = isExamsTab ? "Exams" : day.slice(0, 3);
+      btn.innerHTML = `${tabLabel}<span class="dot"></span>`;
+
       let touchTriggered = false;
       btn.addEventListener("touchstart", (e) => {
         touchTriggered = true;
@@ -511,7 +741,7 @@ async function initTimetableApp() {
               </div>
               <div class="card-body">
                 <div class="card-info">
-                  ${isBreakNow ? `<span class="now-tag break-now-tag">Ongoing break</span><br>` : ""}
+                  ${isBreakNow ? `<span class="now-tag break-now-tag"><span class="live-pulse"></span>Ongoing break</span><br>` : ""}
                   <p class="subj-name">Break</p>
                   <p class="subj-sub">${note} free</p>
                   ${isBreakNow ? `<div class="progress-wrap"><div class="progress-track"><div class="progress-fill"></div></div><span class="progress-remaining"></span></div>` : ""}
@@ -553,7 +783,7 @@ async function initTimetableApp() {
             </div>
             <div class="card-body">
               <div class="card-info">
-                ${isNow ? `<span class="now-tag">Ongoing lecture</span><br>` : ""}
+                ${isNow ? `<span class="now-tag"><span class="live-pulse"></span>Ongoing lecture</span><br>` : ""}
                 <p class="subj-name">${subj.name}${extraNote ? ` <span style="font-weight:500;color:var(--ink-soft);font-size:13px;">(${extraNote})</span>` : ""}</p>
                 <p class="subj-sub">${subLine}</p>
                 ${isNow ? `<div class="progress-wrap"><div class="progress-track">${dividersHtml}<div class="progress-fill"></div></div><span class="progress-remaining"></span></div>` : ""}
@@ -1388,5 +1618,106 @@ document.getElementById('mainTitle').addEventListener('click', () => {
   }
 });
 
+/* ---------- Material 3 Expressive - Appearance & Theme Customizer Modal ---------- */
+function initAppearanceCustomizer() {
+  const modal = document.getElementById("appearanceModal");
+  const openBtn = document.getElementById("appearanceBtn");
+  const closeBtn = document.getElementById("closeAppearanceBtn");
+  const doneBtn = document.getElementById("doneAppearanceBtn");
+  const resetBtn = document.getElementById("resetAppearanceBtn");
+  const colorGrid = document.getElementById("colorGrid");
+  const patternGrid = document.getElementById("patternGrid");
+  const customColorInput = document.getElementById("customColorInput");
+  const themeModeSegment = document.getElementById("themeModeSegment");
+
+  if (!modal) return;
+
+  function openModal() {
+    modal.style.display = "flex";
+    requestAnimationFrame(() => modal.classList.add("visible"));
+  }
+
+  function closeModal() {
+    modal.classList.remove("visible");
+    setTimeout(() => {
+      if (!modal.classList.contains("visible")) {
+        modal.style.display = "none";
+      }
+    }, 240);
+  }
+
+  if (openBtn) openBtn.addEventListener("click", openModal);
+  if (closeBtn) closeBtn.addEventListener("click", closeModal);
+  if (doneBtn) doneBtn.addEventListener("click", closeModal);
+
+  // Close on backdrop click
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  // Close on Escape key
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && modal.classList.contains("visible")) {
+      closeModal();
+    }
+  });
+
+  // Color selection
+  if (colorGrid) {
+    colorGrid.addEventListener("click", (e) => {
+      const swatch = e.target.closest(".m3-color-swatch");
+      if (!swatch || swatch.classList.contains("custom")) return;
+      const colorVal = swatch.dataset.color;
+      const name = swatch.dataset.name || (colorVal === "dynamic" ? "Dynamic" : "Color");
+      applyThemeColor(colorVal, name, true);
+    });
+  }
+
+  if (customColorInput) {
+    customColorInput.addEventListener("input", (e) => {
+      applyThemeColor(e.target.value, "Custom", true);
+    });
+  }
+
+  // Pattern selection
+  if (patternGrid) {
+    patternGrid.addEventListener("click", (e) => {
+      const chip = e.target.closest(".m3-pattern-chip");
+      if (!chip) return;
+      const pattern = chip.dataset.pattern;
+      applyPattern(pattern, true);
+    });
+  }
+
+  // Theme mode selection
+  if (themeModeSegment) {
+    themeModeSegment.addEventListener("click", (e) => {
+      const btn = e.target.closest(".m3-segment-btn");
+      if (!btn) return;
+      const mode = btn.dataset.themeMode;
+      applyTheme(mode);
+    });
+  }
+
+  // Reset defaults
+  if (resetBtn) {
+    resetBtn.addEventListener("click", () => {
+      localStorage.removeItem("timetableThemeColor");
+      localStorage.removeItem("timetableUserPattern");
+      localStorage.removeItem("timetableTheme");
+      applyThemeColor("#D0BCFF", "Pastel Lavender", true);
+      applyPattern("dots", true);
+      applyTheme("auto");
+    });
+  }
+
+  // Initial UI sync
+  applyThemeColor(currentColorSetting, null, false);
+  applyPattern(currentPattern, false);
+  applyTheme(currentThemeMode);
+}
+
 initTimetableApp();
+initAppearanceCustomizer();
+
 
