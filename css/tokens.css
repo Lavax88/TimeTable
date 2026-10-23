@@ -1,0 +1,151 @@
+:root {
+  color-scheme: light;
+  --space-3xs: 2px; --space-2xs: 4px; --space-xs: 8px; --space-sm: 12px; --space-md: 16px; --space-lg: 24px; --space-xl: 32px; --space-2xl: 48px; --space-3xl: 64px; --space-4xl: 96px;
+  --text-xs: 0.75rem; --text-sm: 0.875rem; --text-md: 1rem; --text-lg: 1.2rem; --text-xl: 1.44rem; --text-2xl: 1.728rem; --text-3xl: 2.074rem;
+  --text-display-s: 1.44rem; --text-display: 1.728rem; --text-section: 1.2rem; --text-title: 1rem; --text-lead: 1rem;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1); --ease-in: cubic-bezier(0.7, 0, 0.84, 0); --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 120ms; --dur-short: 220ms; --dur-long: 420ms;
+  --color-error: oklch(52% 0.19 27); --color-error-ink: oklch(99% 0 0);
+  --color-success: oklch(50% 0.12 150); --color-success-ink: oklch(99% 0 0);
+  --container: 900px; --gutter: 24px; --gap-columns: 24px; --section-gap-s: 80px; --section-gap: 112px; --section-gap-l: 144px;
+  --z-base: 1; --z-raised: 10; --z-dropdown: 100; --z-sticky: 200; --z-sticky-nav: 300; --z-modal: 400; --z-toast: 500; --z-tooltip: 600;
+
+  --color-paper: oklch(95.5% 0.006 250);
+  --color-paper-2: oklch(91% 0.009 250);
+  --color-paper-3: oklch(99.5% 0.005 250);
+  --color-ink: oklch(16% 0.014 262);
+  --color-ink-2: oklch(29% 0.014 262);
+  --color-muted: oklch(47% 0.016 260);
+  --color-rule: oklch(80% 0.011 250);
+  --color-ink-rule: oklch(34% 0.014 262);
+
+  --color-accent: oklch(51% 0.22 264);
+  --color-accent-2: oklch(81% 0.16 82);
+  --color-accent-ink: oklch(99.5% 0.003 250);
+  --color-accent-soft: oklch(93% 0.04 264);
+  --color-focus: oklch(51% 0.22 264);
+  --backdrop-overlay: oklch(0% 0 0 / 0.55);
+
+  --font-display: "Chivo Mono", ui-monospace, monospace;
+  --font-body: "Chivo Mono", ui-monospace, monospace;
+  --font-outlier: "Chivo Mono", ui-monospace, monospace;
+
+  --radius-xs: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-card: 0px;
+  --radius-pill: 999px;
+  --rule-hair: 1px;
+  --rule-bar: 2px;
+
+  --shadow-card: none;
+  --shadow-lift: 0 12px 28px -12px oklch(8% 0.01 260 / 0.35);
+  --shadow-popup: 0 12px 32px oklch(8% 0.01 260 / 0.35);
+  --shadow-mobile-shell: 0 0 32px oklch(8% 0.01 260 / 0.25);
+  --tracking-display: -0.03em;
+  --display-weight: 800;
+
+  /* KTU Subjects - Wayfind Route Colors */
+  --toc: oklch(52% 0.20 260);       --toc-soft: oklch(94% 0.03 260);
+  --ee:  oklch(54% 0.15 195);       --ee-soft:  oklch(94% 0.025 195);
+  --ds:  oklch(52% 0.22 25);        --ds-soft:  oklch(94% 0.03 25);
+  --mat: oklch(58% 0.18 78);        --mat-soft: oklch(94% 0.035 78);
+  --oop: oklch(50% 0.16 145);       --oop-soft: oklch(94% 0.025 145);
+  --dal: oklch(58% 0.19 45);        --dal-soft: oklch(94% 0.035 45);
+  --lab: oklch(52% 0.16 230);       --lab-soft: oklch(94% 0.025 230);
+  --act: oklch(46% 0.02 260);       --act-soft: oklch(93% 0.01 260);
+
+  /* Legacy mappings */
+  --bg-1: var(--color-paper);
+  --bg-2: var(--color-paper-2);
+  --page-base: var(--color-paper);
+  --card-base: var(--color-paper-3);
+  --card-time-bg: var(--color-paper-2);
+  --card-time-border: var(--color-rule);
+  --chip-bg: var(--color-paper-2);
+  --chip-border: var(--color-rule);
+  --tab-bg: var(--color-paper-2);
+  --tab-border: var(--color-rule);
+  --legend-bg: var(--color-paper-3);
+  --legend-border: var(--color-rule);
+  --break-border: var(--color-rule);
+  --break-bg: var(--color-paper-2);
+  --navbar-bg: var(--color-paper-3);
+  --navbar-bg-glass: var(--color-paper-3);
+  --navbar-border: var(--color-rule);
+  --shadow-col: oklch(8% 0.01 260 / 0.15);
+  --glass: var(--color-paper-3);
+  --glass-border: var(--color-rule);
+  --glass-highlight: inset 0 1px 0 0 oklch(99.5% 0.005 250 / 0.8);
+  --ink: var(--color-ink);
+  --ink-soft: var(--color-ink-2);
+  --ink-faint: var(--color-muted);
+  --accent-primary: var(--color-accent);
+  --accent-primary-soft: var(--color-accent-soft);
+  --banner-caution-ink: var(--color-ink);
+  --banner-caution-bg: var(--color-accent-2);
+  --banner-caution-border: var(--color-ink);
+  --banner-success-ink: var(--color-success-ink);
+  --banner-success-bg: var(--color-success);
+  --banner-success-border: var(--color-ink);
+  --now-tag-bg: var(--color-accent);
+  --now-tag-ink: var(--color-accent-ink);
+  --calendar-badge-bg: var(--color-ink);
+  --calendar-badge-ink: var(--color-accent-2);
+  --calendar-badge-border: var(--color-ink);
+  --complete-btn-bg: var(--color-ink);
+  --complete-btn-ink: var(--color-paper-3);
+  --bg-pattern-dot: rgba(16, 18, 24, 0.08);
+  --bg-pattern-line: rgba(16, 18, 24, 0.06);
+  --bg-grid-major: rgba(16, 18, 24, 0.12);
+  --bg-grid-minor: rgba(16, 18, 24, 0.05);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --color-paper: oklch(15% 0.012 262);
+  --color-paper-2: oklch(19% 0.014 262);
+  --color-paper-3: oklch(12% 0.010 262);
+  --color-ink: oklch(96% 0.005 250);
+  --color-ink-2: oklch(84% 0.008 250);
+  --color-muted: oklch(68% 0.012 250);
+  --color-rule: oklch(31% 0.014 262);
+  --color-ink-rule: oklch(75% 0.010 250);
+
+  --color-accent: oklch(62% 0.20 264);
+  --color-accent-2: oklch(84% 0.16 82);
+  --color-accent-ink: oklch(15% 0.012 262);
+  --color-accent-soft: oklch(26% 0.06 264);
+  --color-focus: oklch(62% 0.20 264);
+
+  --toc: oklch(70% 0.16 260);       --toc-soft: oklch(24% 0.04 260);
+  --ee:  oklch(72% 0.13 195);       --ee-soft:  oklch(24% 0.035 195);
+  --ds:  oklch(68% 0.18 25);        --ds-soft:  oklch(24% 0.04 25);
+  --mat: oklch(74% 0.15 78);        --mat-soft: oklch(25% 0.045 78);
+  --oop: oklch(68% 0.14 145);       --oop-soft: oklch(24% 0.03 145);
+  --dal: oklch(72% 0.16 45);        --dal-soft: oklch(25% 0.04 45);
+  --lab: oklch(70% 0.14 230);       --lab-soft: oklch(24% 0.035 230);
+  --act: oklch(68% 0.02 260);       --act-soft: oklch(24% 0.015 260);
+
+  --shadow-col: oklch(0% 0 0 / 0.6);
+  --shadow-popup: 0 12px 32px oklch(0% 0 0 / 0.6);
+  --shadow-mobile-shell: 0 0 32px oklch(0% 0 0 / 0.5);
+  --banner-caution-ink: oklch(15% 0.012 262);
+  --banner-caution-bg: var(--color-accent-2);
+  --banner-caution-border: var(--color-accent-2);
+  --banner-success-ink: oklch(15% 0.012 262);
+  --banner-success-bg: oklch(72% 0.15 145);
+  --banner-success-border: oklch(72% 0.15 145);
+  --now-tag-bg: var(--color-accent);
+  --now-tag-ink: var(--color-accent-ink);
+  --calendar-badge-bg: var(--color-paper-2);
+  --calendar-badge-ink: var(--color-accent-2);
+  --calendar-badge-border: var(--color-rule);
+  --complete-btn-bg: var(--color-accent);
+  --complete-btn-ink: var(--color-accent-ink);
+  --bg-pattern-dot: rgba(255, 255, 255, 0.08);
+  --bg-pattern-line: rgba(255, 255, 255, 0.06);
+  --bg-grid-major: rgba(255, 255, 255, 0.12);
+  --bg-grid-minor: rgba(255, 255, 255, 0.05);
+}

@@ -695,7 +695,7 @@ async function initTimetableApp() {
     function moveIndicator(){
       const activeTab = tabsEl.querySelector(".tab.active");
       if(!activeTab) return;
-      indicator.style.left = activeTab.offsetLeft + "px";
+      indicator.style.transform = "translateX(" + activeTab.offsetLeft + "px)";
       indicator.style.width = activeTab.offsetWidth + "px";
     }
 

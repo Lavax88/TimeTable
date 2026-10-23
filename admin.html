@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Admin Dashboard</title>
+  <meta name="description" content="Admin dashboard to manage schedule events, holidays, and exam modes for KTU S3 CSE.">
 
   <meta name="theme-color" id="themeColorMeta" content="#121214">
   <meta name="theme-color" id="themeColorLight" media="(prefers-color-scheme: light)" content="#FFFFFF">
@@ -14,7 +15,9 @@
 
   <link rel="icon" type="image/png" href="logo.png?v=3">
   <link rel="apple-touch-icon" href="logo.png?v=3">
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chivo+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/index.css">
   <link rel="stylesheet" href="css/admin.css">
   <script>
@@ -43,24 +46,24 @@
     <header>
       <div class="header-actions">
         <a href="index.html" class="admin-toggle" aria-label="Go to timetable">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         </a>
       </div>
       <h1>Admin Dashboard</h1>
-      <p class="eyebrow">KTU S3 CSE · Event Management</p>
+      <p class="eyebrow">KTU S3 CSE Event Management</p>
     </header>
 
-    <div class="card" style="padding: 24px; margin-bottom: 24px;">
-      <h2 style="font-size: 18px; margin-top: 0;">Add Events</h2>
+    <div class="card admin-section-card">
+      <h2 class="admin-heading">Add Events</h2>
 
       <div id="lockScreen">
-        <p style="font-size: 13px; color: var(--ink-soft); margin: 0;">Enter your admin password to manage events.</p>
+        <p class="admin-help-text">Enter your admin password to manage events.</p>
         <input type="password" id="password" placeholder="Admin Password" required class="input-field">
-        <button id="unlockBtn" style="padding: 14px; background: var(--dal); color: #fff; border: none; border-radius: 8px; font-weight: 700; font-family: inherit; cursor: pointer;">Unlock Dashboard</button>
+        <button id="unlockBtn" class="admin-btn admin-btn-dal">Enter dashboard</button>
       </div>
 
       <div id="eventBuilder">
-        <p style="font-size:13px;color:var(--ink-soft);margin:0;">Single events (test, deadline, general, reminder)</p>
+        <p class="admin-help-text">Single events (test, deadline, general, reminder)</p>
         <div id="eventRows">
           <div class="event-row">
             <select class="input-field event-type">
@@ -70,21 +73,21 @@
               <option value="reminder">Reminder</option>
             </select>
             <select class="input-field event-subject">
-              <option value="" disabled selected>Loading subjects...</option>
+              <option value="" disabled selected>Loading subjects…</option>
               <option value="">(No subject)</option>
             </select>
             <input type="text" class="input-field event-title" placeholder="Event Title" required>
             <input type="date" class="input-field event-date" required>
             <button type="button" class="event-remove-btn" style="display:none;" aria-label="Remove event">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           </div>
         </div>
         <button type="button" id="addEventRow" class="add-row-btn">+ Add Another Event</button>
 
-        <hr style="border:none;border-top:1px solid var(--card-time-border);margin:16px 0;">
+        <hr class="admin-divider">
 
-        <p style="font-size:13px;color:var(--ink-soft);margin:0;">Exam series (one title, multiple dates)</p>
+        <p class="admin-help-text">Exam series (one title, multiple dates)</p>
         <input type="text" id="seriesGlobalName" class="input-field" placeholder="Series title (optional, defaults to subject name)">
         <div id="seriesRows">
           <div class="series-row">
@@ -93,46 +96,46 @@
             </select>
             <input type="date" class="input-field series-date" required>
             <button type="button" class="series-remove-btn" style="display: none;" aria-label="Remove series date">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           </div>
         </div>
         <button type="button" id="addSeriesRow" class="add-row-btn">+ Add Another Date</button>
 
-        <button type="button" id="submitEventsBtn" style="padding: 14px; background: var(--toc); color: #fff; border: none; border-radius: 8px; font-weight: 700; font-family: inherit; cursor: pointer; margin-top: 16px;">Push All to Schedule</button>
+        <button type="button" id="submitEventsBtn" class="admin-btn admin-btn-toc">Push All to Schedule</button>
       </div>
-      <p id="status" style="margin-top: 16px; font-weight: 600; text-align: center; font-size: 14px;"></p>
+      <p id="status" class="admin-status"></p>
     </div>
 
-    <div class="card" style="padding: 24px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-        <h2 style="font-size: 18px; margin: 0;">Active Events</h2>
-        <div style="display:flex;gap:8px;">
+    <div class="card admin-section-card">
+      <div class="admin-header-row">
+        <h2 class="admin-heading">Active Events</h2>
+        <div class="admin-header-actions">
           <button id="deleteSelectedBtn" class="del-btn" style="display:none;">Delete Selected</button>
-          <button id="clearAllBtn" class="del-btn" style="background:var(--ds);">Clear All</button>
+          <button id="clearAllBtn" class="del-btn admin-del-clear">Clear All</button>
         </div>
       </div>
       <div id="eventsList">
-        <p style="color: var(--ink-soft); font-size: 14px;">Loading existing events...</p>
+        <p class="admin-muted-text">Loading existing events…</p>
       </div>
     </div>
 
-    <div id="holidaysSection" class="card" style="padding: 24px; display: none;">
-      <h2 style="font-size: 18px; margin-top: 0; margin-bottom: 16px;">Holidays</h2>
-      <p style="font-size: 13px; color: var(--ink-soft); margin: 0 0 12px;">On these dates the schedule is paused.</p>
-      <div id="holidayForm" style="display: flex; gap: 10px; margin-bottom: 16px;">
+    <div id="holidaysSection" class="card admin-section-card" style="display: none;">
+      <h2 class="admin-heading">Holidays</h2>
+      <p class="admin-help-text">On these dates the schedule is paused.</p>
+      <div id="holidayForm" class="holiday-form-row">
         <input type="date" id="holidayDate" class="input-field" style="flex: 1;">
-        <button id="addHolidayBtn" style="padding: 12px 20px; background: var(--ee); color: #fff; border: none; border-radius: 8px; font-weight: 700; font-family: inherit; cursor: pointer; white-space: nowrap;">Add Holiday</button>
+        <button id="addHolidayBtn" class="admin-btn admin-btn-ee">Add Holiday</button>
       </div>
       <div id="holidaysList">
-        <p style="color: var(--ink-soft); font-size: 14px;">No holidays set.</p>
+        <p class="admin-muted-text">No holidays set.</p>
       </div>
     </div>
 
-    <div id="examToggleSection" class="card" style="padding: 24px; display: none;">
+    <div id="examToggleSection" class="card admin-section-card" style="display: none;">
       <div class="exam-toggle-row">
         <div>
-          <label>Force exam mode (testing)</label>
+          <label for="examModeToggle">Force exam mode (testing)</label>
           <span class="hint">When enabled, all users see only the exam timetable regardless of date.</span>
         </div>
         <label class="toggle-switch">
@@ -140,7 +143,7 @@
           <span class="toggle-slider"></span>
         </label>
       </div>
-      <p id="examModeStatus" style="font-size: 12px; color: var(--ink-soft); margin: 0;"></p>
+      <p id="examModeStatus" class="exam-mode-status-text"></p>
     </div>
   </div>
 
