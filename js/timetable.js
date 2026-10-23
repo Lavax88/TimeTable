@@ -438,8 +438,13 @@ async function initTimetableApp() {
       const isExamsTab = day === "Exams";
 
       const btn = document.createElement("button");
+      btn.type = "button";
       btn.className = "tab" + (isToday && !isExamsTab ? " today" : "");
       btn.dataset.day = day;
+      btn.setAttribute("aria-label", day);
+
+      const tabLabel = isExamsTab ? "Exams" : day.slice(0, 3);
+      btn.innerHTML = `${tabLabel}<span class="dot" aria-hidden="true"></span>`;
 
       let touchTriggered = false;
       btn.addEventListener("touchstart", (e) => {
@@ -752,7 +757,13 @@ async function initTimetableApp() {
     });
 
     selectDay(DAYS.includes(nowDayName) ? nowDayName : "Monday");
-    requestAnimationFrame(() => { indicator.style.transition = ""; });
+    requestAnimationFrame(() => {
+      indicator.style.transition = "";
+      moveIndicator();
+    });
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(moveIndicator);
+    }
 
     setTimeout(() => {
       const nowCard = document.querySelector(".day-panel.active .card.now");
