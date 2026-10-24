@@ -26,8 +26,8 @@
   --color-focus: oklch(51% 0.22 264);
   --backdrop-overlay: oklch(0% 0 0 / 0.55);
 
-  --font-display: "Chivo Mono", ui-monospace, monospace;
-  --font-body: "Chivo Mono", ui-monospace, monospace;
+  --font-display: "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-body: "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-outlier: "Chivo Mono", ui-monospace, monospace;
 
   --radius-xs: 0px;
@@ -43,8 +43,8 @@
   --shadow-lift: 0 12px 28px -12px oklch(8% 0.01 260 / 0.35);
   --shadow-popup: 0 12px 32px oklch(8% 0.01 260 / 0.35);
   --shadow-mobile-shell: 0 0 32px oklch(8% 0.01 260 / 0.25);
-  --tracking-display: -0.03em;
-  --display-weight: 800;
+  --tracking-display: -0.015em;
+  --display-weight: 700;
 
   /* KTU Subjects - Wayfind Route Colors */
   --toc: oklch(52% 0.20 260);       --toc-soft: oklch(94% 0.03 260);

@@ -670,9 +670,13 @@ async function initTimetableApp() {
       const backwardDist = (oldIndex - newIndex + n) % n;
       const forward = forwardDist <= backwardDist;
 
-      const durationMs = 180;
+      const durationMs = 200;
       const transitionStyle = `transform ${durationMs}ms cubic-bezier(0.25, 1, 0.5, 1)`;
 
+      const startHeight = panelsEl.offsetHeight;
+      if (startHeight > 0) {
+        panelsEl.style.height = startHeight + "px";
+      }
       panelsEl.classList.add("sliding");
 
       oldPanel.classList.add("sliding-panel");
@@ -752,7 +756,7 @@ async function initTimetableApp() {
       const item = document.createElement("div");
       item.className = "legend-item";
       item.innerHTML = `<span class="legend-swatch" style="background:${accent[0]}"></span>
-        <div><b>${name}</b><span>${sub}</span></div>`;
+        <div class="legend-text"><b>${name}</b><span>${sub}</span></div>`;
       legendEl.appendChild(item);
     });
 

@@ -14,7 +14,7 @@
   cursor: pointer;
   opacity: 0.8;
   padding: var(--space-2xs);
-  transition: opacity var(--dur-micro) steps(1);
+  transition: opacity var(--dur-short) var(--ease-out);
 }
 
 .input-field::-webkit-calendar-picker-indicator:hover {
@@ -51,7 +51,7 @@
   font-family: var(--font-body);
   cursor: pointer;
   font-size: var(--text-xs);
-  transition: opacity var(--dur-micro) steps(1), background-color var(--dur-micro) steps(1);
+  transition: opacity var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out);
 }
 
 .admin-btn-dal {
@@ -138,7 +138,7 @@
   font-family: var(--font-body);
   font-weight: 700;
   font-size: var(--text-xs);
-  transition: background-color var(--dur-micro) steps(1), color var(--dur-micro) steps(1);
+  transition: background-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out);
 }
 
 .del-btn:hover {
@@ -166,7 +166,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color var(--dur-micro) steps(1), color var(--dur-micro) steps(1);
+  transition: background-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out);
 }
 
 .event-remove-btn:hover, .series-remove-btn:hover {
@@ -190,7 +190,7 @@
   cursor: pointer;
   width: 100%;
   font-size: var(--text-xs);
-  transition: background-color var(--dur-micro) steps(1);
+  transition: background-color var(--dur-short) var(--ease-out);
 }
 
 .add-row-btn:hover {
