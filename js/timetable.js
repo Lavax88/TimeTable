@@ -426,6 +426,10 @@ async function initTimetableApp() {
 
     const tabsEl = document.getElementById("tabs");
     const panelsEl = document.getElementById("panels");
+    panelsEl.innerHTML = "";
+    const panelsTrack = document.createElement("div");
+    panelsTrack.className = "panels-track";
+    panelsEl.appendChild(panelsTrack);
 
     const indicator = document.createElement("div");
     indicator.className = "tab-indicator";
@@ -474,7 +478,7 @@ async function initTimetableApp() {
 
       if (isExamsTab) {
         panel.innerHTML = `<div class="free-note">No upcoming exams scheduled.</div>`;
-        panelsEl.appendChild(panel);
+        panelsTrack.appendChild(panel);
         return;
       }
 
@@ -498,7 +502,7 @@ async function initTimetableApp() {
       const rawPeriods = SCHEDULE[day];
       if(!rawPeriods || rawPeriods.length === 0){
         panel.insertAdjacentHTML('beforeend', `<div class="free-note">No classes scheduled.</div>`);
-        panelsEl.appendChild(panel);
+        panelsTrack.appendChild(panel);
         return;
       }
 
@@ -575,44 +579,39 @@ async function initTimetableApp() {
         panel.appendChild(card);
       });
 
-      panelsEl.appendChild(panel);
+      panelsTrack.appendChild(panel);
     });
 
     let currentDay = null;
     let animTimer = null;
-    let animRaf = null;
-    let lastSwitchTime = 0;
     let breakTimetableVisible = false; // user-override: show timetable during a break
     const h1El = document.querySelector("h1");
     const originalH1 = h1El ? h1El.textContent : "Weekly Class Timetable";
 
-    function finishCurrentAnimation(){
-      if(animRaf){
-        cancelAnimationFrame(animRaf);
-        animRaf = null;
-      }
-      if(animTimer){
-        clearTimeout(animTimer);
-        animTimer = null;
-      }
-      panelsEl.querySelectorAll(".day-panel").forEach(p => {
-        p.classList.remove("sliding-panel");
-        p.style.transition = "";
-        p.style.transform = "";
-        if(p.dataset.day === currentDay){
-          p.classList.add("active");
+    function updateContainerHeight(animate = false, durationMs = 240){
+      const idx = DAYS.indexOf(currentDay);
+      if(idx === -1) return;
+      const activePanel = panelsTrack.children[idx];
+      if(!activePanel) return;
+      const h = activePanel.offsetHeight;
+      if(h > 0){
+        if(animate){
+          panelsEl.style.transition = `height ${durationMs}ms cubic-bezier(0.25, 1, 0.5, 1)`;
         } else {
-          p.classList.remove("active");
+          panelsEl.style.transition = "none";
         }
-      });
-      panelsEl.classList.remove("sliding");
-      panelsEl.style.height = "";
+        panelsEl.style.height = h + "px";
+      }
     }
 
-    function selectDay(day){
+    function selectDay(day, animate = true){
       if(!day) return;
+      const targetIdx = DAYS.indexOf(day);
+      if(targetIdx === -1) return;
 
-      if (day === "Exams") {
+      currentDay = day;
+
+      if(day === "Exams"){
         const { exams } = getFilteredEvents();
         const label = exams.length > 0 ? exams[0].title : "Exam Timetable";
         h1El.textContent = label;
@@ -620,90 +619,47 @@ async function initTimetableApp() {
         h1El.textContent = originalH1;
       }
       const tasksEl = document.getElementById('upcomingTasks');
-      if (tasksEl) tasksEl.style.display = day === 'Exams' ? 'none' : '';
+      if(tasksEl) tasksEl.style.display = day === 'Exams' ? 'none' : '';
 
-      // Immediately reflect active tab selection and move indicator
-      document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.day === day));
-      moveIndicator();
+      // Update tab active classes
+      const allTabs = tabsEl.querySelectorAll(".tab");
+      allTabs.forEach((t, i) => t.classList.toggle("active", i === targetIdx));
 
-      if(day === currentDay && !animTimer && !animRaf) return;
-
-      const nowTime = Date.now();
-      const timeSinceLastSwitch = nowTime - lastSwitchTime;
-      lastSwitchTime = nowTime;
-
-      const wasAnimating = !!(animTimer || animRaf);
-      const isRapidSwitch = wasAnimating || (timeSinceLastSwitch < 250);
-
-      finishCurrentAnimation();
-
-      if(day === currentDay) return;
-
-      const newPanel = panelsEl.querySelector(`.day-panel[data-day="${day}"]`);
-      if(!newPanel) return;
-      if(!currentDay){
-        currentDay = day;
-        newPanel.classList.add("active");
-        return;
-      }
-
-      if(isRapidSwitch){
-        // Instant tab switch on fast taps: zero latency, zero layout reflow, zero animation lag
-        panelsEl.querySelectorAll(".day-panel").forEach(p => {
-          p.classList.remove("sliding-panel");
-          p.style.transition = "";
-          p.style.transform = "";
-          p.classList.toggle("active", p.dataset.day === day);
-        });
-        currentDay = day;
-        return;
-      }
-
-      const oldDay = currentDay;
-      const oldPanel = panelsEl.querySelector(`.day-panel[data-day="${oldDay}"]`);
-      currentDay = day;
-
-      if(!oldPanel){
-        newPanel.classList.add("active");
-        return;
-      }
-
-      const n = DAYS.length;
-      const oldIndex = DAYS.indexOf(oldDay);
-      const newIndex = DAYS.indexOf(day);
-      const forwardDist = (newIndex - oldIndex + n) % n;
-      const backwardDist = (oldIndex - newIndex + n) % n;
-      const forward = forwardDist <= backwardDist;
-
-      const durationMs = 200;
-      const transitionStyle = `transform ${durationMs}ms cubic-bezier(0.25, 1, 0.5, 1)`;
-
-      const startHeight = panelsEl.offsetHeight;
-      if (startHeight > 0) {
-        panelsEl.style.height = startHeight + "px";
-      }
-      panelsEl.classList.add("sliding");
-
-      oldPanel.classList.add("sliding-panel");
-      newPanel.classList.add("active", "sliding-panel");
-      newPanel.style.transition = "none";
-      newPanel.style.transform = forward ? "translateX(100%)" : "translateX(-100%)";
-      oldPanel.style.transition = "none";
-      oldPanel.style.transform = "translateX(0)";
-
-      void newPanel.offsetWidth;
-
-      animRaf = requestAnimationFrame(() => {
-        newPanel.style.transition = transitionStyle;
-        oldPanel.style.transition = transitionStyle;
-        newPanel.style.transform = "translateX(0)";
-        oldPanel.style.transform = forward ? "translateX(-100%)" : "translateX(100%)";
-        animRaf = null;
+      // Update panel active classes
+      Array.from(panelsTrack.children).forEach((p, i) => {
+        p.classList.toggle("active", i === targetIdx);
       });
 
-      animTimer = setTimeout(() => {
-        finishCurrentAnimation();
-      }, durationMs + 10);
+      const durationMs = animate ? 240 : 0;
+      const easing = "cubic-bezier(0.25, 1, 0.5, 1)";
+
+      if(animTimer){
+        clearTimeout(animTimer);
+        animTimer = null;
+      }
+
+      if(animate){
+        panelsTrack.style.transition = `transform ${durationMs}ms ${easing}`;
+        indicator.style.transition = `transform ${durationMs}ms var(--ease-out), width ${durationMs}ms var(--ease-out)`;
+        updateContainerHeight(true, durationMs);
+      } else {
+        panelsTrack.style.transition = "none";
+        indicator.style.transition = "none";
+        updateContainerHeight(false);
+      }
+
+      panelsTrack.style.transform = `translateX(-${targetIdx * 100}%)`;
+      moveIndicator();
+
+      if(animate){
+        animTimer = setTimeout(() => {
+          panelsTrack.style.transition = "none";
+          panelsEl.style.transition = "none";
+          indicator.style.transition = "";
+          updateContainerHeight(false);
+          animTimer = null;
+        }, durationMs + 20);
+      }
     }
 
     function moveIndicator(){
@@ -713,34 +669,160 @@ async function initTimetableApp() {
       indicator.style.width = activeTab.offsetWidth + "px";
     }
 
-    window.addEventListener("resize", moveIndicator);
+    window.addEventListener("resize", () => {
+      moveIndicator();
+      updateContainerHeight(false);
+    });
 
-    /* ---------- Swipe / horizontal scroll to change day ---------- */
+    /* ---------- Swipe / live interactive touch drag to change day ---------- */
     function goToDay(offset){
       const idx = DAYS.indexOf(currentDay);
-      const nextIdx = (idx + offset + DAYS.length) % DAYS.length;
-      selectDay(DAYS[nextIdx]);
+      const nextIdx = Math.max(0, Math.min(DAYS.length - 1, idx + offset));
+      if(nextIdx !== idx){
+        selectDay(DAYS[nextIdx], true);
+      }
     }
 
-    let touchStartX = 0, touchStartY = 0, touchTracking = false;
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchStartTime = 0;
+    let touchTracking = false;
+    let isSwiping = false;
+    let isScrolling = false;
+    let panelWidth = 0;
+    let startTranslateX = 0;
+
     panelsEl.addEventListener("touchstart", (e) => {
-      // Touch takes priority: settle any active sliding animation immediately
-      if(animTimer || animRaf){
-        finishCurrentAnimation();
+      if(e.touches.length !== 1) return;
+      if(animTimer){
+        clearTimeout(animTimer);
+        animTimer = null;
       }
+      panelsTrack.style.transition = "none";
+      panelsEl.style.transition = "none";
+      indicator.style.transition = "none";
+
       touchStartX = e.touches[0].clientX;
       touchStartY = e.touches[0].clientY;
+      touchStartTime = Date.now();
       touchTracking = true;
+      isSwiping = false;
+      isScrolling = false;
+
+      panelWidth = panelsEl.offsetWidth || window.innerWidth;
+      const currIdx = DAYS.indexOf(currentDay);
+      startTranslateX = -currIdx * panelWidth;
+      updateContainerHeight(false);
     }, { passive: true });
+
+    panelsEl.addEventListener("touchmove", (e) => {
+      if(!touchTracking) return;
+      const touch = e.touches[0];
+      const rawDx = touch.clientX - touchStartX;
+      const rawDy = touch.clientY - touchStartY;
+
+      if(!isSwiping && !isScrolling){
+        const absX = Math.abs(rawDx);
+        const absY = Math.abs(rawDy);
+        // Vertical scroll detection: let page scroll naturally
+        if(absY > absX && absY > 8){
+          isScrolling = true;
+          return;
+        }
+        // Horizontal swipe detection: lock into swiping
+        if(absX > absY && absX > 8){
+          isSwiping = true;
+        }
+      }
+
+      if(isScrolling) return;
+
+      if(isSwiping){
+        if(e.cancelable) e.preventDefault();
+
+        const currIdx = DAYS.indexOf(currentDay);
+        const isAtStart = currIdx === 0 && rawDx > 0;
+        const isAtEnd = currIdx === DAYS.length - 1 && rawDx < 0;
+
+        let appliedDx = rawDx;
+        if(isAtStart || isAtEnd){
+          appliedDx = rawDx * 0.28; // Rubber-band resistance at edges
+        }
+
+        const currentTranslateX = startTranslateX + appliedDx;
+        panelsTrack.style.transform = `translateX(${currentTranslateX}px)`;
+
+        // Live height interpolation
+        const targetIdx = rawDx < 0
+          ? Math.min(DAYS.length - 1, currIdx + 1)
+          : Math.max(0, currIdx - 1);
+
+        const currentH = panelsTrack.children[currIdx] ? panelsTrack.children[currIdx].offsetHeight : 0;
+        const targetH = panelsTrack.children[targetIdx] ? panelsTrack.children[targetIdx].offsetHeight : 0;
+        const progress = Math.min(1, Math.abs(appliedDx) / panelWidth);
+
+        if(currentH > 0 && targetH > 0){
+          const liveH = Math.round(currentH + (targetH - currentH) * progress);
+          panelsEl.style.height = liveH + "px";
+        }
+
+        // Live tab indicator movement
+        const allTabs = tabsEl.querySelectorAll(".tab");
+        const curTab = allTabs[currIdx];
+        const tgtTab = allTabs[targetIdx];
+        if(curTab && tgtTab){
+          const curLeft = curTab.offsetLeft;
+          const curW = curTab.offsetWidth;
+          const tgtLeft = tgtTab.offsetLeft;
+          const tgtW = tgtTab.offsetWidth;
+          indicator.style.transition = "none";
+          indicator.style.transform = `translateX(${curLeft + (tgtLeft - curLeft) * progress}px)`;
+          indicator.style.width = `${curW + (tgtW - curW) * progress}px`;
+
+          const activeIdx = progress > 0.5 ? targetIdx : currIdx;
+          allTabs.forEach((t, i) => t.classList.toggle("active", i === activeIdx));
+        }
+      }
+    }, { passive: false });
 
     panelsEl.addEventListener("touchend", (e) => {
       if(!touchTracking) return;
+      if(!isSwiping){
+        touchTracking = false;
+        return;
+      }
       touchTracking = false;
-      const dx = e.changedTouches[0].clientX - touchStartX;
-      const dy = e.changedTouches[0].clientY - touchStartY;
-      const SWIPE_THRESHOLD = 45;
-      if(Math.abs(dx) > SWIPE_THRESHOLD && Math.abs(dx) > Math.abs(dy) * 1.2){
-        goToDay(dx < 0 ? 1 : -1);
+      isSwiping = false;
+
+      const touch = e.changedTouches[0];
+      const dx = touch.clientX - touchStartX;
+      const dt = Math.max(1, Date.now() - touchStartTime);
+      const velocity = Math.abs(dx) / dt;
+      const distance = Math.abs(dx);
+
+      const currIdx = DAYS.indexOf(currentDay);
+      // Increased gesture completion thresholds
+      const isDistance = distance >= panelWidth * 0.38;
+      const isFlick = velocity >= 0.45 && distance >= 75;
+
+      let nextIdx = currIdx;
+      if(isDistance || isFlick){
+        if(dx < 0 && currIdx < DAYS.length - 1){
+          nextIdx = currIdx + 1;
+        } else if(dx > 0 && currIdx > 0){
+          nextIdx = currIdx - 1;
+        }
+      }
+
+      selectDay(DAYS[nextIdx], true);
+    }, { passive: true });
+
+    panelsEl.addEventListener("touchcancel", () => {
+      if(!touchTracking) return;
+      touchTracking = false;
+      if(isSwiping){
+        isSwiping = false;
+        selectDay(currentDay, true);
       }
     }, { passive: true });
 
@@ -765,13 +847,17 @@ async function initTimetableApp() {
       legendEl.appendChild(item);
     });
 
-    selectDay(DAYS.includes(nowDayName) ? nowDayName : "Monday");
+    selectDay(DAYS.includes(nowDayName) ? nowDayName : "Monday", false);
     requestAnimationFrame(() => {
       indicator.style.transition = "";
       moveIndicator();
+      updateContainerHeight(false);
     });
     if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(moveIndicator);
+      document.fonts.ready.then(() => {
+        moveIndicator();
+        updateContainerHeight(false);
+      });
     }
 
     setTimeout(() => {
@@ -923,9 +1009,11 @@ async function initTimetableApp() {
         const todayPanel = panelsEl.querySelector('.day-panel.active');
         if (todayPanel) {
           if (breakActive && !breakTimetableVisible) {
-            todayPanel.style.display = 'none';
+            todayPanel.style.opacity = '0';
+            todayPanel.style.pointerEvents = 'none';
           } else {
-            todayPanel.style.display = '';
+            todayPanel.style.opacity = '';
+            todayPanel.style.pointerEvents = '';
           }
         }
         // When break ends, reset the user override

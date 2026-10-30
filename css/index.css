@@ -430,26 +430,27 @@ body.exam-mode .legend-title {
   position: relative;
   min-height: 200px;
   touch-action: pan-y;
+  overflow: hidden;
+  width: 100%;
 }
 
-#panels.sliding {
-  overflow: hidden;
+.panels-track {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  align-items: flex-start;
+  will-change: transform;
 }
 
 .day-panel {
-  display: none;
+  flex: 0 0 100%;
+  width: 100%;
+  min-width: 100%;
+  max-width: 100%;
+  display: flex;
   flex-direction: column;
   gap: var(--space-xs);
-}
-
-.day-panel.sliding-panel {
-  display: flex;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
-  will-change: transform;
+  box-sizing: border-box;
 }
 
 .day-panel.active {
