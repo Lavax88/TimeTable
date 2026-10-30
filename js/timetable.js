@@ -407,7 +407,7 @@ async function initTimetableApp() {
 
     function isSaturdayClassWeek(date){
       const occurrence = Math.ceil(date.getDate() / 7);
-      return occurrence === 1 || occurrence === 3;
+      return occurrence === 1 || occurrence === 3 || occurrence === 5;
     }
     function isClassDayToday(day){
       if(day !== nowDayName) return false;
@@ -480,9 +480,14 @@ async function initTimetableApp() {
 
       if(day === "Saturday"){
         const banner = document.createElement("div");
+        const satDate = thisWeeksSaturday(now);
+        const satOccurrence = Math.ceil(satDate.getDate() / 7);
         if(thisWeekHasNoSaturdayClass){
           banner.className = "caution-banner";
-          banner.textContent = "No classes this Saturday. Classes only run on the 1st & 3rd Saturdays of the month.";
+          banner.textContent = "No classes this Saturday. Classes only run on the 1st, 3rd & 5th Saturdays of the month.";
+        } else if(satOccurrence === 5){
+          banner.className = "caution-banner success";
+          banner.textContent = "Saturday class is scheduled this week — there is class during the 5th Saturday.";
         } else {
           banner.className = "caution-banner success";
           banner.textContent = "Saturday class is scheduled this week.";
@@ -881,7 +886,7 @@ async function initTimetableApp() {
         const rawPeriods = _SCHEDULE[nowDayName];
         if (rawPeriods && rawPeriods.length > 0) {
           const isSaturday = nowDayName === 'Saturday';
-          const hasClass = isSaturday ? (Math.ceil(t.getDate() / 7) === 1 || Math.ceil(t.getDate() / 7) === 3) : true;
+          const hasClass = isSaturday ? isSaturdayClassWeek(t) : true;
           if (hasClass) {
             for (let i = 0; i < rawPeriods.length - 1; i++) {
               const currentEnd = minutesOf(rawPeriods[i][1]);
