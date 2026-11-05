@@ -1,4 +1,4 @@
-const CACHE_NAME = 'timetable-cache-v26';
+const CACHE_NAME = 'timetable-cache-v30';
 
 const urlsToCache = [
   './',
@@ -24,29 +24,17 @@ self.addEventListener('install', event => {
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
-  // Network-first for API calls, page navigation, and manifest (always fresh when online, cache offline)
-  if (
-    url.pathname.startsWith('/api/') ||
-    event.request.mode === 'navigate' ||
-    url.pathname.endsWith('.html') ||
-    url.pathname.endsWith('manifest.json')
-  ) {
-    event.respondWith(
-      fetch(event.request)
-        .then(response => {
+  // Network-first for all requests: always get fresh content when online, fall back to cache when offline
+  event.respondWith(
+    fetch(event.request)
+      .then(response => {
+        if (response && response.status === 200 && (response.type === 'basic' || response.type === 'cors')) {
           const clone = response.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-          return response;
-        })
-        .catch(() => caches.match(event.request))
-    );
-    return;
-  }
-
-  // Cache-first for static assets (CSS, JS, images)
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => response || fetch(event.request))
+        }
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
 
