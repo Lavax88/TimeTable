@@ -639,6 +639,7 @@ async function initTimetableApp() {
       }
 
       if(animate){
+        panelsTrack.classList.add("swiping");
         panelsTrack.style.transition = `transform ${durationMs}ms ${easing}`;
         indicator.style.transition = `transform ${durationMs}ms var(--ease-out), width ${durationMs}ms var(--ease-out)`;
         updateContainerHeight(true, durationMs);
@@ -657,6 +658,7 @@ async function initTimetableApp() {
           panelsEl.style.transition = "none";
           indicator.style.transition = "";
           updateContainerHeight(false);
+          panelsTrack.classList.remove("swiping");
           animTimer = null;
         }, durationMs + 20);
       }
@@ -691,12 +693,24 @@ async function initTimetableApp() {
     let isScrolling = false;
     let panelWidth = 0;
     let startTranslateX = 0;
+    let cachedHeights = [];
+    let cachedTabs = [];
+    let rafId = null;
+    let latestTranslateX = 0;
+    let latestHeight = 0;
+    let latestIndicatorLeft = 0;
+    let latestIndicatorWidth = 0;
+    let latestActiveIdx = -1;
 
     panelsEl.addEventListener("touchstart", (e) => {
       if(e.touches.length !== 1) return;
       if(animTimer){
         clearTimeout(animTimer);
         animTimer = null;
+      }
+      if(rafId){
+        cancelAnimationFrame(rafId);
+        rafId = null;
       }
       panelsTrack.style.transition = "none";
       panelsEl.style.transition = "none";
@@ -713,6 +727,12 @@ async function initTimetableApp() {
       const currIdx = DAYS.indexOf(currentDay);
       startTranslateX = -currIdx * panelWidth;
       updateContainerHeight(false);
+
+      // Pre-cache heights and tab coordinates once to avoid 60fps layout thrashing
+      cachedHeights = Array.from(panelsTrack.children).map(c => c.offsetHeight);
+      const allTabs = tabsEl.querySelectorAll(".tab");
+      cachedTabs = Array.from(allTabs).map(t => ({ left: t.offsetLeft, width: t.offsetWidth }));
+      panelsTrack.classList.add("swiping");
     }, { passive: true });
 
     panelsEl.addEventListener("touchmove", (e) => {
@@ -727,6 +747,7 @@ async function initTimetableApp() {
         // Vertical scroll detection: let page scroll naturally
         if(absY > absX && absY > 8){
           isScrolling = true;
+          panelsTrack.classList.remove("swiping");
           return;
         }
         // Horizontal swipe detection: lock into swiping
@@ -750,45 +771,56 @@ async function initTimetableApp() {
         }
 
         const currentTranslateX = startTranslateX + appliedDx;
-        panelsTrack.style.transform = `translateX(${currentTranslateX}px)`;
 
-        // Live height interpolation
         const targetIdx = rawDx < 0
           ? Math.min(DAYS.length - 1, currIdx + 1)
           : Math.max(0, currIdx - 1);
 
-        const currentH = panelsTrack.children[currIdx] ? panelsTrack.children[currIdx].offsetHeight : 0;
-        const targetH = panelsTrack.children[targetIdx] ? panelsTrack.children[targetIdx].offsetHeight : 0;
+        const currentH = cachedHeights[currIdx] || 0;
+        const targetH = cachedHeights[targetIdx] || 0;
         const progress = Math.min(1, Math.abs(appliedDx) / panelWidth);
 
-        if(currentH > 0 && targetH > 0){
-          const liveH = Math.round(currentH + (targetH - currentH) * progress);
-          panelsEl.style.height = liveH + "px";
+        latestTranslateX = currentTranslateX;
+        latestHeight = (currentH > 0 && targetH > 0)
+          ? Math.round(currentH + (targetH - currentH) * progress)
+          : 0;
+
+        const curTab = cachedTabs[currIdx];
+        const tgtTab = cachedTabs[targetIdx];
+        if(curTab && tgtTab){
+          latestIndicatorLeft = curTab.left + (tgtTab.left - curTab.left) * progress;
+          latestIndicatorWidth = curTab.width + (tgtTab.width - curTab.width) * progress;
+          latestActiveIdx = progress > 0.5 ? targetIdx : currIdx;
         }
 
-        // Live tab indicator movement
-        const allTabs = tabsEl.querySelectorAll(".tab");
-        const curTab = allTabs[currIdx];
-        const tgtTab = allTabs[targetIdx];
-        if(curTab && tgtTab){
-          const curLeft = curTab.offsetLeft;
-          const curW = curTab.offsetWidth;
-          const tgtLeft = tgtTab.offsetLeft;
-          const tgtW = tgtTab.offsetWidth;
-          indicator.style.transition = "none";
-          indicator.style.transform = `translateX(${curLeft + (tgtLeft - curLeft) * progress}px)`;
-          indicator.style.width = `${curW + (tgtW - curW) * progress}px`;
-
-          const activeIdx = progress > 0.5 ? targetIdx : currIdx;
-          allTabs.forEach((t, i) => t.classList.toggle("active", i === activeIdx));
+        if(!rafId){
+          rafId = requestAnimationFrame(() => {
+            rafId = null;
+            panelsTrack.style.transform = `translateX(${latestTranslateX}px)`;
+            if(latestHeight > 0){
+              panelsEl.style.height = latestHeight + "px";
+            }
+            if(latestIndicatorWidth > 0){
+              indicator.style.transition = "none";
+              indicator.style.transform = `translateX(${latestIndicatorLeft}px)`;
+              indicator.style.width = `${latestIndicatorWidth}px`;
+              const allTabs = tabsEl.querySelectorAll(".tab");
+              allTabs.forEach((t, i) => t.classList.toggle("active", i === latestActiveIdx));
+            }
+          });
         }
       }
     }, { passive: false });
 
     panelsEl.addEventListener("touchend", (e) => {
       if(!touchTracking) return;
+      if(rafId){
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
       if(!isSwiping){
         touchTracking = false;
+        panelsTrack.classList.remove("swiping");
         return;
       }
       touchTracking = false;
@@ -819,7 +851,12 @@ async function initTimetableApp() {
 
     panelsEl.addEventListener("touchcancel", () => {
       if(!touchTracking) return;
+      if(rafId){
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
       touchTracking = false;
+      panelsTrack.classList.remove("swiping");
       if(isSwiping){
         isSwiping = false;
         selectDay(currentDay, true);

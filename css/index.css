@@ -128,6 +128,7 @@ h1 {
   color: var(--color-ink);
   line-height: 1.15;
   margin: var(--space-xs) 0;
+  max-width: calc(100% - 140px);
 }
 
 .meta-plates-row, .meta-row {
@@ -496,6 +497,10 @@ body.exam-mode .legend-title {
   will-change: transform;
 }
 
+.panels-track:not(.swiping) .day-panel:not(.active) {
+  visibility: hidden;
+}
+
 .day-panel {
   flex: 0 0 100%;
   width: 100%;
@@ -518,8 +523,8 @@ body.exam-mode .legend-title {
   flex-direction: column;
   color: var(--color-ink);
   background: var(--glass);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.3);
-  backdrop-filter: blur(var(--glass-blur)) saturate(1.3);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
   border: 2px solid var(--color-rule);
   border-radius: var(--radius-card);
   box-shadow: var(--glass-hi), var(--shadow-card);
@@ -1166,6 +1171,28 @@ body.exam-mode .legend-title {
 /* =========================================================
    10. VIEWPORT EMULATION & RESPONSIVENESS
    ========================================================= */
+body.dev-mobile-ui {
+  --glass-blur: 12px;
+}
+
+body.dev-mobile-ui header {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-md);
+}
+
+body.dev-mobile-ui .header-actions {
+  position: static;
+  align-self: flex-end;
+  margin-bottom: var(--space-2xs);
+}
+
+body.dev-mobile-ui h1 {
+  font-size: var(--text-xl);
+  max-width: 100%;
+  margin: 0 0 var(--space-xs);
+}
+
 body.dev-mobile-ui .wrap {
   max-width: 440px;
   margin-inline: auto;
@@ -1240,12 +1267,30 @@ body.dev-desktop-ui .wrap {
 
 /* Real mobile & tablet viewport queries */
 @media (max-width: 600px) {
+  :root {
+    --glass-blur: 12px;
+  }
+
+  body:not(.dev-desktop-ui) header {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-md);
+  }
+
+  body:not(.dev-desktop-ui) .header-actions {
+    position: static;
+    align-self: flex-end;
+    margin-bottom: var(--space-2xs);
+  }
+
   body:not(.dev-desktop-ui) .wrap {
     padding: var(--space-md) var(--space-xs) var(--space-2xl);
   }
 
   body:not(.dev-desktop-ui) h1 {
     font-size: var(--text-xl);
+    max-width: 100%;
+    margin: 0 0 var(--space-xs);
   }
 
   body:not(.dev-desktop-ui) .tab {
