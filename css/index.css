@@ -714,13 +714,13 @@ body.exam-mode .legend-title {
 .card.break {
   color: var(--color-muted);
   background: color-mix(in oklab, var(--color-paper-2) 60%, transparent);
-  border: 2px dashed var(--color-rule);
+  border: var(--rule-hair) dashed var(--color-rule);
 }
 
 .card.break .card-time {
   color: var(--color-muted);
   background: transparent;
-  border-right: 2px dashed var(--color-rule);
+  border-right: var(--rule-hair) dashed var(--color-rule);
 }
 
 .card.break .card-time .p-time {
