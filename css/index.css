@@ -1176,20 +1176,22 @@ body.dev-mobile-ui {
 }
 
 body.dev-mobile-ui header {
-  display: flex;
-  flex-direction: column;
+  position: relative;
   padding: var(--space-md);
 }
 
 body.dev-mobile-ui .header-actions {
-  position: static;
-  align-self: flex-end;
-  margin-bottom: var(--space-2xs);
+  position: absolute;
+  top: var(--space-md);
+  right: var(--space-md);
+  display: flex;
+  gap: var(--space-2xs);
+  align-items: center;
 }
 
 body.dev-mobile-ui h1 {
   font-size: var(--text-xl);
-  max-width: 100%;
+  max-width: calc(100% - 88px);
   margin: 0 0 var(--space-xs);
 }
 
@@ -1272,15 +1274,17 @@ body.dev-desktop-ui .wrap {
   }
 
   body:not(.dev-desktop-ui) header {
-    display: flex;
-    flex-direction: column;
+    position: relative;
     padding: var(--space-md);
   }
 
   body:not(.dev-desktop-ui) .header-actions {
-    position: static;
-    align-self: flex-end;
-    margin-bottom: var(--space-2xs);
+    position: absolute;
+    top: var(--space-md);
+    right: var(--space-md);
+    display: flex;
+    gap: var(--space-2xs);
+    align-items: center;
   }
 
   body:not(.dev-desktop-ui) .wrap {
@@ -1289,7 +1293,7 @@ body.dev-desktop-ui .wrap {
 
   body:not(.dev-desktop-ui) h1 {
     font-size: var(--text-xl);
-    max-width: 100%;
+    max-width: calc(100% - 88px);
     margin: 0 0 var(--space-xs);
   }
 
