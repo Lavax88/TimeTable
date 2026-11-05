@@ -61,8 +61,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/index.css?v=30">
-  <link rel="stylesheet" href="css/features.css?v=30">
+  <link rel="stylesheet" href="css/index.css?v=31">
+  <link rel="stylesheet" href="css/features.css?v=31">
 
   <link rel="icon" type="image/png" href="logo.png?v=4">
   <link rel="apple-touch-icon" href="logo.png?v=4">
@@ -281,8 +281,8 @@
   </div>
 </div>
 
-<script src="js/timetable.js?v=30"></script>
-<script src="js/features.js?v=30"></script>
+<script src="js/timetable.js?v=31"></script>
+<script src="js/features.js?v=31"></script>
 <script>
   if ('serviceWorker' in navigator) {
     let refreshing = false;
@@ -293,7 +293,7 @@
       }
     });
     window.addEventListener('load', function() {
-      navigator.serviceWorker.register('./sw.js?v=30')
+      navigator.serviceWorker.register('./sw.js?v=31')
         .then(function(reg) {
           reg.update();
         })
