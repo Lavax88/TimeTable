@@ -191,6 +191,16 @@ const typeShortLabels = {
   reminder: 'REMINDER'
 };
 
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function isEventExpired(ev) {
   if (!ev || !ev.date) return false;
   const parts = ev.date.split('-').map(Number);
@@ -202,11 +212,18 @@ function renderEventsList(events) {
   const listEl = document.getElementById('eventsList');
   const activeEvents = (events || []).filter(e => !isEventExpired(e));
   window._cachedEvents = activeEvents;
+
+  const clearAllBtn = document.getElementById('clearAllBtn');
+  const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+
   if (activeEvents.length === 0) {
-    listEl.innerHTML = `<p style="color: var(--ink-soft); font-size: 14px;">No upcoming events found.</p>`;
-    document.getElementById('deleteSelectedBtn').style.display = 'none';
+    listEl.innerHTML = `<p class="admin-muted-text">No upcoming events found.</p>`;
+    if (deleteSelectedBtn) deleteSelectedBtn.style.display = 'none';
+    if (clearAllBtn) clearAllBtn.style.display = 'none';
     return;
   }
+
+  if (clearAllBtn) clearAllBtn.style.display = 'inline-block';
   listEl.innerHTML = '';
 
   const examTitleCount = {};
@@ -219,31 +236,38 @@ function renderEventsList(events) {
   activeEvents.forEach((ev, idx) => {
     const item = document.createElement('div');
     item.className = 'event-item';
+    item.dataset.index = idx;
+
     const displayTitle = ev.title || ev.subject || 'Untitled';
-    const typeLabel = typeShortLabels[ev.type] || ev.type.toUpperCase();
+    const typeLabel = typeShortLabels[ev.type] || (ev.type || '').toUpperCase();
+    const safeTitle = (ev.title || '').replace(/'/g, "\\'");
+    const safeSubject = (ev.subject || '').replace(/'/g, "\\'");
+    const isSeries = ev.type === 'exam' && examTitleCount[ev.title] > 1;
 
-    const safeTitle = ev.title.replace(/'/g, "\\'");
-
-    let actionsHtml = `<input type="checkbox" class="event-checkbox" data-index="${idx}" style="margin-right:10px;accent-color:var(--toc);">`;
-    actionsHtml += `<button class="del-btn" onclick="deleteEvent('${safeTitle}', '${ev.date}')">Delete</button>`;
-
-    if (ev.type === 'exam' && examTitleCount[ev.title] > 1) {
-      actionsHtml += `<button class="del-btn" onclick="deleteSeries('${safeTitle}')" style="background:var(--ink-soft);margin-left:6px;">Delete All</button>`;
+    const subtitleParts = [ev.date, typeLabel];
+    if (ev.subject && ev.subject !== ev.title) {
+      subtitleParts.push(ev.subject);
     }
 
     item.innerHTML = `
-      <div style="display:flex;align-items:center;gap:8px;">
-        ${actionsHtml}
-        <div>
-          <span style="font-weight: 700; font-size: 14px; display: block;">${displayTitle}</span>
-          <span style="font-size: 12px; color: var(--ink-soft); text-transform: capitalize;">${ev.date} · ${typeLabel}</span>
+      <div class="event-info-group">
+        <input type="checkbox" class="event-checkbox" data-index="${idx}" aria-label="Select event ${escapeHtml(displayTitle)}">
+        <div class="event-meta">
+          <span class="event-title-text">${escapeHtml(displayTitle)}</span>
+          <span class="event-subtitle-text">${escapeHtml(subtitleParts.join(' · '))}</span>
         </div>
+      </div>
+      <div class="event-actions-group">
+        <button type="button" class="del-btn edit-btn" onclick="startEditEvent(${idx})">Edit</button>
+        <button type="button" class="del-btn admin-del-danger" onclick="deleteEvent('${safeTitle}', '${ev.date}', '${safeSubject}')">Delete</button>
+        ${isSeries ? `<button type="button" class="del-btn admin-btn-series" onclick="deleteSeries('${safeTitle}')">Delete All</button>` : ''}
       </div>
     `;
     item.querySelector('.event-checkbox').addEventListener('change', updateDeleteSelectedBtn);
     listEl.appendChild(item);
   });
-  document.getElementById('deleteSelectedBtn').style.display = events.length > 0 ? 'inline-block' : 'none';
+
+  updateDeleteSelectedBtn();
 }
 
 function updateDeleteSelectedBtn() {
@@ -251,11 +275,142 @@ function updateDeleteSelectedBtn() {
   document.getElementById('deleteSelectedBtn').style.display = checked > 0 ? 'inline-block' : 'none';
 }
 
+window.startEditEvent = function(idx) {
+  if (!pwdInput.value) {
+    alert("Please enter the Admin Password at the top first to edit events.");
+    pwdInput.focus();
+    return;
+  }
+
+  const ev = window._cachedEvents[idx];
+  if (!ev) return;
+
+  const item = document.querySelector(`.event-item[data-index="${idx}"]`);
+  if (!item) return;
+
+  item.classList.add('editing');
+
+  let subjectOptions = '<option value="">(No subject)</option>';
+  for (const [key, details] of Object.entries(window._subjects || {})) {
+    if (key !== "ACT" && key !== "LABCOMBO") {
+      const selected = ev.subject === details.name ? 'selected' : '';
+      subjectOptions += `<option value="${escapeHtml(details.name)}" ${selected}>${escapeHtml(details.name)}</option>`;
+    }
+  }
+  subjectOptions += `<option value="General" ${ev.subject === 'General' ? 'selected' : ''}>General / Other</option>`;
+
+  const isNoSubj = ['general', 'reminder'].includes(ev.type);
+
+  item.innerHTML = `
+    <div class="event-edit-card">
+      <div class="event-edit-header">
+        <span class="event-edit-title">Editing: <strong>${escapeHtml(ev.title || 'Event')}</strong></span>
+      </div>
+      <div class="event-edit-fields">
+        <div class="event-edit-col">
+          <label class="event-edit-label">Event Name / Title</label>
+          <input type="text" class="input-field edit-title-input" value="${escapeHtml(ev.title || '')}" required>
+        </div>
+        <div class="event-edit-row">
+          <div class="event-edit-col">
+            <label class="event-edit-label">Date</label>
+            <input type="date" class="input-field edit-date-input" value="${ev.date}" required>
+          </div>
+          <div class="event-edit-col">
+            <label class="event-edit-label">Type</label>
+            <select class="input-field edit-type-select">
+              <option value="exam" ${ev.type === 'exam' ? 'selected' : ''}>Exam</option>
+              <option value="test" ${ev.type === 'test' ? 'selected' : ''}>Test</option>
+              <option value="deadline" ${ev.type === 'deadline' ? 'selected' : ''}>Deadline</option>
+              <option value="general" ${ev.type === 'general' ? 'selected' : ''}>General</option>
+              <option value="reminder" ${ev.type === 'reminder' ? 'selected' : ''}>Reminder</option>
+            </select>
+          </div>
+          <div class="event-edit-col edit-subject-col" style="${isNoSubj ? 'display:none;' : ''}">
+            <label class="event-edit-label">Subject</label>
+            <select class="input-field edit-subject-select">
+              ${subjectOptions}
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="event-edit-actions">
+        <button type="button" class="admin-btn admin-btn-toc" onclick="saveEditEvent(${idx})">Save Changes</button>
+        <button type="button" class="del-btn" onclick="cancelEditEvent(${idx})">Cancel</button>
+      </div>
+    </div>
+  `;
+
+  const typeSel = item.querySelector('.edit-type-select');
+  const subjCol = item.querySelector('.edit-subject-col');
+  typeSel.addEventListener('change', () => {
+    const hide = ['general', 'reminder'].includes(typeSel.value);
+    subjCol.style.display = hide ? 'none' : '';
+  });
+};
+
+window.cancelEditEvent = function(idx) {
+  renderEventsList(window._cachedEvents);
+};
+
+window.saveEditEvent = function(idx) {
+  if (!pwdInput.value) {
+    alert("Please enter the Admin Password at the top first.");
+    pwdInput.focus();
+    return;
+  }
+
+  const ev = window._cachedEvents[idx];
+  if (!ev) return;
+
+  const item = document.querySelector(`.event-item[data-index="${idx}"]`);
+  if (!item) return;
+
+  const titleInp = item.querySelector('.edit-title-input');
+  const dateInp = item.querySelector('.edit-date-input');
+  const typeSel = item.querySelector('.edit-type-select');
+  const subjSel = item.querySelector('.edit-subject-select');
+
+  const newTitle = titleInp ? titleInp.value.trim() : '';
+  const newDate = dateInp ? dateInp.value : '';
+  const newType = typeSel ? typeSel.value : 'exam';
+  const newSubj = subjSel && !['general', 'reminder'].includes(newType) ? subjSel.value : '';
+
+  if (!newTitle) {
+    alert("Please enter an event name/title.");
+    if (titleInp) titleInp.focus();
+    return;
+  }
+  if (!newDate) {
+    alert("Please select a date.");
+    if (dateInp) dateInp.focus();
+    return;
+  }
+
+  const updatedEvent = {
+    title: newTitle,
+    date: newDate,
+    type: newType,
+  };
+  if (newSubj) {
+    updatedEvent.subject = newSubj;
+  }
+
+  sendToAPI({
+    password: pwdInput.value,
+    action: 'edit',
+    targetTitle: ev.title,
+    targetDate: ev.date,
+    targetSubject: ev.subject,
+    updatedEvent: updatedEvent
+  });
+};
+
 function renderHolidaysList() {
   const listEl = document.getElementById('holidaysList');
   const holidays = window._holidays || [];
   if (holidays.length === 0) {
-    listEl.innerHTML = `<p style="color: var(--ink-soft); font-size: 14px;">No holidays set.</p>`;
+    listEl.innerHTML = `<p class="admin-muted-text">No holidays set.</p>`;
     return;
   }
   listEl.innerHTML = '';
@@ -264,11 +419,11 @@ function renderHolidaysList() {
     const item = document.createElement('div');
     item.className = 'event-item';
     item.innerHTML = `
-      <div>
-        <span style="font-weight: 700; font-size: 14px; display: block;">${date}</span>
-        <span style="font-size: 12px; color: var(--ink-soft);">No notifications</span>
+      <div class="event-meta">
+        <span class="event-title-text">${escapeHtml(date)}</span>
+        <span class="event-subtitle-text">No notifications</span>
       </div>
-      <button class="del-btn" onclick="removeHoliday('${date}')" style="background: var(--ink-soft);">Remove</button>
+      <button type="button" class="del-btn admin-del-danger" onclick="removeHoliday('${date}')">Remove</button>
     `;
     listEl.appendChild(item);
   });
@@ -350,19 +505,23 @@ document.getElementById('submitEventsBtn').addEventListener('click', (e) => {
   sendToAPI({ password: pwdInput.value, action: 'add', events: events });
 });
 
-window.deleteEvent = function(title, date) {
+window.deleteEvent = function(title, date, subject) {
   if (!pwdInput.value) {
     alert("Please enter the Admin Password at the top to unlock deletion.");
+    pwdInput.focus();
     return;
   }
   if (confirm(`Are you sure you want to delete '${title}'?`)) {
-    sendToAPI({ password: pwdInput.value, action: 'delete', targetTitle: title, targetDate: date });
+    const payload = { password: pwdInput.value, action: 'delete', targetTitle: title, targetDate: date };
+    if (subject) payload.targetSubject = subject;
+    sendToAPI(payload);
   }
 };
 
 window.deleteSeries = function(title) {
   if (!pwdInput.value) {
     alert("Please enter the Admin Password at the top to unlock deletion.");
+    pwdInput.focus();
     return;
   }
   if (confirm(`Delete ALL events in the series '${title}'? This cannot be undone.`)) {
@@ -371,16 +530,19 @@ window.deleteSeries = function(title) {
 };
 
 document.getElementById('deleteSelectedBtn').addEventListener('click', () => {
-  if (!pwdInput.value) { alert("Please enter the Admin Password at the top first."); return; }
+  if (!pwdInput.value) { alert("Please enter the Admin Password at the top first."); pwdInput.focus(); return; }
   const checked = document.querySelectorAll('.event-checkbox:checked');
   if (checked.length === 0) return;
   if (confirm(`Delete ${checked.length} selected event(s)?`)) {
+    const targets = [];
     checked.forEach(cb => {
       const idx = parseInt(cb.dataset.index);
       const ev = window._cachedEvents[idx];
-      if (ev) sendToAPI({ password: pwdInput.value, action: 'delete', targetTitle: ev.title, targetDate: ev.date });
+      if (ev) targets.push({ title: ev.title, date: ev.date, subject: ev.subject });
     });
-    setTimeout(loadData, 2000);
+    if (targets.length > 0) {
+      sendToAPI({ password: pwdInput.value, action: 'delete_multiple', targets: targets });
+    }
   }
 });
 

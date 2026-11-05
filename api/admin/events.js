@@ -80,12 +80,60 @@ module.exports = async (req, res) => {
         current.EVENTS.push(...newEvents);
         break;
       }
+      case 'edit': {
+        const t = body.targetTitle;
+        const d = body.targetDate;
+        const s = body.targetSubject;
+        const updated = body.updatedEvent;
+        if (!updated || !updated.title || !updated.date) {
+          return res.status(400).json({ error: 'Missing title or date for updated event.' });
+        }
+        let idx = -1;
+        if (s !== undefined && s !== '') {
+          idx = current.EVENTS.findIndex(e => e.title === t && e.date === d && e.subject === s);
+        }
+        if (idx === -1) {
+          idx = current.EVENTS.findIndex(e => e.title === t && e.date === d);
+        }
+        if (idx === -1) {
+          return res.status(404).json({ error: 'Original event not found to edit.' });
+        }
+        const existing = current.EVENTS[idx];
+        const newEv = {
+          ...existing,
+          title: updated.title.trim(),
+          date: updated.date,
+          type: updated.type || existing.type
+        };
+        if (updated.subject && !['general', 'reminder'].includes(newEv.type)) {
+          newEv.subject = updated.subject;
+        } else {
+          delete newEv.subject;
+        }
+        current.EVENTS[idx] = newEv;
+        break;
+      }
       case 'delete': {
         const t = body.targetTitle;
         const d = body.targetDate;
+        const s = body.targetSubject;
+        if (s !== undefined && s !== '') {
+          const idx = current.EVENTS.findIndex(e => e.title === t && e.date === d && e.subject === s);
+          if (idx !== -1) {
+            current.EVENTS.splice(idx, 1);
+            break;
+          }
+        }
         current.EVENTS = current.EVENTS.filter(
           e => !(e.title === t && e.date === d)
         );
+        break;
+      }
+      case 'delete_multiple': {
+        const targets = body.targets || [];
+        current.EVENTS = current.EVENTS.filter(e => {
+          return !targets.some(t => t.title === e.title && t.date === e.date && (t.subject === undefined || t.subject === e.subject));
+        });
         break;
       }
       case 'delete_series': {

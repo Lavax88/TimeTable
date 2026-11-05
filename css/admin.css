@@ -22,6 +22,10 @@
 }
 
 .admin-section-card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
   padding: var(--space-lg);
   margin-bottom: var(--space-lg);
   border: var(--rule-bar) solid var(--color-ink);
@@ -89,17 +93,21 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
   margin-bottom: var(--space-md);
+  width: 100%;
+}
+
+.admin-header-row .admin-heading {
+  margin-bottom: 0;
 }
 
 .admin-header-actions {
   display: flex;
+  align-items: center;
   gap: var(--space-xs);
-}
-
-.admin-del-clear {
-  background: var(--ds);
-  color: var(--color-accent-ink);
+  flex-wrap: wrap;
 }
 
 .admin-muted-text {
@@ -119,14 +127,76 @@
   margin: 0;
 }
 
+#eventsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  width: 100%;
+}
+
 .event-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
   background: var(--color-paper-2);
   border: var(--rule-hair) solid var(--color-rule);
-  margin-bottom: var(--space-xs);
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.event-item.editing {
+  background: var(--color-paper-3);
+  border: var(--rule-bar) solid var(--color-ink);
+  padding: var(--space-md);
+}
+
+.event-info-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  min-width: 0;
+  flex: 1 1 240px;
+}
+
+.event-checkbox {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--toc);
+  flex-shrink: 0;
+}
+
+.event-meta {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3xs);
+}
+
+.event-title-text {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-xs);
+  color: var(--color-ink);
+  word-break: break-word;
+}
+
+.event-subtitle-text {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  color: var(--color-muted);
+}
+
+.event-actions-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  flex-wrap: wrap;
+  flex-shrink: 0;
 }
 
 .del-btn {
@@ -138,12 +208,102 @@
   font-family: var(--font-body);
   font-weight: 700;
   font-size: var(--text-xs);
-  transition: background-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out);
+  transition: background-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out), border-color var(--dur-short) var(--ease-out);
 }
 
 .del-btn:hover {
   background: var(--color-ink);
   color: var(--color-paper-3);
+}
+
+.del-btn.edit-btn:hover {
+  background: var(--toc);
+  color: var(--color-accent-ink);
+  border-color: var(--toc);
+}
+
+.del-btn.admin-del-danger:hover {
+  background: var(--ds);
+  color: var(--color-accent-ink);
+  border-color: var(--ds);
+}
+
+.del-btn.admin-del-clear {
+  background: var(--ds);
+  color: var(--color-accent-ink);
+}
+
+.del-btn.admin-del-clear:hover {
+  opacity: 0.88;
+}
+
+.del-btn.admin-btn-series {
+  background: var(--color-paper-2);
+  color: var(--color-ink);
+  border: var(--rule-hair) solid var(--color-muted);
+}
+
+.del-btn.admin-btn-series:hover {
+  background: var(--ds);
+  color: var(--color-accent-ink);
+  border-color: var(--ds);
+}
+
+/* Inline Edit Card inside event item */
+.event-edit-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  width: 100%;
+}
+
+.event-edit-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: var(--rule-hair) solid var(--color-rule);
+  padding-bottom: var(--space-xs);
+}
+
+.event-edit-title {
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.event-edit-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.event-edit-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3xs);
+  flex: 1 1 120px;
+}
+
+.event-edit-row {
+  display: flex;
+  gap: var(--space-xs);
+  flex-wrap: wrap;
+}
+
+.event-edit-label {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--color-muted);
+}
+
+.event-edit-actions {
+  display: flex;
+  gap: var(--space-xs);
+  align-items: center;
+  flex-wrap: wrap;
+  padding-top: var(--space-xs);
 }
 
 #eventBuilder { display: none; flex-direction: column; gap: var(--space-md); margin-top: var(--space-md); }
