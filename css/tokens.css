@@ -74,7 +74,7 @@
   --color-focus: oklch(80% 0.10 274);
 
   --color-accent-2: oklch(83% 0.095 62);
-  --color-accent-2-ink: oklch(20% 0.035 62);
+  --color-accent-2-ink: oklch(14% 0.035 62);
   --color-accent-2-hi: oklch(88% 0.085 62);
   --color-accent-2-soft: oklch(27% 0.035 62);
 
@@ -95,9 +95,13 @@
   --glass-hi: inset 0 1px 0 oklch(100% 0 0 / 0.12), inset 0 0 0 1px oklch(100% 0 0 / 0.06);
   --shadow-card: 0 1px 0 oklch(100% 0 0 / 0.06) inset, 0 24px 48px -20px oklch(8% 0.02 268 / 0.6);
   --shadow-lift: 0 1px 0 oklch(100% 0 0 / 0.10) inset, 0 32px 64px -24px oklch(8% 0.02 268 / 0.7);
-  --shadow-active: inset 0 1px 0 oklch(100% 0 0 / 0.16), 0 0 0 1px var(--color-accent), var(--shadow-lift);
+  --shadow-active: inset 0 1px 0 oklch(100% 0 0 / 0.14), 0 8px 28px -6px oklch(77% 0.10 274 / 0.22), var(--shadow-lift);
+  --shadow-break-active: var(--glass-hi), 0 8px 28px -6px oklch(83% 0.095 62 / 0.22), var(--shadow-lift);
   --shadow-popup: 0 1px 0 oklch(100% 0 0 / 0.12) inset, 0 32px 64px -16px oklch(5% 0.02 268 / 0.85);
   --shadow-mobile-shell: 0 0 40px oklch(8% 0.02 268 / 0.5);
+
+  --progress-track-bg: oklch(13.5% 0.015 268);
+  --progress-track-border: oklch(29% 0.016 266);
 
   --font-display: "Wix Madefor Display", ui-sans-serif, system-ui, sans-serif;
   --font-body: "Wix Madefor Text", ui-sans-serif, system-ui, sans-serif;
@@ -196,9 +200,9 @@
   --color-accent-soft: oklch(93% 0.035 274);
   --color-focus: oklch(52% 0.13 274);
 
-  --color-accent-2: oklch(60% 0.14 60);
+  --color-accent-2: oklch(55% 0.14 60);
   --color-accent-2-ink: oklch(99% 0 0);
-  --color-accent-2-hi: oklch(54% 0.14 60);
+  --color-accent-2-hi: oklch(49% 0.14 60);
   --color-accent-2-soft: oklch(94% 0.03 60);
 
   --glass: oklch(99.5% 0.003 75 / 0.88);
@@ -206,9 +210,13 @@
   --glass-hi: inset 0 1px 0 oklch(100% 0 0 / 0.8), inset 0 0 0 1px oklch(21% 0.016 268 / 0.06);
   --shadow-card: 0 1px 2px oklch(21% 0.016 268 / 0.05), 0 16px 36px -16px oklch(21% 0.016 268 / 0.08);
   --shadow-lift: 0 1px 2px oklch(21% 0.016 268 / 0.06), 0 24px 48px -18px oklch(21% 0.016 268 / 0.12);
-  --shadow-active: inset 0 1px 0 oklch(100% 0 0 / 0.8), 0 0 0 1px var(--color-accent), var(--shadow-lift);
+  --shadow-active: inset 0 1px 0 oklch(100% 0 0 / 0.8), 0 8px 24px -6px oklch(52% 0.13 274 / 0.25), var(--shadow-lift);
+  --shadow-break-active: 0 1px 2px oklch(21% 0.016 268 / 0.06), 0 8px 24px -6px oklch(60% 0.14 60 / 0.25), var(--shadow-lift);
   --shadow-popup: 0 12px 32px -8px oklch(21% 0.016 268 / 0.18);
   --shadow-mobile-shell: 0 0 32px oklch(21% 0.016 268 / 0.12);
+
+  --progress-track-bg: oklch(90% 0.010 75);
+  --progress-track-border: oklch(84% 0.010 75);
 
   --toc: oklch(52% 0.15 274);       --toc-soft: oklch(94% 0.03 274);
   --ee:  oklch(50% 0.13 190);       --ee-soft:  oklch(94% 0.025 190);
