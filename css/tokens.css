@@ -1,142 +1,165 @@
 :root {
-  color-scheme: light;
-  --space-3xs: 2px; --space-2xs: 4px; --space-xs: 8px; --space-sm: 12px; --space-md: 16px; --space-lg: 24px; --space-xl: 32px; --space-2xl: 48px; --space-3xl: 64px; --space-4xl: 96px;
-  --text-xs: 0.75rem; --text-sm: 0.875rem; --text-md: 1rem; --text-lg: 1.2rem; --text-xl: 1.44rem; --text-2xl: 1.728rem; --text-3xl: 2.074rem;
-  --text-display-s: 1.44rem; --text-display: 1.728rem; --text-section: 1.2rem; --text-title: 1rem; --text-lead: 1rem;
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1); --ease-in: cubic-bezier(0.7, 0, 0.84, 0); --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-  --dur-micro: 120ms; --dur-short: 220ms; --dur-long: 420ms;
-  --color-error: oklch(52% 0.19 27); --color-error-ink: oklch(99% 0 0);
-  --color-success: oklch(50% 0.12 150); --color-success-ink: oklch(99% 0 0);
-  --container: 900px; --gutter: 24px; --gap-columns: 24px; --section-gap-s: 80px; --section-gap: 112px; --section-gap-l: 144px;
-  --z-base: 1; --z-raised: 10; --z-dropdown: 100; --z-sticky: 200; --z-sticky-nav: 300; --z-modal: 400; --z-toast: 500; --z-tooltip: 600;
+  color-scheme: dark;
+  --space-3xs: 2px;
+  --space-2xs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+  --space-4xl: 96px;
 
-  --color-paper: oklch(95.5% 0.006 250);
-  --color-paper-2: oklch(91% 0.009 250);
-  --color-paper-3: oklch(99.5% 0.005 250);
-  --color-ink: oklch(16% 0.014 262);
-  --color-ink-2: oklch(29% 0.014 262);
-  --color-muted: oklch(47% 0.016 260);
-  --color-rule: oklch(80% 0.011 250);
-  --color-ink-rule: oklch(34% 0.014 262);
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.2rem;
+  --text-xl: 1.44rem;
+  --text-2xl: 1.728rem;
+  --text-3xl: 2.074rem;
 
-  --color-accent: oklch(51% 0.22 264);
-  --color-accent-2: oklch(81% 0.16 82);
-  --color-accent-ink: oklch(99.5% 0.003 250);
-  --color-accent-soft: oklch(93% 0.04 264);
-  --color-focus: oklch(51% 0.22 264);
-  --backdrop-overlay: oklch(0% 0 0 / 0.55);
+  --text-display-s: 1.44rem;
+  --text-display: 1.728rem;
+  --text-section: 1.2rem;
+  --text-title: 1rem;
+  --text-lead: 1rem;
 
-  --font-display: "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-body: "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-outlier: "Chivo Mono", ui-monospace, monospace;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 120ms;
+  --dur-short: 220ms;
+  --dur-long: 420ms;
 
-  --radius-xs: 0px;
-  --radius-sm: 0px;
-  --radius-md: 0px;
-  --radius-lg: 0px;
-  --radius-card: 0px;
+  --color-error: oklch(72% 0.16 27);
+  --color-error-ink: oklch(98% 0.005 75);
+  --color-success: oklch(76% 0.13 150);
+  --color-success-ink: oklch(18% 0.035 150);
+
+  --container: 920px;
+  --gutter: 24px;
+  --gap-columns: 24px;
+  --section-gap-s: 80px;
+  --section-gap: 112px;
+  --section-gap-l: 144px;
+
+  --z-base: 1;
+  --z-raised: 10;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-sticky-nav: 300;
+  --z-modal: 400;
+  --z-toast: 500;
+  --z-tooltip: 600;
+
+  /* Dusk Native Tokens (Dark) */
+  --color-paper: oklch(17.5% 0.014 268);
+  --color-paper-2: oklch(21% 0.016 268);
+  --color-paper-3: oklch(25% 0.017 268);
+  --color-ink: oklch(96% 0.006 75);
+  --color-ink-2: oklch(85% 0.010 262);
+  --color-muted: oklch(70% 0.016 262);
+  --color-rule: oklch(30% 0.016 266);
+  --color-ink-rule: oklch(42% 0.018 266);
+  --color-light: oklch(100% 0 0);
+  --color-shade: oklch(10% 0.022 268);
+
+  /* Signals: Periwinkle (matched/active/done) & Apricot (open/waiting/alert) */
+  --color-accent: oklch(77% 0.10 274);
+  --color-accent-ink: oklch(19% 0.035 274);
+  --color-accent-hi: oklch(84% 0.085 274);
+  --color-accent-deep: oklch(44% 0.13 274);
+  --color-accent-soft: oklch(26% 0.035 274);
+  --color-focus: oklch(80% 0.10 274);
+
+  --color-accent-2: oklch(83% 0.095 62);
+  --color-accent-2-ink: oklch(20% 0.035 62);
+  --color-accent-2-hi: oklch(88% 0.085 62);
+  --color-accent-2-soft: oklch(27% 0.035 62);
+
+  --color-dusk: oklch(70% 0.12 330);
+  --color-day-ink: oklch(22% 0.022 268);
+  --color-day-muted: oklch(38% 0.022 266);
+  --color-fog: oklch(94% 0.012 70);
+
+  --color-well: oklch(95.5% 0.008 75);
+  --color-well-2: oklch(92% 0.010 75);
+  --color-well-ink: oklch(21% 0.016 268);
+  --color-well-muted: oklch(47% 0.016 265);
+  --color-well-rule: oklch(87.5% 0.009 75);
+  --color-card: oklch(99.5% 0.003 75);
+
+  --glass: oklch(22% 0.018 268 / 0.65);
+  --glass-blur: 20px;
+  --glass-hi: inset 0 1px 0 oklch(100% 0 0 / 0.12), inset 0 0 0 1px oklch(100% 0 0 / 0.06);
+  --shadow-card: 0 1px 0 oklch(100% 0 0 / 0.06) inset, 0 24px 48px -20px oklch(8% 0.02 268 / 0.6);
+  --shadow-lift: 0 1px 0 oklch(100% 0 0 / 0.10) inset, 0 32px 64px -24px oklch(8% 0.02 268 / 0.7);
+  --shadow-active: inset 0 1px 0 oklch(100% 0 0 / 0.16), 0 0 0 1px var(--color-accent), var(--shadow-lift);
+  --shadow-popup: 0 1px 0 oklch(100% 0 0 / 0.12) inset, 0 32px 64px -16px oklch(5% 0.02 268 / 0.85);
+  --shadow-mobile-shell: 0 0 40px oklch(8% 0.02 268 / 0.5);
+
+  --font-display: "Wix Madefor Display", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Wix Madefor Text", ui-sans-serif, system-ui, sans-serif;
+  --font-outlier: "Wix Madefor Text", ui-sans-serif, system-ui, sans-serif;
+
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-card: 18px;
+  --radius-inner: 10px;
   --radius-pill: 999px;
   --rule-hair: 1px;
-  --rule-bar: 2px;
+  --rule-bar: 1.5px;
 
-  --shadow-card: none;
-  --shadow-lift: 0 12px 28px -12px oklch(8% 0.01 260 / 0.35);
-  --shadow-popup: 0 12px 32px oklch(8% 0.01 260 / 0.35);
-  --shadow-mobile-shell: 0 0 32px oklch(8% 0.01 260 / 0.25);
-  --tracking-display: -0.015em;
-  --display-weight: 700;
+  --tracking-display: -0.022em;
+  --display-weight: 500;
 
-  /* KTU Subjects - Wayfind Route Colors */
-  --toc: oklch(52% 0.20 260);       --toc-soft: oklch(94% 0.03 260);
-  --ee:  oklch(54% 0.15 195);       --ee-soft:  oklch(94% 0.025 195);
-  --ds:  oklch(52% 0.22 25);        --ds-soft:  oklch(94% 0.03 25);
-  --mat: oklch(58% 0.18 78);        --mat-soft: oklch(94% 0.035 78);
-  --oop: oklch(50% 0.16 145);       --oop-soft: oklch(94% 0.025 145);
-  --dal: oklch(58% 0.19 45);        --dal-soft: oklch(94% 0.035 45);
-  --lab: oklch(52% 0.16 230);       --lab-soft: oklch(94% 0.025 230);
-  --act: oklch(46% 0.02 260);       --act-soft: oklch(93% 0.01 260);
+  /* KTU Subjects - Dusk Palette Harmony */
+  --toc: oklch(76% 0.12 274);       --toc-soft: oklch(26% 0.035 274);
+  --ee:  oklch(76% 0.11 190);       --ee-soft:  oklch(26% 0.035 190);
+  --ds:  oklch(76% 0.13 32);        --ds-soft:  oklch(26% 0.035 32);
+  --mat: oklch(82% 0.11 82);        --mat-soft: oklch(27% 0.035 82);
+  --oop: oklch(76% 0.11 150);       --oop-soft: oklch(26% 0.035 150);
+  --dal: oklch(80% 0.11 60);        --dal-soft: oklch(27% 0.035 60);
+  --lab: oklch(74% 0.11 230);       --lab-soft: oklch(26% 0.035 230);
+  --act: oklch(74% 0.03 268);       --act-soft: oklch(25% 0.015 268);
 
-  /* Legacy mappings */
+  /* Legacy & Compatibility Mappings */
   --bg-1: var(--color-paper);
   --bg-2: var(--color-paper-2);
   --page-base: var(--color-paper);
-  --card-base: var(--color-paper-3);
+  --card-base: var(--glass);
   --card-time-bg: var(--color-paper-2);
   --card-time-border: var(--color-rule);
   --chip-bg: var(--color-paper-2);
   --chip-border: var(--color-rule);
   --tab-bg: var(--color-paper-2);
   --tab-border: var(--color-rule);
-  --legend-bg: var(--color-paper-3);
+  --legend-bg: var(--glass);
   --legend-border: var(--color-rule);
-  --break-border: var(--color-rule);
-  --break-bg: var(--color-paper-2);
-  --navbar-bg: var(--color-paper-3);
-  --navbar-bg-glass: var(--color-paper-3);
+  --break-border: var(--color-accent-2);
+  --break-bg: var(--glass);
+  --navbar-bg: var(--glass);
+  --navbar-bg-glass: var(--glass);
   --navbar-border: var(--color-rule);
-  --shadow-col: oklch(8% 0.01 260 / 0.15);
-  --glass: var(--color-paper-3);
+  --shadow-col: oklch(8% 0.02 268 / 0.4);
   --glass-border: var(--color-rule);
-  --glass-highlight: inset 0 1px 0 0 oklch(99.5% 0.005 250 / 0.8);
+  --glass-highlight: var(--glass-hi);
   --ink: var(--color-ink);
   --ink-soft: var(--color-ink-2);
   --ink-faint: var(--color-muted);
   --accent-primary: var(--color-accent);
   --accent-primary-soft: var(--color-accent-soft);
-  --banner-caution-ink: var(--color-ink);
-  --banner-caution-bg: var(--color-accent-2);
-  --banner-caution-border: var(--color-ink);
-  --banner-success-ink: var(--color-success-ink);
-  --banner-success-bg: var(--color-success);
-  --banner-success-border: var(--color-ink);
-  --now-tag-bg: var(--color-accent);
-  --now-tag-ink: var(--color-accent-ink);
-  --calendar-badge-bg: var(--color-ink);
-  --calendar-badge-ink: var(--color-accent-2);
-  --calendar-badge-border: var(--color-ink);
-  --complete-btn-bg: var(--color-ink);
-  --complete-btn-ink: var(--color-paper-3);
-  --bg-pattern-dot: rgba(16, 18, 24, 0.08);
-  --bg-pattern-line: rgba(16, 18, 24, 0.06);
-  --bg-grid-major: rgba(16, 18, 24, 0.12);
-  --bg-grid-minor: rgba(16, 18, 24, 0.05);
-}
 
-[data-theme="dark"] {
-  color-scheme: dark;
-  --color-paper: oklch(15% 0.012 262);
-  --color-paper-2: oklch(19% 0.014 262);
-  --color-paper-3: oklch(12% 0.010 262);
-  --color-ink: oklch(96% 0.005 250);
-  --color-ink-2: oklch(84% 0.008 250);
-  --color-muted: oklch(68% 0.012 250);
-  --color-rule: oklch(31% 0.014 262);
-  --color-ink-rule: oklch(75% 0.010 250);
-
-  --color-accent: oklch(62% 0.20 264);
-  --color-accent-2: oklch(84% 0.16 82);
-  --color-accent-ink: oklch(15% 0.012 262);
-  --color-accent-soft: oklch(26% 0.06 264);
-  --color-focus: oklch(62% 0.20 264);
-
-  --toc: oklch(70% 0.16 260);       --toc-soft: oklch(24% 0.04 260);
-  --ee:  oklch(72% 0.13 195);       --ee-soft:  oklch(24% 0.035 195);
-  --ds:  oklch(68% 0.18 25);        --ds-soft:  oklch(24% 0.04 25);
-  --mat: oklch(74% 0.15 78);        --mat-soft: oklch(25% 0.045 78);
-  --oop: oklch(68% 0.14 145);       --oop-soft: oklch(24% 0.03 145);
-  --dal: oklch(72% 0.16 45);        --dal-soft: oklch(25% 0.04 45);
-  --lab: oklch(70% 0.14 230);       --lab-soft: oklch(24% 0.035 230);
-  --act: oklch(68% 0.02 260);       --act-soft: oklch(24% 0.015 260);
-
-  --shadow-col: oklch(0% 0 0 / 0.6);
-  --shadow-popup: 0 12px 32px oklch(0% 0 0 / 0.6);
-  --shadow-mobile-shell: 0 0 32px oklch(0% 0 0 / 0.5);
-  --banner-caution-ink: oklch(15% 0.012 262);
+  --banner-caution-ink: var(--color-accent-2-ink);
   --banner-caution-bg: var(--color-accent-2);
   --banner-caution-border: var(--color-accent-2);
-  --banner-success-ink: oklch(15% 0.012 262);
-  --banner-success-bg: oklch(72% 0.15 145);
-  --banner-success-border: oklch(72% 0.15 145);
+  --banner-success-ink: var(--color-success-ink);
+  --banner-success-bg: var(--color-success);
+  --banner-success-border: var(--color-success);
+
   --now-tag-bg: var(--color-accent);
   --now-tag-ink: var(--color-accent-ink);
   --calendar-badge-bg: var(--color-paper-2);
@@ -144,8 +167,75 @@
   --calendar-badge-border: var(--color-rule);
   --complete-btn-bg: var(--color-accent);
   --complete-btn-ink: var(--color-accent-ink);
-  --bg-pattern-dot: rgba(255, 255, 255, 0.08);
-  --bg-pattern-line: rgba(255, 255, 255, 0.06);
-  --bg-grid-major: rgba(255, 255, 255, 0.12);
-  --bg-grid-minor: rgba(255, 255, 255, 0.05);
+
+  --backdrop-overlay: oklch(10% 0.022 268 / 0.72);
+
+  --bg-pattern-dot: oklch(100% 0 0 / 0.045);
+  --bg-pattern-line: oklch(100% 0 0 / 0.035);
+  --bg-grid-major: oklch(100% 0 0 / 0.065);
+  --bg-grid-minor: oklch(100% 0 0 / 0.03);
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --color-paper: oklch(95.5% 0.008 75);
+  --color-paper-2: oklch(92% 0.010 75);
+  --color-paper-3: oklch(99.5% 0.003 75);
+  --color-ink: oklch(21% 0.016 268);
+  --color-ink-2: oklch(34% 0.018 268);
+  --color-muted: oklch(47% 0.016 265);
+  --color-rule: oklch(87.5% 0.009 75);
+  --color-ink-rule: oklch(62% 0.015 268);
+  --color-light: oklch(100% 0 0);
+  --color-shade: oklch(90% 0.010 75);
+
+  --color-accent: oklch(52% 0.13 274);
+  --color-accent-ink: oklch(99% 0 0);
+  --color-accent-hi: oklch(46% 0.14 274);
+  --color-accent-deep: oklch(38% 0.13 274);
+  --color-accent-soft: oklch(93% 0.035 274);
+  --color-focus: oklch(52% 0.13 274);
+
+  --color-accent-2: oklch(60% 0.14 60);
+  --color-accent-2-ink: oklch(99% 0 0);
+  --color-accent-2-hi: oklch(54% 0.14 60);
+  --color-accent-2-soft: oklch(94% 0.03 60);
+
+  --glass: oklch(99.5% 0.003 75 / 0.88);
+  --glass-blur: 16px;
+  --glass-hi: inset 0 1px 0 oklch(100% 0 0 / 0.8), inset 0 0 0 1px oklch(21% 0.016 268 / 0.06);
+  --shadow-card: 0 1px 2px oklch(21% 0.016 268 / 0.05), 0 16px 36px -16px oklch(21% 0.016 268 / 0.08);
+  --shadow-lift: 0 1px 2px oklch(21% 0.016 268 / 0.06), 0 24px 48px -18px oklch(21% 0.016 268 / 0.12);
+  --shadow-active: inset 0 1px 0 oklch(100% 0 0 / 0.8), 0 0 0 1px var(--color-accent), var(--shadow-lift);
+  --shadow-popup: 0 12px 32px -8px oklch(21% 0.016 268 / 0.18);
+  --shadow-mobile-shell: 0 0 32px oklch(21% 0.016 268 / 0.12);
+
+  --toc: oklch(52% 0.15 274);       --toc-soft: oklch(94% 0.03 274);
+  --ee:  oklch(50% 0.13 190);       --ee-soft:  oklch(94% 0.025 190);
+  --ds:  oklch(52% 0.16 32);        --ds-soft:  oklch(94% 0.03 32);
+  --mat: oklch(56% 0.15 82);        --mat-soft: oklch(94% 0.035 82);
+  --oop: oklch(48% 0.14 150);       --oop-soft: oklch(94% 0.025 150);
+  --dal: oklch(56% 0.15 60);        --dal-soft: oklch(94% 0.035 60);
+  --lab: oklch(50% 0.14 230);       --lab-soft: oklch(94% 0.025 230);
+  --act: oklch(46% 0.02 268);       --act-soft: oklch(93% 0.01 268);
+
+  --banner-caution-ink: oklch(99% 0 0);
+  --banner-caution-bg: var(--color-accent-2);
+  --banner-caution-border: var(--color-accent-2);
+  --banner-success-ink: oklch(99% 0 0);
+  --banner-success-bg: oklch(52% 0.13 150);
+  --banner-success-border: oklch(52% 0.13 150);
+
+  --calendar-badge-bg: var(--color-paper-2);
+  --calendar-badge-ink: var(--color-accent-2);
+  --calendar-badge-border: var(--color-rule);
+  --complete-btn-bg: var(--color-accent);
+  --complete-btn-ink: var(--color-accent-ink);
+
+  --backdrop-overlay: oklch(21% 0.016 268 / 0.45);
+
+  --bg-pattern-dot: oklch(21% 0.016 268 / 0.05);
+  --bg-pattern-line: oklch(21% 0.016 268 / 0.04);
+  --bg-grid-major: oklch(21% 0.016 268 / 0.07);
+  --bg-grid-minor: oklch(21% 0.016 268 / 0.03);
 }

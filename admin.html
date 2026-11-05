@@ -6,9 +6,9 @@
   <title>Admin Dashboard</title>
   <meta name="description" content="Admin dashboard to manage schedule events, holidays, and exam modes for KTU S3 CSE.">
 
-  <meta name="theme-color" id="themeColorMeta" content="#121214">
-  <meta name="theme-color" id="themeColorLight" media="(prefers-color-scheme: light)" content="#FFFFFF">
-  <meta name="theme-color" id="themeColorDark" media="(prefers-color-scheme: dark)" content="#121214">
+  <meta name="theme-color" id="themeColorMeta" content="#17181f">
+  <meta name="theme-color" id="themeColorLight" media="(prefers-color-scheme: light)" content="#f5f4f1">
+  <meta name="theme-color" id="themeColorDark" media="(prefers-color-scheme: dark)" content="#17181f">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" id="appleStatusBarMeta" content="black-translucent">
@@ -17,7 +17,7 @@
   <link rel="apple-touch-icon" href="logo.png?v=3">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Chivo+Mono:wght@500;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Wix+Madefor+Display:wght@400;500;600;700&family=Wix+Madefor+Text:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/index.css">
   <link rel="stylesheet" href="css/admin.css">
   <script>
@@ -27,7 +27,7 @@
       const theme = savedTheme ? savedTheme : (prefersDark ? "dark" : "light");
       document.documentElement.setAttribute("data-theme", theme);
       const isDark = theme === "dark";
-      const color = isDark ? "#121214" : "#FFFFFF";
+      const color = isDark ? "#17181f" : "#f5f4f1";
       const mMeta = document.getElementById("themeColorMeta");
       if (mMeta) mMeta.setAttribute("content", color);
       const mLight = document.getElementById("themeColorLight");
@@ -50,7 +50,7 @@
         </a>
       </div>
       <h1>Admin Dashboard</h1>
-      <p class="eyebrow">KTU S3 CSE Event Management</p>
+      <p class="admin-subtitle">KTU S3 CSE event management</p>
     </header>
 
     <div class="card admin-section-card">

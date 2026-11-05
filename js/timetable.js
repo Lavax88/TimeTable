@@ -18,7 +18,7 @@ function applyTheme(theme){
   }
   localStorage.setItem("timetableTheme", theme);
   const isDark = theme === "dark";
-  const color = isDark ? "#121214" : "#FFFFFF";
+  const color = isDark ? "#17181f" : "#f5f4f1";
 
   const metaIds = ["themeColorMeta", "themeColorLight", "themeColorDark"];
   metaIds.forEach(id => {
