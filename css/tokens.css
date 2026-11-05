@@ -103,9 +103,9 @@
   --progress-track-bg: oklch(13.5% 0.015 268);
   --progress-track-border: oklch(29% 0.016 266);
 
-  --font-display: "Wix Madefor Display", ui-sans-serif, system-ui, sans-serif;
-  --font-body: "Wix Madefor Text", ui-sans-serif, system-ui, sans-serif;
-  --font-outlier: "Wix Madefor Text", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-outlier: "Outfit", ui-sans-serif, system-ui, sans-serif;
 
   --radius-xs: 6px;
   --radius-sm: 8px;
