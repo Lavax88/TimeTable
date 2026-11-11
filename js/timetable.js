@@ -43,6 +43,7 @@ let _holidays = [];
 let _settings = {};
 let _lastCheckedDate = new Date().toDateString();
 let _lastBadgeMinute = -1;
+let _onHolidaysUpdated = null;
 
 /* ---------- Dev date override (DEV-ONLY, hostname-gated) ---------- */
 const IS_DEV =
@@ -270,6 +271,7 @@ async function loadEvents() {
   }
   renderEvents();
   checkExamMode();
+  if (typeof _onHolidaysUpdated === 'function') _onHolidaysUpdated();
 }
 
 function getFilteredEvents() {
@@ -348,7 +350,7 @@ async function initTimetableApp() {
     const nowMinutes = now.getHours()*60 + now.getMinutes();
 
     function isClassDayToday(day) {
-      return ScheduleEngine.isClassDay(day, now);
+      return ScheduleEngine.isClassDay(day, now, _holidays);
     }
 
     const tabsEl = document.getElementById("tabs");
@@ -651,31 +653,84 @@ async function initTimetableApp() {
     }, 500);
 
     /* ---------- LIVE PROGRESS TRACKERS ---------- */
+    function stripClassProgressCards() {
+      document.querySelectorAll('.day-panel .card[data-start-min]').forEach(card => {
+        card.classList.remove('now');
+        const nowTag = card.querySelector('.now-tag');
+        if (nowTag) {
+          if (nowTag.nextSibling && nowTag.nextSibling.nodeName === 'BR') {
+            nowTag.nextSibling.remove();
+          }
+          nowTag.remove();
+        }
+        const progressWrap = card.querySelector('.progress-wrap');
+        if (progressWrap) progressWrap.remove();
+      });
+    }
+
+    function syncHolidayState() {
+      const refNow = getDevNow();
+      DAYS.forEach(day => {
+        if (day === 'Exams') return;
+        const panel = document.querySelector(`.day-panel[data-day="${day}"]`);
+        if (!panel) return;
+
+        panel.querySelectorAll('.holiday-banner').forEach(el => el.remove());
+        panel.querySelectorAll('.caution-banner:not(.holiday-banner)').forEach(el => {
+          el.style.display = '';
+        });
+
+        const bannerInfo = ScheduleEngine.getHolidayBannerInfo(day, refNow, _holidays);
+        if (bannerInfo) {
+          panel.querySelectorAll('.caution-banner:not(.holiday-banner)').forEach(el => {
+            el.style.display = 'none';
+          });
+          const banner = document.createElement('div');
+          banner.className = bannerInfo.className;
+          banner.textContent = bannerInfo.message;
+          panel.prepend(banner);
+        }
+      });
+
+      if (ScheduleEngine.isHolidayDate(refNow, _holidays)) {
+        stripClassProgressCards();
+      }
+      updateContainerHeight(false);
+    }
+
+    _onHolidaysUpdated = () => {
+      syncHolidayState();
+      updateProgressBars();
+    };
+
     function updateProgressBars(){
       const t = getDevNow();
       const curMinutes = t.getHours() * 60 + t.getMinutes() + t.getSeconds() / 60;
+      const isHolidayToday = ScheduleEngine.isHolidayDate(t, _holidays);
 
       const classCards = document.querySelectorAll(".card.now[data-start-min]");
-      classCards.forEach(card => {
-        const startMin = Number(card.dataset.startMin);
-        const endMin = Number(card.dataset.endMin);
-        const state = ScheduleEngine.getPeriodState(startMin, endMin, t.getHours() * 60 + t.getMinutes(), t.getSeconds());
-        const pct = state.progressPercent;
+      if (!isHolidayToday) {
+        classCards.forEach(card => {
+          const startMin = Number(card.dataset.startMin);
+          const endMin = Number(card.dataset.endMin);
+          const state = ScheduleEngine.getPeriodState(startMin, endMin, t.getHours() * 60 + t.getMinutes(), t.getSeconds());
+          const pct = state.progressPercent;
 
-        const fill = card.querySelector(".progress-fill");
-        const remainingEl = card.querySelector(".progress-remaining");
-        if(fill) fill.style.width = pct + "%";
+          const fill = card.querySelector(".progress-fill");
+          const remainingEl = card.querySelector(".progress-remaining");
+          if(fill) fill.style.width = pct + "%";
 
-        card.querySelectorAll(".progress-divider").forEach(d => {
-          const dividerPos = parseFloat(d.dataset.pos);
-          d.classList.toggle("passed", pct >= dividerPos);
+          card.querySelectorAll(".progress-divider").forEach(d => {
+            const dividerPos = parseFloat(d.dataset.pos);
+            d.classList.toggle("passed", pct >= dividerPos);
+          });
+
+          if(remainingEl){
+            const minsLeft = state.remainingMinutes;
+            remainingEl.textContent = minsLeft <= 0 ? "Wrapping up" : `${minsToLabel(minsLeft)} left`;
+          }
         });
-
-        if(remainingEl){
-          const minsLeft = state.remainingMinutes;
-          remainingEl.textContent = minsLeft <= 0 ? "Wrapping up" : `${minsToLabel(minsLeft)} left`;
-        }
-      });
+      }
 
       const eventCards = document.querySelectorAll(".card.now[data-event-date]");
       eventCards.forEach(card => {
@@ -749,8 +804,7 @@ async function initTimetableApp() {
         const nowDayName = dayNames[t.getDay()];
         const rawPeriods = _SCHEDULE[nowDayName];
         if (rawPeriods && rawPeriods.length > 0) {
-          const isSaturday = nowDayName === 'Saturday';
-          const hasClass = isSaturday ? isSaturdayClassWeek(t) : true;
+          const hasClass = ScheduleEngine.isClassDay(nowDayName, t, _holidays);
           if (hasClass) {
             for (let i = 0; i < rawPeriods.length - 1; i++) {
               const currentEnd = minutesOf(rawPeriods[i][1]);
@@ -1238,6 +1292,7 @@ function checkForDateChange() {
     _lastBadgeMinute = -1;
     renderEvents();
     checkExamMode();
+    if (typeof _onHolidaysUpdated === 'function') _onHolidaysUpdated();
   }
 }
 

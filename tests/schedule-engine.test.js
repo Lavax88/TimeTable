@@ -77,3 +77,35 @@ test('ScheduleEngine - getPeriodState tracks progress accurately', () => {
   assert.equal(after.status, 'passed');
   assert.equal(after.progressPercent, 100);
 });
+
+test('ScheduleEngine - holidays disable class days and generate holiday banners', () => {
+  // Wed Nov 11, 2026
+  const wed = new Date(2026, 10, 11, 10, 0, 0);
+  assert.equal(ScheduleEngine.formatDateKey(wed), '2026-11-11');
+  assert.equal(ScheduleEngine.isHolidayDate(wed, ['2026-11-11']), true);
+  assert.equal(ScheduleEngine.isHolidayDate(wed, ['2026-11-12']), false);
+
+  assert.equal(ScheduleEngine.isClassDay('Wednesday', wed, []), true);
+  assert.equal(ScheduleEngine.isClassDay('Wednesday', wed, ['2026-11-11']), false);
+
+  // Even a working 1st Saturday becomes non-class if marked as a holiday
+  const firstSat = new Date(2026, 10, 7, 10, 0, 0);
+  assert.equal(ScheduleEngine.isClassDay('Saturday', firstSat, []), true);
+  assert.equal(ScheduleEngine.isClassDay('Saturday', firstSat, ['2026-11-07']), false);
+
+  // Holiday banner for today vs another day in the same week
+  const todayBanner = ScheduleEngine.getHolidayBannerInfo('Wednesday', wed, ['2026-11-11', '2026-11-13']);
+  assert.equal(todayBanner.isHoliday, true);
+  assert.equal(todayBanner.dateStr, '2026-11-11');
+  assert.match(todayBanner.message, /Holiday today/i);
+  assert.match(todayBanner.message, /No classes/i);
+
+  const fridayBanner = ScheduleEngine.getHolidayBannerInfo('Friday', wed, ['2026-11-11', '2026-11-13']);
+  assert.equal(fridayBanner.isHoliday, true);
+  assert.equal(fridayBanner.dateStr, '2026-11-13');
+  assert.match(fridayBanner.message, /Friday/i);
+  assert.match(fridayBanner.message, /No classes/i);
+
+  assert.equal(ScheduleEngine.getHolidayBannerInfo('Thursday', wed, ['2026-11-11', '2026-11-13']), null);
+  assert.equal(ScheduleEngine.getHolidayBannerInfo('Exams', wed, ['2026-11-11']), null);
+});

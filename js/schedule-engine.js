@@ -95,12 +95,59 @@
     };
   }
 
-  function isClassDay(dayName, currentDate) {
+  function formatDateKey(date) {
+    if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return date;
+    }
+    const d = date instanceof Date ? date : new Date(date);
+    if (Number.isNaN(d.getTime())) return '';
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  function isHolidayDate(date, holidays = []) {
+    if (!Array.isArray(holidays) || holidays.length === 0) return false;
+    const key = formatDateKey(date);
+    return Boolean(key && holidays.includes(key));
+  }
+
+  function getDateForWeekDay(dayName, referenceDate) {
+    const weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const idx = weekDays.indexOf(dayName);
+    if (idx === -1) return null;
+    const { monday } = getWeekRange(referenceDate);
+    const target = new Date(monday);
+    target.setDate(monday.getDate() + idx);
+    return target;
+  }
+
+  function getHolidayBannerInfo(dayName, referenceDate, holidays = []) {
+    const targetDate = getDateForWeekDay(dayName, referenceDate);
+    if (!targetDate || !isHolidayDate(targetDate, holidays)) return null;
+
+    const ref = referenceDate instanceof Date ? referenceDate : new Date(referenceDate);
+    const dateStr = formatDateKey(targetDate);
+    const isToday = dateStr === formatDateKey(ref);
+
+    return {
+      isHoliday: true,
+      dateStr,
+      className: 'caution-banner holiday-banner',
+      message: isToday
+        ? 'Holiday today — No classes scheduled.'
+        : `Holiday on ${dayName} — No classes scheduled.`,
+    };
+  }
+
+  function isClassDay(dayName, currentDate, holidays = []) {
     const d = currentDate instanceof Date ? currentDate : new Date(currentDate);
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const currentDayName = dayNames[d.getDay()];
 
     if (dayName !== currentDayName) return false;
+    if (isHolidayDate(d, holidays)) return false;
     if (dayName === 'Saturday') return isSaturdayClassWeek(d);
     if (dayName === 'Sunday') return false;
     return true;
@@ -165,6 +212,10 @@
     format12HourTime: fmt,
     minsToLabel,
     withBreaks,
+    formatDateKey,
+    isHolidayDate,
+    getDateForWeekDay,
+    getHolidayBannerInfo,
     isSaturdayWorkingDay,
     isSaturdayClassWeek,
     thisWeeksSaturday,
