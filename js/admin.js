@@ -56,7 +56,7 @@ function populateSubjectSelect(sel, placeholder) {
 async function loadData() {
   try {
     const [dataRes, eventsRes] = await Promise.all([
-      fetch('/api/data'),
+      fetch('/data.json'),
       fetch('/api/events?t=' + Date.now())
     ]);
     const data = await dataRes.json();
