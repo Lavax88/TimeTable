@@ -1,12 +1,16 @@
-const CACHE_NAME = 'timetable-cache-v33';
+const CACHE_NAME = 'timetable-cache-v34';
 
 const urlsToCache = [
   './',
   './index.html',
+  './data.json',
   './css/tokens.css',
   './css/base.css',
   './css/index.css',
   './css/features.css',
+  './js/client-store.js',
+  './js/schedule-engine.js',
+  './js/swipe-navigator.js',
   './js/timetable.js',
   './js/features.js',
   './manifest.json',
@@ -34,7 +38,7 @@ self.addEventListener('fetch', event => {
         }
         return response;
       })
-      .catch(() => caches.match(event.request))
+      .catch(() => caches.match(event.request, { ignoreSearch: true }))
   );
 });
 

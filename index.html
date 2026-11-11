@@ -281,8 +281,11 @@
   </div>
 </div>
 
-<script src="js/timetable.js?v=32"></script>
-<script src="js/features.js?v=32"></script>
+<script src="js/client-store.js?v=34"></script>
+<script src="js/schedule-engine.js?v=34"></script>
+<script src="js/swipe-navigator.js?v=34"></script>
+<script src="js/timetable.js?v=34"></script>
+<script src="js/features.js?v=34"></script>
 <script>
   if ('serviceWorker' in navigator) {
     let refreshing = false;
@@ -293,7 +296,7 @@
       }
     });
     window.addEventListener('load', function() {
-      navigator.serviceWorker.register('./sw.js?v=32')
+      navigator.serviceWorker.register('./sw.js?v=34')
         .then(function(reg) {
           reg.update();
         })
