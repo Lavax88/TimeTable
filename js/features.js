@@ -12,11 +12,11 @@
   var LONG_WAIT_DAYS = 14;
 
   function getInstallMeta() {
-    try { return JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch (e) { return {}; }
+    return ClientStore.getInstallMeta();
   }
 
   function setInstallMeta(meta) {
-    localStorage.setItem(LS_KEY, JSON.stringify(meta));
+    ClientStore.setInstallMeta(meta);
   }
 
   function isAlreadyInstalled() {
@@ -45,8 +45,9 @@
   }
 
   function isMobile() {
-    if (document.body.classList.contains('dev-mobile-ui')) return true;
-    if (document.body.classList.contains('dev-desktop-ui')) return false;
+    var devViewport = typeof ClientStore !== 'undefined' ? ClientStore.getDevViewport() : null;
+    if (devViewport === 'mobile' || document.body.classList.contains('dev-mobile-ui')) return true;
+    if (devViewport === 'desktop' || document.body.classList.contains('dev-desktop-ui')) return false;
     return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
   }
 

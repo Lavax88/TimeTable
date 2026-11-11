@@ -1,9 +1,8 @@
 /* ---------- Theme ---------- */
 const root = document.documentElement;
 const themeToggle = document.getElementById("themeToggle");
-const savedTheme = localStorage.getItem("timetableTheme");
 const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-let currentTheme = savedTheme ? savedTheme : (prefersDark ? "dark" : "light");
+let currentTheme = ClientStore.getTheme(prefersDark ? "dark" : "light");
 applyTheme(currentTheme);
 
 themeToggle.addEventListener("click", () => {
@@ -16,7 +15,7 @@ function applyTheme(theme){
   if (themeToggle) {
     themeToggle.setAttribute("aria-label", theme === "dark" ? "Switch to light mode" : "Switch to dark mode");
   }
-  localStorage.setItem("timetableTheme", theme);
+  ClientStore.setTheme(theme);
   const isDark = theme === "dark";
   const color = isDark ? "#17181f" : "#f5f4f1";
 
@@ -58,19 +57,7 @@ const IS_DEV =
 const ALL_PATTERNS = ['dots', 'grid', 'blueprint', 'mesh', 'screentone', 'none'];
 const RANDOM_PATTERNS = ['dots', 'grid', 'blueprint', 'mesh', 'screentone'];
 
-let currentPattern = 'dots';
-try {
-  if (IS_DEV) {
-    currentPattern = sessionStorage.getItem('timetableDevPattern') || 'dots';
-  } else {
-    let randomPattern = sessionStorage.getItem('timetableMainPattern');
-    if (!randomPattern || !RANDOM_PATTERNS.includes(randomPattern)) {
-      randomPattern = RANDOM_PATTERNS[Math.floor(Math.random() * RANDOM_PATTERNS.length)];
-      sessionStorage.setItem('timetableMainPattern', randomPattern);
-    }
-    currentPattern = randomPattern;
-  }
-} catch (_) {}
+let currentPattern = ClientStore.getPattern(IS_DEV, RANDOM_PATTERNS);
 
 document.documentElement.classList.remove(...ALL_PATTERNS.map(p => 'pattern-' + p));
 document.documentElement.classList.add('pattern-' + currentPattern);
@@ -81,7 +68,7 @@ if (document.body) {
 
 if (IS_DEV) {
   try {
-    const storedViewport = sessionStorage.getItem('timetableDevViewport');
+    const storedViewport = ClientStore.getDevViewport();
     if (storedViewport === 'mobile') {
       document.body.classList.add('dev-mobile-ui');
     } else if (storedViewport === 'desktop') {
@@ -92,10 +79,7 @@ if (IS_DEV) {
 
 function getDevNow() {
   if (!IS_DEV) return new Date();
-  const stored = sessionStorage.getItem('timetableTestDate');
-  const storedAt = sessionStorage.getItem('timetableTestAt');
-  if (!stored || !storedAt) return new Date();
-  return new Date(new Date(stored).getTime() + (Date.now() - Number(storedAt)));
+  return ClientStore.getDevTestDate() || new Date();
 }
 
 /* ---------- Event helpers ---------- */
@@ -116,28 +100,10 @@ const typeShortLabels = {
 
 function eventKey(ev) { return ev.title + '|' + ev.date; }
 function isEventCompleted(ev) {
-  try { return JSON.parse(localStorage.getItem('timetableCompleted') || '[]').indexOf(eventKey(ev)) >= 0; }
-  catch(e) { return false; }
+  return ClientStore.isEventCompleted(eventKey(ev));
 }
 function toggleEventComplete(ev) {
-  var key = eventKey(ev);
-  var arr = JSON.parse(localStorage.getItem('timetableCompleted') || '[]');
-  var idx = arr.indexOf(key);
-  var completing = idx < 0; // true = marking as done, false = undoing
-
-  if (completing) {
-    arr.push(key);
-    // Fire-and-forget: delete this event from the server (no password needed)
-    fetch('/api/complete_event', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: ev.title, date: ev.date })
-    }).catch(() => {}); // silently ignore network errors
-  } else {
-    arr.splice(idx, 1);
-  }
-
-  localStorage.setItem('timetableCompleted', JSON.stringify(arr));
+  ClientStore.toggleEventCompleted(eventKey(ev));
   renderEvents();
 }
 
@@ -247,11 +213,7 @@ function injectCalendarBadges() {
   const dayNames = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
   const nowDayName = dayNames[nowDay];
 
-  const monday = new Date(now);
-  monday.setDate(now.getDate() - ((nowDay + 6) % 7));
-  monday.setHours(0, 0, 0, 0);
-  const nextMonday = new Date(monday);
-  nextMonday.setDate(monday.getDate() + 7);
+  const { monday, nextMonday } = ScheduleEngine.getWeekRange(now);
 
   if (!_events || !_events.length) return;
 
@@ -355,15 +317,11 @@ async function initTimetableApp() {
   try {
     let data = null;
     try {
-      const response = await fetch('/api/data?t=' + Date.now());
+      const response = await fetch('/data.json?t=' + Date.now());
       data = await response.json();
-      try {
-        sessionStorage.setItem('timetableData', JSON.stringify(data));
-        sessionStorage.setItem('timetableDataAt', String(Date.now()));
-      } catch (e) {}
+      ClientStore.setCachedTimetableData(data);
     } catch (e) {
-      const cached = sessionStorage.getItem('timetableData');
-      if (cached) data = JSON.parse(cached);
+      data = ClientStore.getCachedTimetableData();
     }
 
     _ACCENT = data.ACCENT;
@@ -373,56 +331,25 @@ async function initTimetableApp() {
 
     const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday", "Exams"];
 
-    function fmt(hhmm){
-      const [h,m] = hhmm.split(":").map(Number);
-      const period = h>=12 ? "PM":"AM";
-      let h12 = h%12; if(h12===0) h12=12;
-      return `${h12}:${m.toString().padStart(2,"0")} ${period}`;
-    }
-    function minutesOf(hhmm){ const [h,m]=hhmm.split(":").map(Number); return h*60+m; }
-    function minsToLabel(mins){
-      if(mins < 60) return `${mins} min`;
-      const h = Math.floor(mins/60), m = mins%60;
-      return m ? `${h}h ${m}m` : `${h}h`;
-    }
-
-    function withBreaks(periods){
-      const out = [];
-      for(let i=0; i<periods.length; i++){
-        out.push(periods[i]);
-        if(i < periods.length - 1){
-          const gap = minutesOf(periods[i+1][0]) - minutesOf(periods[i][1]);
-          if(gap > 5){
-            out.push([periods[i][1], periods[i+1][0], "BREAK", minsToLabel(gap)]);
-          }
-        }
-      }
-      return out;
-    }
+    const {
+      fmt,
+      minutesOf,
+      minsToLabel,
+      withBreaks,
+      isSaturdayClassWeek,
+      thisWeeksSaturday,
+      getSaturdayBannerInfo,
+      getDividers,
+    } = ScheduleEngine;
 
     const now = getDevNow();
     const dayNames = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
     const nowDayName = dayNames[now.getDay()];
     const nowMinutes = now.getHours()*60 + now.getMinutes();
 
-    function isSaturdayClassWeek(date){
-      const occurrence = Math.ceil(date.getDate() / 7);
-      return occurrence === 1 || occurrence === 3 || occurrence === 5;
+    function isClassDayToday(day) {
+      return ScheduleEngine.isClassDay(day, now);
     }
-    function isClassDayToday(day){
-      if(day !== nowDayName) return false;
-      if(day === "Saturday") return isSaturdayClassWeek(now);
-      return true;
-    }
-    function thisWeeksSaturday(date){
-      const daysSinceMonday = (date.getDay() + 6) % 7;
-      const offsetToSaturday = 5 - daysSinceMonday;
-      const sat = new Date(date);
-      sat.setDate(date.getDate() + offsetToSaturday);
-      return sat;
-    }
-
-    const thisWeekHasNoSaturdayClass = !isSaturdayClassWeek(thisWeeksSaturday(now));
 
     const tabsEl = document.getElementById("tabs");
     const panelsEl = document.getElementById("panels");
@@ -482,20 +409,11 @@ async function initTimetableApp() {
         return;
       }
 
-      if(day === "Saturday"){
+      if (day === "Saturday") {
         const banner = document.createElement("div");
-        const satDate = thisWeeksSaturday(now);
-        const satOccurrence = Math.ceil(satDate.getDate() / 7);
-        if(thisWeekHasNoSaturdayClass){
-          banner.className = "caution-banner";
-          banner.textContent = "No classes this Saturday. Classes only run on the 1st, 3rd & 5th Saturdays of the month.";
-        } else if(satOccurrence === 5){
-          banner.className = "caution-banner success";
-          banner.textContent = "Saturday class is scheduled this week — there is class during the 5th Saturday.";
-        } else {
-          banner.className = "caution-banner success";
-          banner.textContent = "Saturday class is scheduled this week.";
-        }
+        const bannerInfo = getSaturdayBannerInfo(now);
+        banner.className = bannerInfo.className;
+        banner.textContent = bannerInfo.message;
         panel.appendChild(banner);
       }
 
@@ -547,8 +465,7 @@ async function initTimetableApp() {
 
         const isNow = isClassDay && nowMinutes >= minutesOf(start) && nowMinutes < minutesOf(end);
         const dividerCount = key === "LABCOMBO" ? (subCount || 1) : 1;
-        const dividersHtml = Array.from({ length: dividerCount - 1 }, (_, i) => {
-          const pos = ((i + 1) / dividerCount) * 100;
+        const dividersHtml = getDividers(dividerCount).map(pos => {
           return `<div class="progress-divider" data-pos="${pos}" style="left:${pos}%"></div>`;
         }).join("");
 
@@ -685,193 +602,18 @@ async function initTimetableApp() {
       }
     }
 
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let touchStartTime = 0;
-    let touchTracking = false;
-    let isSwiping = false;
-    let isScrolling = false;
-    let panelWidth = 0;
-    let startTranslateX = 0;
-    let cachedHeights = [];
-    let cachedTabs = [];
-    let rafId = null;
-    let latestTranslateX = 0;
-    let latestHeight = 0;
-    let latestIndicatorLeft = 0;
-    let latestIndicatorWidth = 0;
-    let latestActiveIdx = -1;
-
-    panelsEl.addEventListener("touchstart", (e) => {
-      if(e.touches.length !== 1) return;
-      if(animTimer){
-        clearTimeout(animTimer);
-        animTimer = null;
-      }
-      if(rafId){
-        cancelAnimationFrame(rafId);
-        rafId = null;
-      }
-      panelsTrack.style.transition = "none";
-      panelsEl.style.transition = "none";
-      indicator.style.transition = "none";
-
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
-      touchStartTime = Date.now();
-      touchTracking = true;
-      isSwiping = false;
-      isScrolling = false;
-
-      panelWidth = panelsEl.offsetWidth || window.innerWidth;
-      const currIdx = DAYS.indexOf(currentDay);
-      startTranslateX = -currIdx * panelWidth;
-      updateContainerHeight(false);
-
-      // Pre-cache heights and tab coordinates once to avoid 60fps layout thrashing
-      cachedHeights = Array.from(panelsTrack.children).map(c => c.offsetHeight);
-      const allTabs = tabsEl.querySelectorAll(".tab");
-      cachedTabs = Array.from(allTabs).map(t => ({ left: t.offsetLeft, width: t.offsetWidth }));
-      panelsTrack.classList.add("swiping");
-    }, { passive: true });
-
-    panelsEl.addEventListener("touchmove", (e) => {
-      if(!touchTracking) return;
-      const touch = e.touches[0];
-      const rawDx = touch.clientX - touchStartX;
-      const rawDy = touch.clientY - touchStartY;
-
-      if(!isSwiping && !isScrolling){
-        const absX = Math.abs(rawDx);
-        const absY = Math.abs(rawDy);
-        // Vertical scroll detection: let page scroll naturally
-        if(absY > absX && absY > 8){
-          isScrolling = true;
-          panelsTrack.classList.remove("swiping");
-          return;
-        }
-        // Horizontal swipe detection: lock into swiping
-        if(absX > absY && absX > 8){
-          isSwiping = true;
-        }
-      }
-
-      if(isScrolling) return;
-
-      if(isSwiping){
-        if(e.cancelable) e.preventDefault();
-
-        const currIdx = DAYS.indexOf(currentDay);
-        const isAtStart = currIdx === 0 && rawDx > 0;
-        const isAtEnd = currIdx === DAYS.length - 1 && rawDx < 0;
-
-        let appliedDx = rawDx;
-        if(isAtStart || isAtEnd){
-          appliedDx = rawDx * 0.28; // Rubber-band resistance at edges
-        }
-
-        const currentTranslateX = startTranslateX + appliedDx;
-
-        const targetIdx = rawDx < 0
-          ? Math.min(DAYS.length - 1, currIdx + 1)
-          : Math.max(0, currIdx - 1);
-
-        const currentH = cachedHeights[currIdx] || 0;
-        const targetH = cachedHeights[targetIdx] || 0;
-        const progress = Math.min(1, Math.abs(appliedDx) / panelWidth);
-
-        latestTranslateX = currentTranslateX;
-        latestHeight = (currentH > 0 && targetH > 0)
-          ? Math.round(currentH + (targetH - currentH) * progress)
-          : 0;
-
-        const curTab = cachedTabs[currIdx];
-        const tgtTab = cachedTabs[targetIdx];
-        if(curTab && tgtTab){
-          latestIndicatorLeft = curTab.left + (tgtTab.left - curTab.left) * progress;
-          latestIndicatorWidth = curTab.width + (tgtTab.width - curTab.width) * progress;
-          latestActiveIdx = progress > 0.5 ? targetIdx : currIdx;
-        }
-
-        if(!rafId){
-          rafId = requestAnimationFrame(() => {
-            rafId = null;
-            panelsTrack.style.transform = `translateX(${latestTranslateX}px)`;
-            if(latestHeight > 0){
-              panelsEl.style.height = latestHeight + "px";
-            }
-            if(latestIndicatorWidth > 0){
-              indicator.style.transition = "none";
-              indicator.style.transform = `translateX(${latestIndicatorLeft}px)`;
-              indicator.style.width = `${latestIndicatorWidth}px`;
-              const allTabs = tabsEl.querySelectorAll(".tab");
-              allTabs.forEach((t, i) => t.classList.toggle("active", i === latestActiveIdx));
-            }
-          });
-        }
-      }
-    }, { passive: false });
-
-    panelsEl.addEventListener("touchend", (e) => {
-      if(!touchTracking) return;
-      if(rafId){
-        cancelAnimationFrame(rafId);
-        rafId = null;
-      }
-      if(!isSwiping){
-        touchTracking = false;
-        panelsTrack.classList.remove("swiping");
-        return;
-      }
-      touchTracking = false;
-      isSwiping = false;
-
-      const touch = e.changedTouches[0];
-      const dx = touch.clientX - touchStartX;
-      const dt = Math.max(1, Date.now() - touchStartTime);
-      const velocity = Math.abs(dx) / dt;
-      const distance = Math.abs(dx);
-
-      const currIdx = DAYS.indexOf(currentDay);
-      // Increased gesture completion thresholds
-      const isDistance = distance >= panelWidth * 0.38;
-      const isFlick = velocity >= 0.45 && distance >= 75;
-
-      let nextIdx = currIdx;
-      if(isDistance || isFlick){
-        if(dx < 0 && currIdx < DAYS.length - 1){
-          nextIdx = currIdx + 1;
-        } else if(dx > 0 && currIdx > 0){
-          nextIdx = currIdx - 1;
-        }
-      }
-
-      selectDay(DAYS[nextIdx], true);
-    }, { passive: true });
-
-    panelsEl.addEventListener("touchcancel", () => {
-      if(!touchTracking) return;
-      if(rafId){
-        cancelAnimationFrame(rafId);
-        rafId = null;
-      }
-      touchTracking = false;
-      panelsTrack.classList.remove("swiping");
-      if(isSwiping){
-        isSwiping = false;
-        selectDay(currentDay, true);
-      }
-    }, { passive: true });
-
-    let wheelCooldown = false;
-    panelsEl.addEventListener("wheel", (e) => {
-      if(Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 24){
-        if(wheelCooldown) return;
-        wheelCooldown = true;
-        goToDay(e.deltaX > 0 ? 1 : -1);
-        setTimeout(() => { wheelCooldown = false; }, 260);
-      }
-    }, { passive: true });
+    const swipeNav = SwipeNavigator.createSwipeNavigator({
+      containerEl: panelsEl,
+      trackEl: panelsTrack,
+      indicatorEl: indicator,
+      tabsEl: tabsEl,
+      getItemsCount: () => DAYS.length,
+      getCurrentIndex: () => DAYS.indexOf(currentDay),
+      onSelect: (targetIdx, animate) => {
+        selectDay(DAYS[targetIdx], animate);
+      },
+    });
+    swipeNav.mount();
 
     /* ---------- Legend ---------- */
     const legendEl = document.getElementById("legend");
@@ -917,9 +659,8 @@ async function initTimetableApp() {
       classCards.forEach(card => {
         const startMin = Number(card.dataset.startMin);
         const endMin = Number(card.dataset.endMin);
-        const total = endMin - startMin;
-        const elapsed = curMinutes - startMin;
-        const pct = Math.min(100, Math.max(0, (elapsed / total) * 100));
+        const state = ScheduleEngine.getPeriodState(startMin, endMin, t.getHours() * 60 + t.getMinutes(), t.getSeconds());
+        const pct = state.progressPercent;
 
         const fill = card.querySelector(".progress-fill");
         const remainingEl = card.querySelector(".progress-remaining");
@@ -931,7 +672,7 @@ async function initTimetableApp() {
         });
 
         if(remainingEl){
-          const minsLeft = Math.max(0, Math.ceil(endMin - curMinutes));
+          const minsLeft = state.remainingMinutes;
           remainingEl.textContent = minsLeft <= 0 ? "Wrapping up" : `${minsToLabel(minsLeft)} left`;
         }
       });
@@ -1100,10 +841,7 @@ function setupDevDatePicker() {
 
   /* Viewport UI mode toggle */
   const viewportBtns = panel.querySelectorAll('#devViewportGroup .dev-toggle-btn');
-  let currentViewport = 'auto';
-  try {
-    currentViewport = sessionStorage.getItem('timetableDevViewport') || 'auto';
-  } catch (_) {}
+  let currentViewport = ClientStore.getDevViewport() || 'auto';
 
   function setViewport(mode) {
     document.body.classList.remove('dev-mobile-ui', 'dev-desktop-ui');
@@ -1123,13 +861,7 @@ function setupDevDatePicker() {
   viewportBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       const mode = btn.dataset.viewport;
-      try {
-        if (mode === 'auto') {
-          sessionStorage.removeItem('timetableDevViewport');
-        } else {
-          sessionStorage.setItem('timetableDevViewport', mode);
-        }
-      } catch (_) {}
+      ClientStore.setDevViewport(mode === 'auto' ? '' : mode);
       setViewport(mode);
     });
   });
@@ -1152,9 +884,7 @@ function setupDevDatePicker() {
   patternBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       const pattern = btn.dataset.pattern;
-      try {
-        sessionStorage.setItem('timetableDevPattern', pattern);
-      } catch (_) {}
+      ClientStore.setDevPattern(pattern);
       currentPattern = pattern;
       setPattern(pattern);
     });
@@ -1435,16 +1165,14 @@ function setupDevDatePicker() {
 
   /* Reset button */
   resetBtn.addEventListener('click', () => {
-    sessionStorage.removeItem('timetableTestDate');
-    sessionStorage.removeItem('timetableTestAt');
+    ClientStore.clearDevTestDate();
     location.reload();
   });
 
   function setDevDateTime() {
     if (!dateInput.value || !timeInput.value) return;
     const iso = dateInput.value + 'T' + timeInput.value + ':00';
-    sessionStorage.setItem('timetableTestDate', iso);
-    sessionStorage.setItem('timetableTestAt', String(Date.now()));
+    ClientStore.setDevTestDate(iso);
     location.reload();
   }
 }
