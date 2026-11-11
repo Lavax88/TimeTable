@@ -50,11 +50,13 @@ test('EventsRepository - CRUD mutations with InMemoryAdapter', async () => {
   data = await repo.getData({ pruneExpired: false });
   assert.deepEqual(data.HOLIDAYS, []);
 
-  // Delete event
-  await repo.applyMutation('delete', {
+  // Delete event returns updated state snapshot immediately
+  const delResult = await repo.applyMutation('delete', {
     targetTitle: 'Assignment 1 (Extended)',
     targetDate: '2026-11-22'
   });
+  assert.equal(delResult.success, true);
+  assert.equal(delResult.data.EVENTS.length, 1);
   data = await repo.getData({ pruneExpired: false });
   assert.equal(data.EVENTS.length, 1);
 });

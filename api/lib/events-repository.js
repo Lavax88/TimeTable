@@ -221,13 +221,15 @@ class EventsRepository {
         throw new Error(`Unknown action: ${action}`);
     }
 
-    await this.adapter.write({
+    const updatedState = {
       EVENTS: current.EVENTS,
       HOLIDAYS: current.HOLIDAYS,
       SETTINGS: current.SETTINGS,
-    });
+    };
 
-    return { success: true };
+    await this.adapter.write(updatedState);
+
+    return { success: true, data: updatedState };
   }
 }
 

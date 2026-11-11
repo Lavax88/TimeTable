@@ -5,7 +5,7 @@ const repository = new EventsRepository();
 module.exports = async (req, res) => {
   try {
     const data = await repository.getData();
-    res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=0, must-revalidate');
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
     res.status(200).json(data);
   } catch (err) {
     console.error('Edge Config read failed:', err.message || err);

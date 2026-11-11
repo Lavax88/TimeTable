@@ -53,11 +53,20 @@ function populateSubjectSelect(sel, placeholder) {
   sel.innerHTML += `<option value="General">General / Other</option>`;
 }
 
+function applyEventsData(eventsData) {
+  const safe = eventsData || {};
+  window._holidays = safe.HOLIDAYS || [];
+  window._settings = safe.SETTINGS || {};
+  renderEventsList(safe.EVENTS || []);
+  renderHolidaysList();
+  initExamModeToggle();
+}
+
 async function loadData() {
   try {
     const [dataRes, eventsRes] = await Promise.all([
       fetch('/data.json'),
-      fetch('/api/events?t=' + Date.now())
+      fetch('/api/events?t=' + Date.now(), { cache: 'no-store' })
     ]);
     const data = await dataRes.json();
     let eventsData = { EVENTS: [], HOLIDAYS: [], SETTINGS: {} };
@@ -65,15 +74,11 @@ async function loadData() {
       eventsData = await eventsRes.json();
     }
     window._subjects = data.SUBJECTS;
-    window._holidays = eventsData.HOLIDAYS || [];
-    window._settings = eventsData.SETTINGS || {};
 
     populateSubjectSelect(document.querySelector('.event-subject'), 'Select a Subject');
     document.querySelectorAll('.series-subject').forEach(sel => populateSubjectSelect(sel, 'Select Subject'));
 
-    renderEventsList(eventsData.EVENTS || []);
-    renderHolidaysList();
-    initExamModeToggle();
+    applyEventsData(eventsData);
   } catch (err) {
     console.error("Failed to load data", err);
   }
@@ -243,8 +248,6 @@ function renderEventsList(events) {
 
     const displayTitle = ev.title || ev.subject || 'Untitled';
     const typeLabel = typeShortLabels[ev.type] || (ev.type || '').toUpperCase();
-    const safeTitle = (ev.title || '').replace(/'/g, "\\'");
-    const safeSubject = (ev.subject || '').replace(/'/g, "\\'");
     const isSeries = ev.type === 'exam' && examTitleCount[ev.title] > 1;
 
     const subtitleParts = [ev.date, typeLabel];
@@ -261,11 +264,17 @@ function renderEventsList(events) {
         </div>
       </div>
       <div class="event-actions-group">
-        <button type="button" class="del-btn edit-btn" onclick="startEditEvent(${idx})">Edit</button>
-        <button type="button" class="del-btn admin-del-danger" onclick="deleteEvent('${safeTitle}', '${ev.date}', '${safeSubject}')">Delete</button>
-        ${isSeries ? `<button type="button" class="del-btn admin-btn-series" onclick="deleteSeries('${safeTitle}')">Delete All</button>` : ''}
+        <button type="button" class="del-btn edit-btn">Edit</button>
+        <button type="button" class="del-btn admin-del-danger delete-event-btn">Delete</button>
+        ${isSeries ? `<button type="button" class="del-btn admin-btn-series">Delete All</button>` : ''}
       </div>
     `;
+    item.querySelector('.edit-btn').addEventListener('click', () => startEditEvent(idx));
+    item.querySelector('.delete-event-btn').addEventListener('click', () => deleteEvent(ev.title, ev.date, ev.subject || ''));
+    const seriesBtn = item.querySelector('.admin-btn-series');
+    if (seriesBtn) {
+      seriesBtn.addEventListener('click', () => deleteSeries(ev.title));
+    }
     item.querySelector('.event-checkbox').addEventListener('change', updateDeleteSelectedBtn);
     listEl.appendChild(item);
   });
@@ -464,7 +473,11 @@ async function sendToAPI(payload) {
           updateRowFields(first);
         }
       }
-      loadData();
+      if (result && result.data) {
+        applyEventsData(result.data);
+      } else {
+        await loadData();
+      }
     } else {
       statusEl.textContent = result.error || "Authentication failed.";
       statusEl.style.color = "var(--ds)";
@@ -587,18 +600,21 @@ function initExamModeToggle() {
       : 'Auto-detection is active (exams within 1 day trigger mode).';
   }
 
-  toggle.addEventListener('change', () => {
-    if (!pwdInput.value) {
-      alert("Please enter the Admin Password at the top first.");
-      toggle.checked = !toggle.checked;
-      return;
-    }
-    sendToAPI({
-      password: pwdInput.value,
-      action: 'update_settings',
-      settings: { forceExamMode: toggle.checked }
+  if (!toggle.dataset.bound) {
+    toggle.dataset.bound = 'true';
+    toggle.addEventListener('change', () => {
+      if (!pwdInput.value) {
+        alert("Please enter the Admin Password at the top first.");
+        toggle.checked = !toggle.checked;
+        return;
+      }
+      sendToAPI({
+        password: pwdInput.value,
+        action: 'update_settings',
+        settings: { forceExamMode: toggle.checked }
+      });
     });
-  });
+  }
 }
 
 initExamModeToggle();
