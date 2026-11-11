@@ -1,4 +1,4 @@
-const CACHE_NAME = 'timetable-cache-v34';
+const CACHE_NAME = 'timetable-cache-v35';
 
 const urlsToCache = [
   './',
@@ -9,6 +9,7 @@ const urlsToCache = [
   './css/index.css',
   './css/features.css',
   './js/client-store.js',
+  './js/date-picker.js',
   './js/schedule-engine.js',
   './js/swipe-navigator.js',
   './js/timetable.js',

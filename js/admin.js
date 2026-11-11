@@ -92,6 +92,9 @@ function setMinDates() {
 
 loadData();
 setMinDates();
+if (typeof ThemedDatePicker !== 'undefined') {
+  ThemedDatePicker.enhanceAll();
+}
 
 function updateRowFields(row) {
   const type = row.querySelector('.event-type').value;
@@ -347,6 +350,10 @@ window.startEditEvent = function(idx) {
     const hide = ['general', 'reminder'].includes(typeSel.value);
     subjCol.style.display = hide ? 'none' : '';
   });
+
+  if (typeof ThemedDatePicker !== 'undefined') {
+    ThemedDatePicker.enhance(item.querySelector('.edit-date-input'));
+  }
 };
 
 window.cancelEditEvent = function(idx) {

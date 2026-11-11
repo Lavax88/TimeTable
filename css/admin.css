@@ -502,3 +502,41 @@
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
 }
+
+/* Themed Date Picker */
+.themed-date-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.themed-date-wrapper .themed-date-input {
+  width: 100%;
+  padding-right: 34px;
+  cursor: pointer;
+}
+
+.event-row .themed-date-event,
+.series-row .themed-date-series {
+  flex: 0 0 auto;
+  width: 152px;
+  min-width: 135px;
+}
+
+.event-row .themed-date-event .event-date,
+.series-row .themed-date-series .series-date {
+  width: 100%;
+  min-width: 0;
+}
+
+.themed-cal-floating {
+  position: fixed;
+  z-index: 9999;
+  margin: 0;
+}
+
+.dev-cal-day.disabled {
+  opacity: 0.3;
+  pointer-events: none;
+  cursor: not-allowed;
+}
