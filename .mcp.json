@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "m3e": {
+      "type": "stdio",
+      "command": "cmd.exe",
+      "args": [
+        "/d",
+        "/c",
+        "npx",
+        "-y",
+        "@m3e/mcp"
+      ]
+    }
+  }
+}
