@@ -380,7 +380,9 @@ body.exam-mode #examModeBanner {
 }
 
 body.exam-mode #examModeContent {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
 }
 
 body.exam-mode .tabs,
