@@ -104,15 +104,15 @@ class EventsRepository {
    * Retrieves active events, holidays, and settings.
    * Optionally prunes expired events from the underlying store.
    */
-  async getData(options = { pruneExpired: true, referenceTime: new Date() }) {
+  async getData({ pruneExpired = true, referenceTime = new Date() } = {}) {
     const data = await this.adapter.read();
     const rawEvents = data.EVENTS || [];
     const holidays = data.HOLIDAYS || [];
     const settings = data.SETTINGS || {};
 
-    const activeEvents = rawEvents.filter(e => !this.isExpired(e, options.referenceTime));
+    const activeEvents = rawEvents.filter(e => !this.isExpired(e, referenceTime));
 
-    if (options.pruneExpired && activeEvents.length !== rawEvents.length) {
+    if (pruneExpired && activeEvents.length !== rawEvents.length) {
       this.adapter.write({
         EVENTS: activeEvents,
         HOLIDAYS: holidays,

@@ -24,12 +24,13 @@ test('EventsRepository - CRUD mutations with InMemoryAdapter', async () => {
     SETTINGS: {}
   });
   const repo = new EventsRepository(adapter);
+  const now = new Date('2026-11-15T12:00:00+05:30');
 
   // Add event
   await repo.applyMutation('add', {
     events: [{ title: 'Series 1 Exam', date: '2026-11-25', type: 'exam', subject: 'Data Structures' }]
-  });
-  let data = await repo.getData({ pruneExpired: false });
+  }, now);
+  let data = await repo.getData({ pruneExpired: false, referenceTime: now });
   assert.equal(data.EVENTS.length, 2);
 
   // Edit event
@@ -37,27 +38,28 @@ test('EventsRepository - CRUD mutations with InMemoryAdapter', async () => {
     targetTitle: 'Assignment 1',
     targetDate: '2026-11-20',
     updatedEvent: { title: 'Assignment 1 (Extended)', date: '2026-11-22', type: 'deadline' }
-  });
-  data = await repo.getData({ pruneExpired: false });
+  }, now);
+  data = await repo.getData({ pruneExpired: false, referenceTime: now });
   assert.equal(data.EVENTS.find(e => e.title === 'Assignment 1 (Extended)').date, '2026-11-22');
 
   // Add & remove holiday
-  await repo.applyMutation('add_holiday', { holidayDate: '2026-11-28' });
-  data = await repo.getData({ pruneExpired: false });
+  await repo.applyMutation('add_holiday', { holidayDate: '2026-11-28' }, now);
+  data = await repo.getData({ pruneExpired: false, referenceTime: now });
   assert.deepEqual(data.HOLIDAYS, ['2026-11-28']);
 
-  await repo.applyMutation('remove_holiday', { holidayDate: '2026-11-28' });
-  data = await repo.getData({ pruneExpired: false });
+  // Remove holiday
+  await repo.applyMutation('remove_holiday', { holidayDate: '2026-11-28' }, now);
+  data = await repo.getData({ pruneExpired: false, referenceTime: now });
   assert.deepEqual(data.HOLIDAYS, []);
 
   // Delete event returns updated state snapshot immediately
   const delResult = await repo.applyMutation('delete', {
     targetTitle: 'Assignment 1 (Extended)',
     targetDate: '2026-11-22'
-  });
+  }, now);
   assert.equal(delResult.success, true);
   assert.equal(delResult.data.EVENTS.length, 1);
-  data = await repo.getData({ pruneExpired: false });
+  data = await repo.getData({ pruneExpired: false, referenceTime: now });
   assert.equal(data.EVENTS.length, 1);
 });
 
